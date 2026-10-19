@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Échauffement actif</title>
+<style>
+  :root {
+    --bg: #E8EBEE; --ink: #1B2A41; --muted: #5B6778; --card: #F7F8F9;
+    --boxe: #C8283C; --course: #0E7C86; --accent: var(--boxe);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--ink);
+         min-height: 100vh; display: flex; justify-content: center; }
+  main { width: 100%; max-width: 560px; padding: 58px 18px 40px; }
+  .quit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); right: 12px; z-index: 5; padding: 9px 16px; border-radius: 999px; background: var(--card); color: var(--ink); font-weight: bold; box-shadow: 0 1px 6px rgba(0,0,0,.25); }
+  h1 { font-size: 1.7rem; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .hidden { display: none !important; }
+  button { font: inherit; cursor: pointer; border: 0; border-radius: 10px; }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  .choices { display: grid; gap: 12px; }
+  .choice { text-align: left; padding: 20px; background: var(--card); color: var(--ink);
+            border-left: 10px solid var(--c); }
+  .choice strong { display: block; font-size: 1.3rem; }
+  .choice span { color: var(--muted); font-size: .9rem; }
+
+  .back { background: none; color: var(--muted); padding: 6px 0; margin-bottom: 10px; }
+  .list { list-style: none; padding: 0; margin: 16px 0 22px; background: var(--card); border-radius: 10px; }
+  .list li { padding: 12px 16px; border-bottom: 1px solid #DDE1E6; }
+  .list li:last-child { border: 0; }
+  .list b { display: block; }
+  .list small { color: var(--muted); }
+  .primary { width: 100%; padding: 16px; background: var(--accent); color: #fff; font-weight: bold; font-size: 1.1rem; }
+
+  .reglage { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border-radius: 10px; padding: 12px 16px; margin: 0 0 16px; }
+  .reglage label { font-weight: bold; }
+  .toggle { padding: 10px 16px; min-width: 6.5em; white-space: nowrap; font-weight: bold; background: var(--ink); color: var(--bg); }
+  .toggle[aria-pressed="false"] { background: transparent; color: var(--muted); border: 2px solid var(--muted); }
+  .list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .list li div { min-width: 0; }
+  .suppr, .ajouter { flex: none; width: 40px; height: 40px; font-size: 1.4rem; line-height: 1; background: transparent; border: 2px solid currentColor; border-radius: 50%; }
+  .suppr { color: var(--muted); }
+  .ajouter { color: var(--accent); }
+  .sec { font-size: 1.05rem; margin: 6px 0 -4px; }
+  .primary:disabled { opacity: .4; cursor: not-allowed; }
+  .reglage { flex-wrap: wrap; }
+  .reglage label { flex: 1 1 9em; }
+  .contour { background: transparent; color: var(--ink); border: 2px solid var(--muted); }
+  .toggle:disabled { opacity: .4; cursor: not-allowed; }
+  .illus { background: #EDF1F6; color: #3B4757; border-radius: 10px; margin: 14px 0; overflow: hidden; }
+  .illus svg { display: block; width: 100%; height: auto; }
+  .souffle { height: 210px; display: flex; align-items: center; justify-content: center; }
+  .souffle i { width: 190px; height: 190px; border-radius: 50%; background: var(--accent); opacity: .8; animation: souffle ease-in-out forwards; }
+  @keyframes souffle { from { transform: scale(var(--de)); } to { transform: scale(var(--vers)); } }
+  .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 8px 12px 10px; font-size: .82rem; }
+  .legende i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #3F4B5C; margin-right: 6px; vertical-align: -2px; }
+  .legende .p1 { background: #8B99AD; }
+  .legende .p2 { background: #fff; border-color: #1E2733; }
+  .legende .vue { margin-left: auto; font-weight: bold; }
+  .mini { flex: none; width: 72px; height: 49px; background: #EDF1F6; border: 1px solid #C5CED9; border-radius: 8px; }
+  .list li > div { flex: 1; }
+  .list li { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .list li.drag { background: var(--bg); box-shadow: 0 6px 18px rgba(0,0,0,.25); transform: scale(1.02); position: relative; z-index: 1; }
+  .reglage small { display: block; color: var(--muted); font-weight: normal; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button:not(.toggle) { width: 44px; height: 44px; font-size: 1.4rem; font-weight: bold; background: var(--ink); color: var(--bg); }
+  .stepper output { min-width: 3.4em; text-align: center; font-weight: bold; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+  .bars { display: flex; gap: 4px; margin: 6px 0 22px; }
+  .bars i { flex: 1; height: 8px; border-radius: 4px; background: #CBD1D8; overflow: hidden; }
+  .bars i b { display: block; height: 100%; width: 0; background: var(--accent); }
+  .bars i.done b { width: 100%; }
+
+  .count { font-size: 1.1rem; color: var(--muted); }
+  .time { font-size: clamp(6rem, 30vw, 9rem); font-weight: bold; line-height: 1; color: var(--accent);
+          font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+  .accueil { cursor: pointer; min-height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; }
+  .logo { width: 150px; background: #022095; border-radius: 28px; padding: 18px 14px; }
+  .logo img { display: block; width: 100%; height: auto; }
+  .signature { font-size: .75rem; letter-spacing: .08em; color: var(--muted); margin: 2px 0 26px; }
+  .touche { color: var(--muted); font-size: .9rem; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .touche { animation: none; } }
+  .name.grand { font-size: clamp(2.2rem, 11vw, 3.4rem); font-weight: 800; letter-spacing: .02em; margin: 4px 0 0; line-height: 1.05; }
+  .name { font-size: 1.7rem; margin: 10px 0 8px; letter-spacing: -0.01em; }
+  .desc { font-size: 1.05rem; line-height: 1.45; max-width: 46ch; }
+  .zones { margin-top: 10px; color: var(--muted); font-size: .9rem; }
+  .media { margin: 16px 0; border-radius: 10px; width: 100%; background: #CBD1D8; aspect-ratio: 16/9; object-fit: cover; }
+
+  .controls { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; margin-top: 26px; }
+  .controls button { padding: 14px; background: var(--card); color: var(--ink); font-weight: bold; }
+  .controls .main { background: var(--ink); color: #fff; }
+  .end { text-align: center; padding-top: 60px; }
+  .end h2 { font-size: 2rem; margin-bottom: 10px; }
+  .end .primary { margin-top: 24px; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #131B27; --ink: #E8EBEE; --muted: #9AA6B6; --card: #1D2838; }
+    .list li { border-bottom-color: #2B384B; }
+    .bars i, .media { background: #2B384B; }
+    .controls .main { background: #E8EBEE; color: #131B27; }
+    .primary { color: #fff; }
+  }
+</style>
+</head>
+<body>
+<button id="quitBtn" class="quit hidden" aria-label="Quitter et retourner au menu d’accueil">✕ Menu</button>
+<main>
+  <!-- Écran 1 : choix -->
+  <section id="accueil" class="accueil">
+    <div class="logo"><img alt="Logo 2 Work" width="288" height="212" src="data:image/png;base64,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"></div>
+    <p class="signature">made by Aidou</p>
+    <p class="touche">Touche l’écran pour continuer</p>
+  </section>
+
+  <section id="menu" class="hidden">
+    <h1>Échauffement actif</h1>
+    <p class="sub">Que veux-tu faire ?</p>
+    <div class="choices">
+      <button class="choice" id="mEch" style="--c:#3A6EA5"><strong>Échauffements</strong><span>Boxe, course à pied, renforcement</span></button>
+      <button class="choice" id="mSeance" style="--c:#7B5EA7"><strong>Planifier une séance</strong><span>Renforcement musculaire : course à pied et boxe</span></button>
+      <button class="choice" id="mCalme" style="--c:#2A9D8F"><strong>Retour au calme</strong><span>Cohérence cardiaque, étirements</span></button>
+    </div>
+  </section>
+
+  <section id="home" class="hidden">
+    <button class="back" id="homeBack">← Menu</button>
+    <h1 id="hTitre">Échauffements</h1>
+    <p class="sub" id="hSub">Choisis ton activité, on s’occupe du reste.</p>
+    <div class="choices hidden" id="choicesP"></div>
+    <div class="choices hidden" id="choicesCS"></div>
+    <div class="choices hidden" id="choicesC"></div>
+    <div class="choices hidden" id="choices"></div>
+    <div class="choices hidden" id="choicesZ"></div>
+    <div class="choices hidden" id="choicesM"></div>
+    <div class="choices hidden" id="choicesR"></div>
+    <div class="choices hidden" id="choicesK"></div>
+  </section>
+
+  <!-- Écran 2 : aperçu -->
+  <section id="preview" class="hidden">
+    <button class="back" id="back">← Retour</button>
+    <h1 id="pTitle"></h1>
+    <p class="sub" id="pInfo"></p>
+    <ol class="list" id="pList"></ol>
+    <div class="reglage">
+      <label for="ajoutBtn">Exercices<small>Touche × pour retirer, maintiens un exercice pour le déplacer</small></label>
+      <div class="stepper"><button id="defBtn" class="toggle contour">Par défaut</button><button id="ajoutBtn" class="toggle" aria-expanded="false">Ajouter</button></div>
+    </div>
+    <div id="ajout" class="hidden">
+      <h2 class="sec">Conseillés pour cette routine</h2>
+      <ul class="list" id="aReco"></ul>
+      <h2 class="sec">Autres exercices</h2>
+      <ul class="list" id="aAutres"></ul>
+      
+    </div>
+    <div class="reglage">
+      <label for="dureeVal">Durée par exercice<small>Appliquée à tous les exercices</small></label>
+      <div class="stepper">
+        <button id="moins" aria-label="Diminuer la durée de 5 secondes">−</button>
+        <output id="dureeVal">20 s</output>
+        <button id="plus" aria-label="Augmenter la durée de 5 secondes">+</button>
+      </div>
+    </div>
+    <div class="reglage">
+      <label for="voixBtn">Voix<small>Annonce le nom de chaque exercice (en anglais)</small></label>
+      <button id="voixBtn" class="toggle" aria-pressed="true">Activée</button>
+    </div>
+    <div class="reglage hidden" id="reposRow">
+      <label for="reposVal">Repos entre exercices<small>Pause avant l’exercice suivant</small></label>
+      <div class="stepper">
+        <button id="rMoins" aria-label="Diminuer le repos de 5 secondes">−</button>
+        <output id="reposVal">20 s</output>
+        <button id="rPlus" aria-label="Augmenter le repos de 5 secondes">+</button>
+      </div>
+    </div>
+    <div class="reglage hidden" id="repsRow">
+      <label for="repsVal">Répétitions par cycle<small>Nombre de fois l’enchaînement effort + repos</small></label>
+      <div class="stepper">
+        <button id="repMoins" aria-label="Une répétition de moins">−</button>
+        <output id="repsVal">8</output>
+        <button id="repPlus" aria-label="Une répétition de plus">+</button>
+      </div>
+    </div>
+    <div class="reglage hidden" id="cyclesRow">
+      <label for="cyclesVal">Nombre de cycles<small>Enchaînements répétés, avec une récupération entre chaque</small></label>
+      <div class="stepper">
+        <button id="cycMoins" aria-label="Un cycle de moins">−</button>
+        <output id="cyclesVal">3</output>
+        <button id="cycPlus" aria-label="Un cycle de plus">+</button>
+      </div>
+    </div>
+    <div class="reglage hidden" id="recupRow">
+      <label for="recupVal">Récupération entre cycles<small>Pause avant le cycle suivant</small></label>
+      <div class="stepper">
+        <button id="recMoins" aria-label="Diminuer la récupération de 5 secondes">−</button>
+        <output id="recupVal">60 s</output>
+        <button id="recPlus" aria-label="Augmenter la récupération de 5 secondes">+</button>
+      </div>
+    </div>
+    <button class="primary" id="start">Commencer</button>
+  </section>
+
+  <!-- Écran 3 : séance -->
+  <section id="session" class="hidden" aria-live="polite">
+    <div class="bars" id="bars"></div>
+    <p class="count" id="count"></p>
+    <div class="time" id="time">20</div>
+    <h2 class="name" id="name"></h2>
+    <div id="mediaBox"></div>
+    <p class="desc" id="desc"></p>
+    <p class="zones" id="zones"></p>
+    <div class="controls">
+      <button id="prev">Précédent</button>
+      <button id="pause" class="main">Pause</button>
+      <button id="next">Passer</button>
+    </div>
+  </section>
+
+  <!-- Écran 4 : fin -->
+  <section id="end" class="hidden end">
+    <h2 id="fTitre">Échauffement terminé</h2>
+    <p class="sub" id="fSub">Tu es prêt pour ta séance.</p>
+    <button class="primary" id="restart">Retour à l’accueil</button>
+  </section>
+</main>
+
+<script>
+/* ============ DONNÉES ============
+   Les exercices sont séparés des routines : un exercice peut servir dans plusieurs routines.
+   Pour ajouter une vidéo plus tard : remplace "video": null par "video": "videos/inchworm.mp4"  */
+const EXERCICES = {
+  inchworm:   { nom: "Inchworm", duree: 20, video: null,
+    description: "Debout, descends les mains au sol, marche jusqu’en position de pompe, puis reviens.",
+    muscles: "Ischio-jambiers, mollets, épaules, gainage" },
+  wgs:        { nom: "World’s greatest stretch", duree: 20, video: null,
+    description: "Grande fente, main au sol côté jambe avant, rotation du buste bras vers le plafond. Alterne les côtés.",
+    muscles: "Fléchisseurs de hanche, adducteurs, ischios, rotation thoracique" },
+  openbook:   { nom: "Open book actif", duree: 20, video: null,
+    description: "Allongé sur le côté, genoux fléchis, ouvre le bras du dessus en suivant la main du regard, puis reviens.",
+    muscles: "Colonne thoracique, pectoraux, épaules" },
+  thread:     { nom: "Thread the needle", duree: 20, video: null,
+    description: "À quatre pattes, passe un bras sous le buste en rotation, puis ouvre-le vers le plafond. Alterne.",
+    muscles: "Épaules, haut du dos, rotation thoracique" },
+  wipers:     { nom: "Windshield wipers", duree: 20, video: null,
+    description: "Assis ou allongé, genoux fléchis, balance les jambes de gauche à droite de façon contrôlée.",
+    muscles: "Rotateurs de hanche, obliques, bas du dos" },
+  catcow:     { nom: "Cat-cow actif", duree: 20, video: null,
+    description: "À quatre pattes, alterne dos rond et dos creux de façon fluide.",
+    muscles: "Colonne entière, lombaires, abdos, trapèzes" },
+  cossack:    { nom: "Cossack squat", duree: 20, video: null,
+    description: "Grande position écartée, descends sur une jambe en gardant l’autre tendue. Alterne.",
+    muscles: "Adducteurs, hanches, quadriceps, chevilles" },
+  shadow:     { nom: "Shadow boxing avec pivots", duree: 20, video: null,
+    description: "Enchaîne jab-croisé avec rotation du pied arrière.",
+    muscles: "Épaules, tronc, jambes (gestes spécifiques)" },
+  dogpedal:   { nom: "Downward dog avec pédalage", duree: 20, video: null,
+    description: "En chien tête en bas, plie une jambe puis l’autre en alternant.",
+    muscles: "Mollets, tendon d’Achille, ischio-jambiers" },
+  scorpion:   { nom: "Scorpion", duree: 20, video: null,
+    description: "Allongé sur le ventre, envoie un pied vers la main opposée en tournant le bassin. Alterne.",
+    muscles: "Quadriceps, fléchisseurs de hanche, lombaires, abdos" },
+  hip9090:    { nom: "90/90 hip switches", duree: 20, video: null,
+    description: "Assis, genoux à 90°, bascule les deux genoux d’un côté à l’autre, sans les mains si possible.",
+    muscles: "Rotateurs de hanche, fessiers" },
+  rdl:        { nom: "Soulevé de terre roumain unipodal", duree: 20, video: null,
+    description: "Sur une jambe, buste penché, jambe libre tendue derrière. Alterne.",
+    muscles: "Ischio-jambiers, fessiers, stabilité de cheville" },
+  fente:      { nom: "Fente arrière bras en l’air", duree: 20, video: null,
+    description: "Fente arrière, bras tendus au-dessus de la tête. Alterne les jambes.",
+    muscles: "Quadriceps, psoas, fessiers" },
+  pont:       { nom: "Pont fessier dynamique", duree: 20, video: null,
+    description: "Allongé sur le dos, monte et descends le bassin en contractant les fessiers en haut.",
+    muscles: "Fessiers, ischio-jambiers, lombaires" },
+  askip:      { nom: "A-skip", duree: 20, video: null,
+    description: "Skipping avec montée de genou et frappe de pied active au sol.",
+    muscles: "Mollets, fléchisseurs de hanche, coordination" }
+};
+
+Object.assign(EXERCICES, {
+  armcircles: { nom: "Cercles de bras", duree: 20, video: null,
+    description: "Debout, trace de grands cercles avec les bras : 10 secondes vers l’avant, puis 10 secondes vers l’arrière.",
+    muscles: "Épaules, pectoraux, haut du dos" },
+  armcross: { nom: "Bras croisés et ouverts", duree: 20, video: null,
+    description: "Debout, ouvre grand les bras vers l’arrière, puis croise-les devant toi en les serrant, en rythme.",
+    muscles: "Pectoraux, deltoïdes postérieurs, trapèzes" },
+  scap: { nom: "Pompes scapulaires", duree: 20, video: null,
+    description: "En planche bras tendus, rapproche puis écarte les omoplates sans plier les coudes.",
+    muscles: "Omoplates, épaules, gainage" },
+  twist: { nom: "Rotations du tronc debout", duree: 20, video: null,
+    description: "Debout jambes écartées, tourne le buste d’un côté puis de l’autre en laissant les bras suivre le mouvement.",
+    muscles: "Obliques, colonne thoracique, hanches" },
+  tspin: { nom: "Planche avec rotation en T", duree: 20, video: null,
+    description: "En planche, ouvre un bras vers le plafond en tournant le buste, puis reviens. Alterne les côtés.",
+    muscles: "Épaules, obliques, rotation thoracique, gainage" },
+  slips: { nom: "Esquives de boxe", duree: 20, video: null,
+    description: "Genoux fléchis, garde levée, décale la tête à gauche puis à droite en pliant les jambes et en tournant le buste.",
+    muscles: "Obliques, quadriceps, mobilité du tronc" },
+  footwork: { nom: "Jeu de jambes léger", duree: 20, video: null,
+    description: "Petits sauts sur la pointe des pieds, appuis rapides avant-arrière et sur les côtés, comme un boxeur.",
+    muscles: "Mollets, chevilles, coordination" },
+  lateral: { nom: "Fente latérale", duree: 20, video: null,
+    description: "Grand pas sur le côté, plie la jambe d’appui en gardant l’autre tendue, reviens et alterne.",
+    muscles: "Adducteurs, fessiers, quadriceps" },
+  bird: { nom: "Bird dog", duree: 20, video: null,
+    description: "À quatre pattes, tends un bras et la jambe opposée, tiens une seconde, reviens et alterne.",
+    muscles: "Lombaires, fessiers, abdos, stabilité du tronc" },
+  sumo: { nom: "Squat sumo avec toucher d’orteils", duree: 20, video: null,
+    description: "Jambes écartées, descends en squat, attrape tes orteils, tends les jambes en gardant les mains aux pieds, puis redescends.",
+    muscles: "Adducteurs, ischio-jambiers, fessiers, mollets" },
+  cobra: { nom: "Cobra vers chien tête en bas", duree: 20, video: null,
+    description: "Depuis le ventre au sol, pousse pour ouvrir la poitrine (cobra), puis relève le bassin en chien tête en bas. Enchaîne.",
+    muscles: "Abdos, pectoraux, colonne, mollets, ischios" },
+  legfwd: { nom: "Balancés de jambe avant-arrière", duree: 20, video: null,
+    description: "Debout, appuyé à un mur, balance une jambe tendue d’avant en arrière : 10 secondes par jambe.",
+    muscles: "Ischio-jambiers, fléchisseurs de hanche" },
+  legside: { nom: "Balancés de jambe latéraux", duree: 20, video: null,
+    description: "Debout, appuyé à un mur, balance une jambe tendue de côté et vers l’intérieur : 10 secondes par jambe.",
+    muscles: "Adducteurs, abducteurs, hanches" },
+  heelkick: { nom: "Talons-fesses", duree: 20, video: null,
+    description: "Sur place, ramène chaque talon vers les fessiers en alternant, genoux sous le bassin.",
+    muscles: "Ischio-jambiers, quadriceps" },
+  kneeup: { nom: "Montées de genoux", duree: 20, video: null,
+    description: "Sur place, monte les genoux à hauteur de hanche en rythme, en restant grand.",
+    muscles: "Fléchisseurs de hanche, quadriceps, cardio" },
+  lungetwist: { nom: "Fente marchée avec rotation", duree: 20, video: null,
+    description: "Avance en fente, tourne le buste vers la jambe avant, puis change de jambe en marchant.",
+    muscles: "Quadriceps, fessiers, fléchisseurs de hanche, obliques" },
+  calfraise: { nom: "Montées sur les pointes", duree: 20, video: null,
+    description: "Debout, monte sur la pointe des pieds de façon dynamique, puis redescends lentement.",
+    muscles: "Mollets, chevilles, tendon d’Achille" },
+  skater: { nom: "Pas de patineur", duree: 20, video: null,
+    description: "Saute d’une jambe sur l’autre sur le côté, amortis l’appui et balance les bras.",
+    muscles: "Fessiers, abducteurs, chevilles, équilibre" },
+  hydrant: { nom: "Fire hydrant", duree: 20, video: null,
+    description: "À quatre pattes, lève un genou sur le côté en gardant l’angle à 90°, puis fais des cercles. Alterne.",
+    muscles: "Fessiers, rotateurs de hanche" },
+  ankles: { nom: "Cercles de chevilles", duree: 20, video: null,
+    description: "Sur une jambe, dessine de grands cercles avec la pointe du pied : 10 secondes par cheville.",
+    muscles: "Chevilles, mollets" }
+});
+
+/* Exercices conseillés pour chaque routine : les 8 de départ + d’autres qui sollicitent les mêmes zones */
+const CONSEILLES = {
+  boxe:   ["inchworm","wgs","openbook","thread","wipers","catcow","cossack","shadow","armcircles","armcross","scap","twist","tspin","slips","footwork","lateral","bird","sumo","cobra"],
+  course: ["dogpedal","wgs","scorpion","hip9090","rdl","fente","pont","askip","legfwd","legside","heelkick","kneeup","lungetwist","calfraise","skater","hydrant","ankles","lateral","sumo","bird"]
+};
+
+const ROUTINES = {
+  boxe:   { titre: "Boxe", detail: "Épaules, thoracique, hanches, tronc", couleur: "#C8283C",
+            exercices: ["inchworm","wgs","openbook","thread","wipers","catcow","cossack","shadow"] },
+  course: { titre: "Course à pied", detail: "Hanches, jambes, chevilles", couleur: "#0E7C86",
+            exercices: ["dogpedal","wgs","scorpion","hip9090","rdl","fente","pont","askip"] }
+};
+
+Object.assign(EXERCICES, {
+  squat: { nom: "Squat", duree: 40, video: null,
+    description: "Pieds largeur d’épaules, descends en poussant les fesses en arrière jusqu’à avoir les cuisses parallèles au sol, puis remonte.",
+    muscles: "Quadriceps, fessiers, ischio-jambiers" },
+  fentesalt: { nom: "Fentes avant alternées", duree: 40, video: null,
+    description: "Fais un grand pas en avant, descends jusqu’à deux genoux à 90°, repousse pour revenir et alterne les jambes.",
+    muscles: "Quadriceps, fessiers, ischio-jambiers, équilibre" },
+  pontuni: { nom: "Pont fessier unipodal", duree: 40, video: null,
+    description: "Allongé sur le dos, une jambe tendue en l’air, monte le bassin en poussant sur l’autre pied et serre les fessiers. Change de jambe à mi-temps.",
+    muscles: "Fessiers, ischio-jambiers, lombaires" },
+  mollet1: { nom: "Montées de mollets sur une jambe", duree: 40, video: null,
+    description: "Sur une jambe, monte sur la pointe du pied puis redescends lentement. Change de jambe à mi-temps.",
+    muscles: "Mollets, tendon d’Achille, chevilles" },
+  chaise: { nom: "La chaise", duree: 40, video: null,
+    description: "Dos contre un mur, descends jusqu’à avoir les cuisses parallèles au sol et tiens la position.",
+    muscles: "Quadriceps, fessiers, mollets" },
+  planche: { nom: "Planche (gainage)", duree: 40, video: null,
+    description: "Sur les avant-bras et la pointe des pieds, corps aligné de la tête aux talons, abdos et fessiers serrés.",
+    muscles: "Abdos profonds, dos, épaules, fessiers" },
+  planchelat: { nom: "Planche latérale", duree: 40, video: null,
+    description: "Sur un avant-bras, corps aligné de profil, bassin haut, bras libre vers le plafond. Change de côté à mi-temps.",
+    muscles: "Obliques, fessiers, épaules" },
+  climbers: { nom: "Mountain climbers", duree: 40, video: null,
+    description: "En position de pompe, ramène les genoux vers la poitrine en alternant, à bon rythme.",
+    muscles: "Abdos, fléchisseurs de hanche, épaules, cardio" },
+  squatsaute: { nom: "Squats sautés", duree: 40, video: null,
+    description: "Descends en squat puis saute le plus haut possible. Amortis la réception et enchaîne.",
+    muscles: "Quadriceps, fessiers, mollets, explosivité" },
+  deadbug: { nom: "Dead bug", duree: 40, video: null,
+    description: "Sur le dos, bras tendus vers le plafond et genoux à 90°. Tends un bras et la jambe opposée sans décoller le bas du dos, puis alterne.",
+    muscles: "Abdos profonds, fléchisseurs de hanche, stabilité" },
+  pompes: { nom: "Pompes", duree: 40, video: null,
+    description: "Mains sous les épaules, corps aligné, descends la poitrine près du sol puis repousse.",
+    muscles: "Pectoraux, triceps, épaules, gainage" },
+  pompesserrees: { nom: "Pompes serrées", duree: 40, video: null,
+    description: "Mains rapprochées sous la poitrine, coudes près du corps, descends puis repousse.",
+    muscles: "Triceps, pectoraux, épaules" },
+  burpees: { nom: "Burpees", duree: 40, video: null,
+    description: "Depuis debout, mains au sol, jambes en arrière en planche, ramène les pieds puis saute bras en l’air.",
+    muscles: "Corps entier, cardio, explosivité" },
+  russian: { nom: "Rotations russes", duree: 40, video: null,
+    description: "Assis, buste incliné en arrière, pieds décollés, fais pivoter le buste en portant les mains d’un côté puis de l’autre.",
+    muscles: "Obliques, abdos, fléchisseurs de hanche" },
+  superman: { nom: "Superman", duree: 40, video: null,
+    description: "Allongé sur le ventre, lève en même temps bras, poitrine et jambes, tiens une seconde puis relâche.",
+    muscles: "Lombaires, fessiers, haut du dos" },
+  planchetouch: { nom: "Planche avec touchers d’épaule", duree: 40, video: null,
+    description: "En position de pompe, touche ton épaule avec la main opposée sans bouger le bassin, puis alterne.",
+    muscles: "Abdos, obliques, épaules, stabilité" }
+});
+
+/* Séances de renforcement (type "seance") */
+Object.assign(ROUTINES, {
+  renfoCourse: { type: "seance", titre: "Renfo course à pied", detail: "Jambes, fessiers, mollets, gainage", couleur: "#0E7C86",
+    exercices: ["squat","fentesalt","rdl","pontuni","mollet1","planche","planchelat","deadbug"] },
+  renfoBoxe: { type: "seance", titre: "Renfo boxe", detail: "Pectoraux, épaules, triceps, abdos, jambes explosives", couleur: "#C8283C",
+    exercices: ["squatsaute","pompes","russian","planchetouch","pompesserrees","climbers","superman","burpees"] }
+});
+Object.assign(CONSEILLES, {
+  renfoCourse: ["squat","fentesalt","rdl","pontuni","mollet1","planche","planchelat","deadbug","chaise","squatsaute","climbers","bird","lateral","skater","calfraise","pont","fente"],
+  renfoBoxe: ["squatsaute","pompes","russian","planchetouch","pompesserrees","climbers","superman","burpees","planche","planchelat","squat","deadbug","fentesalt","tspin","scap","twist"]
+});
+
+/* Tabata : minuteur pur, sans exercices (effort + repos répétés, cycles séparés par une récupération) */
+ROUTINES.tabata = { type: "seance", tabata: true, titre: "Tabata", detail: "Minuteur : effort, repos, répétitions et cycles réglables", couleur: "#D9480F", exercices: [] };
+
+/* Routines de renforcement musculaire */
+Object.assign(ROUTINES, {
+  haut:   { titre: "Haut du corps", detail: "Renforcement : épaules, dos, pectoraux, bras", couleur: "#7B5EA7",
+            exercices: ["armcircles","armcross","catcow","thread","openbook","scap","tspin","inchworm"] },
+  bas:    { titre: "Bas du corps", detail: "Renforcement : hanches, fessiers, cuisses, mollets", couleur: "#AD5A0C",
+            exercices: ["hip9090","hydrant","pont","legfwd","sumo","fente","rdl","calfraise"] },
+  complet: { titre: "Haut et bas du corps", detail: "Renforcement : tout le corps", couleur: "#2F7D3A",
+            exercices: ["armcircles","inchworm","wgs","catcow","thread","pont","sumo","lungetwist"] }
+});
+Object.assign(CONSEILLES, {
+  haut:    ["armcircles","armcross","catcow","thread","openbook","scap","tspin","inchworm","twist","bird","cobra","dogpedal","wgs"],
+  bas:     ["hip9090","hydrant","pont","legfwd","sumo","fente","rdl","calfraise","legside","lateral","cossack","scorpion","lungetwist","dogpedal","ankles","heelkick","kneeup","skater","wipers"],
+  complet: ["armcircles","inchworm","wgs","catcow","thread","pont","sumo","lungetwist","openbook","scap","tspin","bird","cobra","dogpedal","twist","lateral","cossack","rdl","fente","calfraise"]
+});
+
+/* ============ PERSONNAGE (illustrations) ============
+   Pose = [x hanche, y hanche, inclinaison du tronc, bras proche (haut, avant-bras), bras éloigné (haut, avant-bras),
+           jambe proche (cuisse, tibia), jambe éloignée (cuisse, tibia)] — angles en degrés, 0 = vers le bas.
+   f[0] = position principale, f[1] = position de départ (fantôme). Flèche = [x1, y1, xc, yc, x2, y2] (courbe). */
+const POSES = {
+  inchworm:  { f: [[102,111,61,0,0,0,0,-61,-61,-61,-61],[60,80,135,38,38,38,38,0,0,0,0]], a: [[105,58,130,40,160,56]] },
+  wgs:       { f: [[100,110,70,-19,-19,190,190,90,0,-60,-60]], a: [[146,72,125,30,98,60]] },
+  openbook:  { f: [[85,128,90,180,180,100,100,-80,-100,-75,-95],[85,128,90,100,100,100,100,-80,-100,-75,-95]], a: [[165,118,172,88,128,76]] },
+  thread:    { f: [[75,110,62,-70,-70,0,0,0,-90,0,-90],[75,110,62,170,170,0,0,0,-90,0,-90]], a: [[62,106,38,60,98,38]] },
+  wipers:    { f: [[110,128,-90,80,80,80,80,150,20,150,20]], a: [[110,84,130,66,152,84],[152,92,130,74,110,92]] },
+  catcow:    { f: [[75,110,62,0,0,0,0,0,-90,0,-90]], a: [[72,86,96,60,122,80],[122,124,98,138,74,124]] },
+  cossack:   { f: [[100,100,0,70,70,-70,-70,70,0,-48,-48]], a: [[70,40,100,18,130,40]] },
+  shadow:    { f: [[115,82,10,90,90,20,160,25,-5,-35,10],[115,82,10,20,160,20,160,25,-5,-35,10]], a: [[150,36,172,36,196,36]] },
+  dogpedal:  { f: [[128,97,-122,-58,-58,-58,-58,45,45,45,45],[128,97,-122,-58,-58,-58,-58,20,70,45,45]], a: [[152,96,170,112,152,128]] },
+  scorpion:  { f: [[70,128,90,95,95,95,95,-90,150,-90,-90]], a: [[58,92,92,60,126,92]] },
+  hip9090:   { f: [[110,128,0,-40,-40,-45,-45,150,-30,140,-20]], a: [[108,84,128,68,150,84],[150,94,128,78,108,94]] },
+  rdl:       { f: [[120,80,90,0,0,0,0,0,0,-90,-90],[120,80,0,0,0,0,0,0,0,0,0]], a: [[138,52,172,42,186,72]] },
+  fente:     { f: [[115,105,0,175,175,175,175,80,0,-20,-80],[115,80,0,175,175,175,175,0,0,0,0]], a: [[70,60,70,82,70,106]] },
+  pont:      { f: [[101,114,-115,80,80,80,80,95,-37,95,-37],[104,128,-90,80,80,80,80,150,20,150,20]], a: [[103,94,103,76,103,58]] },
+  askip:     { f: [[120,80,5,-40,-100,40,110,85,10,0,0],[120,80,5,40,110,-40,-100,0,0,85,10]], a: [[150,128,150,112,150,96]] }
+};
+
+Object.assign(POSES, {
+  armcircles: { f: [[120,80,0,90,90,-90,-90,6,6,-6,-6],[120,80,0,150,150,-150,-150,6,6,-6,-6]], a: [[160,30,192,48,172,70],[80,30,48,48,68,70]] },
+  armcross:   { f: [[120,80,0,95,95,-95,-95,6,6,-6,-6],[120,80,0,60,-130,-60,130,6,6,-6,-6]], a: [[172,64,156,64,140,64],[68,64,84,64,100,64]] },
+  scap:       { f: [[102,111,61,0,0,0,0,-61,-61,-61,-61]], a: [[112,84,112,70,112,56],[100,58,100,70,100,84]] },
+  twist:      { f: [[120,80,0,100,100,70,70,14,14,-14,-14],[120,80,0,-70,-70,-100,-100,14,14,-14,-14]], a: [[165,32,185,50,168,68],[75,68,55,50,72,32]] },
+  tspin:      { f: [[102,111,61,0,0,180,180,-61,-61,-61,-61],[102,111,61,0,0,0,0,-61,-61,-61,-61]], a: [[152,78,158,42,128,34]] },
+  slips:      { f: [[115,86,25,20,160,20,160,30,-10,-30,10],[115,82,5,20,160,20,160,30,-10,-30,10]], a: [[112,26,125,22,140,34]] },
+  footwork:   { f: [[118,80,8,20,160,20,160,15,-5,-15,5],[118,72,8,20,160,20,160,15,-5,-15,5]], a: [[75,125,75,108,75,92],[165,92,165,108,165,125]] },
+  lateral:    { f: [[100,100,0,40,-120,-40,120,70,0,-48,-48],[100,88,0,40,-120,-40,120,30,30,-30,-30]], a: [[132,48,152,42,172,52]] },
+  bird:       { f: [[75,110,62,90,90,0,0,0,-90,-90,-90],[75,110,62,0,0,0,0,0,-90,0,-90]], a: [[152,76,168,76,186,76],[44,92,30,92,16,92]] },
+  sumo:       { f: [[120,98,0,0,0,0,0,65,10,-65,-10],[120,88,0,0,0,0,0,30,30,-30,-30]], a: [[190,60,190,78,190,96]] },
+  cobra:      { f: [[70,128,25,-20,-20,-20,-20,-90,-90,-90,-90],[128,97,-122,-58,-58,-58,-58,45,45,45,45]], a: [[108,92,140,66,172,90]] },
+  legfwd:     { f: [[120,80,0,80,80,80,80,80,80,0,0],[120,80,0,80,80,80,80,-35,-35,0,0]], a: [[172,72,140,50,100,84]] },
+  legside:    { f: [[120,80,0,70,70,-70,-70,55,55,0,0],[120,80,0,70,70,-70,-70,-25,-25,0,0]], a: [[172,100,160,122,132,126]] },
+  heelkick:   { f: [[120,80,5,40,110,-40,-100,10,-150,0,0],[120,80,5,-40,-100,40,110,0,0,10,-150]], a: [[100,122,92,106,100,92]] },
+  kneeup:     { f: [[120,80,0,-40,-100,40,110,90,0,0,0],[120,80,0,-40,-100,40,110,0,0,0,0]], a: [[165,125,165,108,165,92]] },
+  lungetwist: { f: [[115,105,0,90,90,90,90,80,0,-20,-80],[115,80,0,90,90,90,90,0,0,0,0]], a: [[96,60,115,40,140,56]] },
+  calfraise:  { f: [[120,70,0,5,5,-5,-5,0,0,0,0],[120,80,0,5,5,-5,-5,0,0,0,0]], a: [[165,122,165,106,165,90]] },
+  skater:     { f: [[120,85,15,60,60,-80,-80,15,-10,-60,-30],[120,85,-15,-60,-60,80,80,-15,10,60,30]], a: [[170,70,185,70,200,70]] },
+  hydrant:    { f: [[75,110,62,0,0,0,0,-100,0,0,-90],[75,110,62,0,0,0,0,0,-90,0,-90]], a: [[30,95,42,80,60,92]] },
+  ankles:     { f: [[120,80,0,70,70,-70,-70,70,0,0,0]], a: [[132,112,150,142,168,112]] }
+});
+
+Object.assign(POSES, {
+  squat:         { f: [[100,112,40,90,90,90,90,80,-40,80,-40],[120,80,0,90,90,90,90,0,0,0,0]], a: [[185,60,185,78,185,98]] },
+  fentesalt:     { f: [[115,105,0,-35,60,-35,60,80,0,-20,-80],[115,80,0,-35,60,-35,60,0,0,0,0]], a: [[70,60,70,82,70,106]] },
+  pontuni:       { f: [[101,114,-115,80,80,80,80,95,-37,100,100],[104,128,-90,80,80,80,80,150,20,150,20]], a: [[103,94,103,76,103,58]] },
+  mollet1:       { f: [[120,70,0,5,5,-5,-5,0,0,-10,-120],[120,80,0,5,5,-5,-5,0,0,-10,-120]], a: [[165,122,165,106,165,90]] },
+  chaise:        { f: [[80,110,0,20,70,20,70,90,0,90,0]], a: [] },
+  planche:       { f: [[98,125,75,0,90,0,90,-75,-75,-75,-75]], a: [] },
+  planchelat:    { f: [[114,125,75,0,90,180,180,-75,-75,-75,-75]], a: [[112,100,112,86,112,72]] },
+  climbers:      { f: [[102,111,61,0,0,0,0,60,-60,-61,-61],[102,111,61,0,0,0,0,-61,-61,60,-60]], a: [[70,128,95,112,124,122]] },
+  squatsaute:    { f: [[120,60,0,160,160,160,160,0,0,0,0],[100,112,40,-60,-60,-60,-60,80,-40,80,-40]], a: [[175,125,175,95,175,65]] },
+  deadbug:       { f: [[110,128,-90,-90,-90,180,180,180,90,95,95]], a: [[150,100,165,108,178,114]] },
+  pompes:        { f: [[99,129,79,-60,74,-60,74,-79,-79,-79,-79],[102,111,61,0,0,0,0,-61,-61,-61,-61]], a: [[168,70,168,90,168,110]] },
+  pompesserrees: { f: [[99,129,79,-60,74,-60,74,-79,-79,-79,-79],[102,111,61,0,0,0,0,-61,-61,-61,-61]], a: [[168,70,168,90,168,110]] },
+  burpees:       { f: [[102,111,61,0,0,0,0,-61,-61,-61,-61],[120,80,0,170,170,170,170,0,0,0,0]], a: [[60,104,66,36,106,44]] },
+  russian:       { f: [[110,125,-35,70,70,70,70,120,70,120,70]], a: [[118,100,133,88,150,100],[150,106,133,94,116,106]] },
+  superman:      { f: [[70,128,70,120,120,120,120,-110,-110,-110,-110],[70,128,90,95,95,95,95,-90,-90,-90,-90]], a: [[40,100,40,86,40,72],[150,96,150,82,150,68]] },
+  planchetouch:  { f: [[102,111,61,100,-120,0,0,-61,-61,-61,-61],[102,111,61,0,0,0,0,-61,-61,-61,-61]], a: [[165,68,150,50,132,72]] }
+});
+
+/* Catégories d'échauffement par sport (chaque routine appartient à une catégorie) */
+const CATS = {
+  boxe:   { titre: "Boxe", detail: "Épaules, thoracique, hanches, tronc", couleur: "#C8283C" },
+  course: { titre: "Course à pied", detail: "Hanches, jambes, chevilles", couleur: "#0E7C86" },
+  renfo:  { titre: "Renfo", detail: "Haut du corps, bas du corps ou tout le corps", couleur: "#7B5EA7" },
+  yoga:   { titre: "Yoga", detail: "Souplesse, dos, hanches, respiration", couleur: "#C0527A" }
+};
+["boxe","course"].forEach(k => ROUTINES[k].cat = k);
+["haut","bas","complet"].forEach(k => ROUTINES[k].cat = "renfo");
+
+Object.assign(EXERCICES, {
+  enfant: { nom: "Posture de l’enfant active", duree: 20, video: null,
+    description: "À genoux, assis sur les talons, avance les mains loin devant toi et pose le front vers le sol. Respire, puis redresse-toi et recommence.",
+    muscles: "Dos, épaules, hanches, chevilles" },
+  cascade: { nom: "Flexion avant en cascade", duree: 20, video: null,
+    description: "Debout, genoux souples, laisse retomber le buste et les bras vers le sol, tête relâchée, puis remonte lentement vertèbre par vertèbre.",
+    muscles: "Ischio-jambiers, bas du dos, nuque" }
+});
+ROUTINES.yoga = { cat: "yoga", titre: "Yoga", detail: "Échauffement doux : dos, hanches, respiration", couleur: "#C0527A",
+  exercices: ["catcow","thread","enfant","cobra","dogpedal","wgs","hip9090","cascade"] };
+CONSEILLES.yoga = ["catcow","thread","enfant","cobra","dogpedal","wgs","hip9090","cascade","openbook","bird","hydrant","pont","wipers","scorpion","cossack","armcircles","twist"];
+Object.assign(POSES, {
+  enfant:  { v: "p", f: [[55,132,75,70,80,70,80,85,-90,85,-90],[60,109,0,0,0,0,0,0,-90,0,-90]], a: [[100,100,125,96,146,112]] },
+  cascade: { v: "p", f: [[120,86,125,15,60,15,60,8,-5,8,-5],[120,85,0,170,170,170,170,0,0,0,0]], a: [[176,30,198,72,176,118]] }
+});
+
+/* Surf et ski : échauffements + séances de renfo (haut, bas, haut et bas du corps) */
+Object.assign(CATS, {
+  surf: { titre: "Surf", detail: "Épaules, dos, hanches, pop-up", couleur: "#1D8FE1" },
+  ski:  { titre: "Ski", detail: "Jambes, chevilles, hanches, équilibre", couleur: "#3949AB" }
+});
+Object.assign(EXERCICES, {
+  paddle: { nom: "Rame de surfeur", duree: 20, video: null,
+    description: "Allongé sur le ventre, poitrine relevée, simule la rame : grands cercles de bras en alternant, jambes serrées.",
+    muscles: "Épaules, dorsaux, lombaires, nuque" },
+  popup: { nom: "Pop-up de surf", duree: 20, video: null,
+    description: "Allongé sur le ventre, mains sous la poitrine : pousse, ramène les pieds sous toi d’un seul mouvement et relève-toi en position basse de surfeur. Redescends et recommence.",
+    muscles: "Épaules, triceps, hanches, jambes, abdos" },
+  surfsquat: { nom: "Squat de surfeur", duree: 20, video: null,
+    description: "Pieds écartés et légèrement décalés, descends en squat bas, bras ouverts pour l’équilibre, puis remonte. Change de pied avant à mi-temps.",
+    muscles: "Quadriceps, fessiers, adducteurs, équilibre" },
+  skisquat: { nom: "Position du skieur", duree: 20, video: null,
+    description: "Genoux fléchis, buste penché, bras tendus devant toi comme pour tenir des bâtons. Garde la position en rebondissant légèrement sur les jambes.",
+    muscles: "Quadriceps, fessiers, lombaires, abdos" },
+  skihop: { nom: "Sauts latéraux de skieur", duree: 20, video: null,
+    description: "Pieds joints, saute d’un côté à l’autre d’une ligne imaginaire en amortissant chaque réception, genoux fléchis.",
+    muscles: "Mollets, quadriceps, fessiers, chevilles, coordination" }
+});
+Object.assign(ROUTINES, {
+  surf: { cat: "surf", titre: "Surf", detail: "Échauffement : épaules, dos, hanches, pop-up", couleur: "#1D8FE1",
+    exercices: ["armcircles","thread","cobra","paddle","hip9090","cossack","surfsquat","popup"] },
+  ski: { cat: "ski", titre: "Ski", detail: "Échauffement : jambes, chevilles, hanches", couleur: "#3949AB",
+    exercices: ["legfwd","legside","ankles","lateral","sumo","twist","skisquat","skihop"] },
+  renfoSurf: { type: "seance", titre: "Renfo surf", detail: "Épaules, dos, gainage, jambes", couleur: "#1D8FE1",
+    exercices: ["pompes","squat","superman","burpees","planchelat","russian","fentesalt","planche"] },
+  renfoSki: { type: "seance", titre: "Renfo ski", detail: "Cuisses, fessiers, mollets, gainage", couleur: "#3949AB",
+    exercices: ["squat","chaise","fentesalt","skater","pontuni","mollet1","planche","planchelat"] },
+  renfoHaut: { type: "seance", titre: "Renfo haut du corps", detail: "Pectoraux, épaules, triceps, dos, abdos", couleur: "#7B5EA7",
+    exercices: ["pompes","pompesserrees","planchetouch","scap","superman","planche","tspin","climbers"] },
+  renfoBas: { type: "seance", titre: "Renfo bas du corps", detail: "Cuisses, fessiers, ischios, mollets", couleur: "#AD5A0C",
+    exercices: ["squat","fentesalt","rdl","pontuni","mollet1","chaise","skater","squatsaute"] },
+  renfoComplet: { type: "seance", titre: "Renfo haut et bas du corps", detail: "Tout le corps", couleur: "#2F7D3A",
+    exercices: ["squat","pompes","fentesalt","planche","pontuni","superman","climbers","burpees"] }
+});
+{ const t = ROUTINES.tabata; delete ROUTINES.tabata; ROUTINES.tabata = t; }   // Tabata en dernier
+Object.entries({ renfoCourse: "course", renfoBoxe: "boxe", renfoSurf: "surf", renfoSki: "ski", renfoHaut: "haut", renfoBas: "bas", renfoComplet: "complet" }).forEach(([k, g]) => ROUTINES[k].grp = g);
+Object.assign(CONSEILLES, {
+  surf: ["armcircles","thread","cobra","paddle","hip9090","cossack","surfsquat","popup","wgs","openbook","armcross","scap","twist","bird","tspin","catcow","inchworm"],
+  ski: ["legfwd","legside","ankles","lateral","sumo","twist","skisquat","skihop","chaise","rdl","calfraise","skater","cossack","hydrant","fente","wgs","pont"],
+  renfoSurf: ["pompes","squat","superman","burpees","planchelat","russian","fentesalt","planche","pompesserrees","planchetouch","tspin","scap","climbers","deadbug","popup"],
+  renfoSki: ["squat","chaise","fentesalt","skater","pontuni","mollet1","planche","planchelat","squatsaute","lateral","skihop","skisquat","rdl","deadbug"],
+  renfoHaut: ["pompes","pompesserrees","planchetouch","scap","superman","planche","tspin","climbers","burpees","russian","planchelat","deadbug"],
+  renfoBas: ["squat","fentesalt","rdl","pontuni","mollet1","chaise","skater","squatsaute","lateral","sumo","fente","calfraise","pont"],
+  renfoComplet: ["squat","pompes","fentesalt","planche","pontuni","superman","climbers","burpees","planchelat","russian","deadbug","mollet1","squatsaute","pompesserrees"]
+});
+Object.assign(POSES, {
+  paddle:    { v: "p", f: [[110,132,55,100,100,20,-30,-90,-90,-90,-90],[110,132,55,20,-30,100,100,-90,-90,-90,-90]], a: [[185,106,193,128,155,134]] },
+  popup:     { v: "p", f: [[125,96,20,80,80,-80,-80,55,-10,-55,10],[85,130,90,0,0,0,0,-90,-90,-90,-90]], a: [[70,100,80,68,110,50]] },
+  surfsquat: { v: "p", f: [[110,102,15,80,80,-80,-80,70,-15,-65,20],[110,85,0,80,80,-80,-80,8,-4,-8,4]], a: [[168,60,168,82,168,104]] },
+  skisquat:  { v: "p", f: [[95,98,40,40,100,40,100,60,-20,60,-20],[95,85,0,0,0,0,0,0,0,0,0]], a: [[56,60,56,82,56,104]] },
+  skihop:    { v: "f", f: [[165,78,12,25,5,-25,-5,-8,-3,-12,-5],[75,85,-12,25,5,-25,-5,10,5,14,8]], a: [[88,46,120,24,152,46]] }
+});
+
+/* ============ DIRECTION ARTISTIQUE (commune à toutes les images) ============
+   1 · Départ = silhouette grise  |  2 · Position finale = silhouette blanche  |  flèches = sens du mouvement
+   Vues : "p" = profil, "f" = face ou dessus (épaules et hanches avec largeur). Angles : 0 = vers le bas, 90 = vers la droite.
+   Options de pose : [11] courbure du dos, [12] inclinaison de la tête, [13] longueur du tronc. null = segment masqué.
+   Options d’image : u = libellé de la vue, m = mur, g = lignes de repère. */
+const DA = {
+  sol: "#B3BDCA",
+  depart:  { membre: "#8B99AD", loin: "#7A889C", contour: "#3F4B5C", tete: "#A2AEBF" },
+  arrivee: { membre: "#FFFFFF", loin: "#E3E8EF", contour: "#1E2733", tete: "url(#tete)" }
+};
+
+/* Images revues : vues de dessus, de face ou de dos quand le profil ne montre pas le mouvement */
+Object.assign(POSES, {
+  wipers:   { v: "f", u: "Vue de dessus", f: [[95,75,90,0,0,180,180,0,-90,0,-90],[95,75,90,0,0,180,180,180,-90,180,-90]], a: [[50,48,34,75,50,102,1]] },
+  openbook: { v: "p", u: "Vue de dessus", f: [[85,75,90,180,180,0,0,0,-90,5,-85],[85,75,90,0,0,0,0,0,-90,5,-85]], a: [[148,112,172,75,148,36]] },
+  scorpion: { v: "f", u: "Vue de dessus", f: [[85,75,90,0,0,180,180,-90,180,-90,-90],[85,75,90,0,0,180,180,-90,-90,-90,-90]], a: [[40,102,20,72,46,44]] },
+  hip9090:  { v: "f", u: "Vue de dessus", f: [[120,95,0,160,160,-160,-160,125,-145,80,-5,0,0,8],[120,95,0,160,160,-160,-160,-80,5,-125,145,0,0,8]], a: [[95,130,120,146,150,130,1]] },
+  twist:    { v: "f", u: "Vue de dessus", f: [[120,78,40,50,50,-130,-130,null,null,null,null,0,0,0],[120,78,-40,130,130,-50,-50,null,null,null,null,0,0,0]], a: [[70,28,120,6,170,28,1]] },
+  russian:  { v: "f", u: "Vue de dessus", f: [[80,75,130,50,50,50,50,90,90,90,90,0,0,8],[80,75,50,130,130,130,130,90,90,90,90,0,0,8]], a: [[130,24,172,75,130,126,1]] },
+  lungetwist: { v: "f", u: "Vue de dessus", f: [[100,75,150,30,30,30,30,88,92,-92,-88,0,0,8],[100,75,90,90,90,90,90,88,92,-92,-88,0,0,8]], a: [[158,66,172,88,150,106]] },
+  slips:    { v: "f", f: [[120,82,18,25,-165,-25,165,20,-8,-20,8],[120,82,-18,25,-165,-25,165,20,-8,-20,8]], a: [[95,20,120,8,148,20,1]] },
+  footwork: { v: "p", f: [[135,82,10,20,160,20,160,25,-5,-35,10],[115,82,10,20,160,20,160,25,-5,-35,10]], a: [[100,26,130,16,168,26]] },
+  catcow:   { v: "p", f: [[75,110,62,0,0,0,0,0,-90,0,-90,14,55],[75,110,62,0,0,0,0,0,-90,0,-90,-10,-40]], a: [[70,70,100,48,130,70,1]] },
+  hydrant:  { v: "f", u: "Vue de dos", f: [[120,110,0,0,0,0,0,90,0,0,null,0,0,16],[120,110,0,0,0,0,0,0,null,0,null,0,0,16]], a: [[140,134,166,134,176,106]] },
+  thread:   { v: "f", u: "Vue de face", f: [[120,110,0,-50,-50,0,0,0,null,0,null,0,0,16],[120,110,0,180,180,0,0,0,null,0,null,0,0,16]], a: [[152,52,172,104,112,126]] },
+  pompesserrees: { v: "f", u: "Vue de dessus", f: [[80,75,90,101,101,79,79,-90,-90,-90,-90],[80,75,90,90,90,90,90,-90,-90,-90,-90]], a: [[175,44,170,56,164,68],[175,106,170,94,164,82]] },
+  cobra:    { v: "p", f: [[70,128,25,-20,-20,-20,-20,-90,-90,-90,-90],[70,128,90,95,95,95,95,-90,-90,-90,-90]], a: [[104,96,108,80,102,64]] },
+  chaise:   { v: "p", f: [[80,110,0,20,70,20,70,90,0,90,0]], a: [], m: 60, g: [[80,110,150,110]] },
+  planche:  { v: "p", f: [[98,125,75,0,90,0,90,-75,-75,-75,-75]], a: [], g: [[36,141,152,110]] },
+  planchelat: { v: "p", f: [[114,125,75,0,90,180,180,-75,-75,-75,-75]], a: [[112,100,112,86,112,72]], g: [[50,141,160,112]] }
+});
+["cossack","lateral","sumo","legside","skater","armcircles","armcross"].forEach(id => { POSES[id].v = "f"; });
+POSES.ankles.a = [[132,112,150,142,168,112,1]];
+
+Object.assign(POSES, {
+  thread:   { v: "p", f: [[75,110,62,-70,-70,0,0,0,-90,0,-90],[75,110,62,170,170,0,0,0,-90,0,-90]], a: [[62,106,38,60,98,38]] },
+  hip9090:  { v: "f", u: "Vue de dessus", f: [[120,105,0,20,20,-20,-20,125,-145,80,-5,0,0,8],[120,105,0,20,20,-20,-20,-80,5,-125,145,0,0,8]], a: [[90,40,120,22,150,40,1]] },
+  pont:     { v: "p", f: [[78,108.5,-125,80,80,80,80,100,-10,100,-10],[84,128,-90,80,80,80,80,150,20,150,20]], a: [[78,92,78,76,78,60]] },
+  pontuni:  { v: "p", f: [[78,108.5,-125,80,80,80,80,100,-10,100,100],[84,128,-90,80,80,80,80,150,20,150,20]], a: [[78,92,78,76,78,60]] },
+  scap:     { v: "p", f: [[102,111,61,0,0,0,0,-61,-61,-61,-61],[102,111,70,0,0,0,0,-61,-61,-61,-61]], a: [[112,84,112,70,112,56],[100,58,100,70,100,84]] },
+  twist:    { v: "f", u: "Vue de dessus", pi: [[103,92],[137,92]], f: [[120,78,40,50,50,-130,-130,null,null,null,null,0,0,0],[120,78,-40,130,130,-50,-50,null,null,null,null,0,0,0]], a: [[70,28,120,6,170,28,1]] },
+  squatsaute: { v: "p", f: [[120,70,0,155,155,155,155,0,0,0,0],[100,112,40,-60,-60,-60,-60,80,-40,80,-40]], a: [[175,125,175,95,175,65]] },
+  lungetwist: { v: "p", f: [[115,105,0,120,120,-60,-60,80,0,-20,-80],[115,105,0,90,90,90,90,80,0,-20,-80]], a: [[165,60,184,84,162,108]] },
+  russian:  { v: "f", u: "Vue de dessus", pi: [[150,66],[150,84]], f: [[70,75,130,50,50,50,50,null,null,null,null,0,0,8],[70,75,50,130,130,130,130,null,null,null,null,0,0,8]], a: [[120,24,160,75,120,126,1]] },
+  planchetouch: { v: "f", u: "Vue de face", pi: [[113,138],[127,138]], f: [[120,110,0,-60,-158,0,0,null,null,null,null,0,0,16],[120,110,0,0,0,0,0,null,null,null,null,0,0,16]], a: [[160,72,150,56,130,64]] }
+});
+
+function figure(p, S, v) {
+  const [hx, hy, t] = p, r = p.slice(3, 11);
+  const c = p[11] || 0, hb = p[12] || 0, tl = p[13] === undefined ? 34 : p[13];
+  const w = v === "f" ? 1 : 0;
+  const rad = d => d * Math.PI / 180;
+  const up = [Math.sin(rad(t)), -Math.cos(rad(t))], pr = [Math.cos(rad(t)), Math.sin(rad(t))];
+  const hd = [Math.sin(rad(t + hb)), -Math.cos(rad(t + hb))];
+  const hip = [hx, hy], sh = [hx + up[0] * tl, hy + up[1] * tl];
+  const tete = [sh[0] + hd[0] * 15, sh[1] + hd[1] * 15];
+  const dec = (o, k) => [o[0] + pr[0] * k, o[1] + pr[1] * k];
+  const pt = (a, ang, len) => [a[0] + Math.sin(rad(ang)) * len, a[1] + Math.cos(rad(ang)) * len];
+  const membre = (o, a1, l1, a2, l2) => {
+    if (a1 === null) return null;
+    const m = pt(o, a1, l1);
+    return a2 === null ? [o, m] : [o, m, pt(m, a2, l2)];
+  };
+  const f1 = n => n.toFixed(1);
+  const trait = (pts, wd, fill) => {
+    if (!pts) return "";
+    const s = pts.map(q => f1(q[0]) + "," + f1(q[1])).join(" ");
+    return `<polyline points="${s}" fill="none" stroke="${S.contour}" stroke-width="${wd + 4}" stroke-linecap="round" stroke-linejoin="round"/><polyline points="${s}" fill="none" stroke="${fill}" stroke-width="${wd}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  };
+  const tw = w ? 26 : 20;
+  let torse;
+  if (tl === 0) {
+    torse = `<circle cx="${f1(hx)}" cy="${f1(hy)}" r="${tw / 2}" fill="${S.membre}" stroke="${S.contour}" stroke-width="4"/>`;
+  } else {
+    const ctl = [(hip[0] + sh[0]) / 2 - pr[0] * 2 * c, (hip[1] + sh[1]) / 2 - pr[1] * 2 * c];
+    const d = `M${f1(hip[0])} ${f1(hip[1])} Q${f1(ctl[0])} ${f1(ctl[1])} ${f1(sh[0])} ${f1(sh[1])}`;
+    torse = `<path d="${d}" fill="none" stroke="${S.contour}" stroke-width="${tw + 4}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${S.membre}" stroke-width="${tw}" stroke-linecap="round"/>`;
+  }
+  const bF = dec(sh, -13 * w), bN = dec(sh, 13 * w), jF = dec(hip, -7 * w), jN = dec(hip, 7 * w);
+  const mF = membre(bF, r[2], 24, r[3], 22), pF = membre(jF, r[6], 30, r[7], 30), pN = membre(jN, r[4], 30, r[5], 30), mN = membre(bN, r[0], 24, r[1], 22);
+  const bout = (m, o) => m ? m[m.length - 1] : o;
+  const svg =
+    trait(mF, 8, S.loin) +
+    trait(pF, 11, S.loin) +
+    torse +
+    trait(pN, 11, S.membre) +
+    trait(mN, 8, S.membre) +
+    `<circle cx="${f1(tete[0])}" cy="${f1(tete[1])}" r="11" fill="${S.tete}" stroke="${S.contour}" stroke-width="3.5"/>`;
+  return { svg, tete, J: { mn: bout(mN, bN), mf: bout(mF, bF), pn: bout(pN, jN), pf: bout(pF, jF) } };
+}
+
+/* Matériel : dessiné au bout des mains ("mn", "mf", "m" = milieu des deux) ou des pieds ("pn", "pf"), ou à des coordonnées [x, y].
+   Fixes (banc, barre de traction) : sous le personnage. Mobiles : par-dessus, en fantôme pour la position de départ. */
+const FIXES = ["banc", "tbar"];
+function objets(liste, J, fantome) {
+  const f = n => n.toFixed(1), gris = "#9AA6B5", ct = "#3B4757";
+  const pos = a => Array.isArray(a) ? a : a === "m" ? [(J.mn[0] + J.mf[0]) / 2, (J.mn[1] + J.mf[1]) / 2] : J[a];
+  const trait = (a, b, w, c) => `<line x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const rond = (x, y, r, fond) => `<circle cx="${f(x)}" cy="${f(y)}" r="${r}" fill="${fond}" stroke="${ct}" stroke-width="2.5"/>`;
+  const forme = {
+    barre: (a, L = 18) => {
+      const [x, y] = pos(a), pl = dx => `<rect x="${f(x + dx - 2.5)}" y="${f(y - 8)}" width="5" height="16" rx="1.5" fill="${gris}" stroke="${ct}" stroke-width="2"/>`;
+      return trait([x - L / 2, y], [x + L / 2, y], 7, ct) + trait([x - L / 2, y], [x + L / 2, y], 3.5, gris) + pl(-L / 2) + pl(L / 2);
+    },
+    kb: (a, dy = 12) => { const [x, y] = pos(a); return `<path d="M${f(x - 5)} ${f(y + dy - 6)}A6 7 0 0 1 ${f(x + 5)} ${f(y + dy - 6)}" fill="none" stroke="${ct}" stroke-width="3.5"/>` + rond(x, y + dy, 9, gris); },
+    disc: a => { const [x, y] = pos(a); return rond(x, y, 11, gris) + rond(x, y, 2.5, "#fff"); },
+    roue: a => { const [x, y] = pos(a); return rond(x, y, 8, gris) + rond(x, y, 2, ct); },
+    bande: (a, b) => { const p = pos(a), q = pos(b); return `<path d="M${f(p[0])} ${f(p[1])}Q${f((p[0] + q[0]) / 2)} ${f((p[1] + q[1]) / 2 + 5)} ${f(q[0])} ${f(q[1])}" fill="none" stroke="#E8590C" stroke-width="3.5" stroke-linecap="round"/>`; },
+    cable: (a, q) => trait(pos(a), q, 2.5, ct) + rond(q[0], q[1], 5, "#fff"),
+    banc: (x, y, w) => trait([x + 8, y + 5], [x + 8, 145], 4, ct) + trait([x + w - 8, y + 5], [x + w - 8, 145], 4, ct) + `<rect x="${x}" y="${y}" width="${w}" height="9" rx="4" fill="${gris}" stroke="${ct}" stroke-width="2.5"/>`,
+    tbar: (x1, x2, y) => trait([x1, y], [x1, 145], 3, "#9AA6B5") + trait([x2, y], [x2, 145], 3, "#9AA6B5") + trait([x1, y], [x2, y], 6, ct) + trait([x1, y], [x2, y], 3, gris)
+  };
+  return `<g opacity="${fantome ? 0.45 : 1}">${liste.map(([t, ...a]) => forme[t](...a)).join("")}</g>`;
+}
+function matos(p, fin, dep) {
+  const o = p.o || [], fixes = o.filter(x => FIXES.includes(x[0])), mobiles = o.filter(x => !FIXES.includes(x[0]));
+  return { sous: objets(fixes, null) + (dep ? objets(mobiles, dep.J, true) : ""), sur: objets(mobiles, fin.J) };
+}
+
+function mini(id) {
+  const p = POSES[id];
+  if (!p) return "";
+  const dessus = (p.u || "").includes("dessus");
+  const dep = p.f[1] ? figure(p.f[1], DA.depart, p.v) : null, fin = figure(p.f[0], { ...DA.arrivee, tete: "#FFFFFF" }, p.v), mt = matos(p, fin, dep);
+  const g = (dep ? dep.svg : "") + fin.svg + mt.sur;
+  const sol = dessus ? "" : `<line x1="8" y1="145" x2="232" y2="145" stroke="${DA.sol}" stroke-width="4"/>`;
+  return `<svg class="mini" viewBox="0 -14 240 164" aria-hidden="true">${sol}${mt.sous}${(p.pi || []).map(q => `<ellipse cx="${q[0]}" cy="${q[1]}" rx="6" ry="9" fill="#fff" stroke="#1E2733" stroke-width="3"/>`).join("")}${g}</svg>`;
+}
+
+function dessiner(e) {
+  const p = POSES[e.id];
+  if (!p) return "";
+  const vue = p.u || (p.v === "f" ? "Vue de face" : "Vue de profil");
+  const fin = figure(p.f[0], DA.arrivee, p.v);
+  const deb = p.f[1] ? figure(p.f[1], DA.depart, p.v) : null, mt = matos(p, fin, deb);
+  const pastille = (n, t, fond) => {
+    const x = Math.min(230, Math.max(11, t[0] + 16)), y = Math.min(139, Math.max(-2, t[1] - 16));
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" stroke="#fff" stroke-width="2" style="fill:${fond}"/><text x="${x.toFixed(1)}" y="${(y + 0.5).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">${n}</text>`;
+  };
+  const fleches = (p.a || []).map(a => {
+    const d = `M${a[0]} ${a[1]} Q${a[2]} ${a[3]} ${a[4]} ${a[5]}`;
+    return `<path d="${d}" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".9"/><path d="${d}" fill="none" stroke-width="4.5" stroke-linecap="round" marker-end="url(#fl)"${a[6] ? ' marker-start="url(#fl2)"' : ""} style="stroke:var(--accent)"/>`;
+  }).join("");
+  const guides = (p.g || []).map(g => `<line x1="${g[0]}" y1="${g[1]}" x2="${g[2]}" y2="${g[3]}" stroke-width="2.5" stroke-dasharray="6 5" style="stroke:var(--accent)"/>`).join("");
+  const mur = p.m ? `<rect x="${p.m}" y="8" width="7" height="137" fill="#9AA6B5"/>` : "";
+  const sol = vue.includes("dessus") ? "" : `<line x1="8" y1="145" x2="232" y2="145" stroke="${DA.sol}" stroke-width="3"/>`;
+  const defs = `<defs><marker id="fl" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--accent);stroke:#fff;stroke-width:1.5;stroke-linejoin:round"/></marker><marker id="fl2" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto"><path d="M10 0L0 5L10 10z" style="fill:var(--accent);stroke:#fff;stroke-width:1.5;stroke-linejoin:round"/></marker><radialGradient id="tete" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#D9DFE7"/></radialGradient></defs>`;
+  const pieds = (p.pi || []).map(q => `<ellipse cx="${q[0]}" cy="${q[1]}" rx="6" ry="9" fill="#fff" stroke="#1E2733" stroke-width="3"/>`).join("");
+  const legende = (deb ? `<span><i class="p1"></i>1 · Départ</span><span><i class="p2"></i>2 · Position finale</span>` : `<span><i class="p2"></i>Position à tenir</span>`) + `<span class="vue">${vue}</span>`;
+  return `<div class="illus"><svg viewBox="0 -14 240 164" role="img" aria-label="${e.nom} : ${vue.toLowerCase()}">${defs}${sol}${mur}${pieds}${mt.sous}${deb ? deb.svg : ""}${fin.svg}${mt.sur}${guides}${fleches}${deb ? pastille(1, deb.tete, "#3F4B5C") + pastille(2, fin.tete, "var(--accent)") : ""}</svg><div class="legende">${legende}</div></div>`;
+}
+
+/* Images revues : départ (gris) et arrivée (blanc) plus lisibles */
+Object.assign(POSES, {
+  inchworm:  { v: "p", f: [[102,111,61,0,0,0,0,-61,-61,-61,-61],[60,85,115,0,0,0,0,0,0,0,0]], a: [[100,128,118,120,138,128]] },
+  openbook:  { v: "p", u: "Vue de dessus", f: [[85,75,90,180,180,90,90,0,-90,5,-85],[85,75,90,90,90,90,90,0,-90,5,-85]], a: [[168,72,172,40,132,30]] },
+  pont:      { v: "p", f: [[123,108.5,-125,80,80,80,80,100,-10,100,-10],[129,128,-90,80,80,80,80,150,20,150,20]], a: [[123,92,123,76,123,60]] },
+  pontuni:   { v: "p", f: [[123,108.5,-125,80,80,80,80,100,-10,100,100],[129,128,-90,80,80,80,80,150,20,150,20]], a: [[123,92,123,76,123,60]] },
+  twist:     { v: "f", u: "Vue de dessus", pi: [[103,92],[137,92]], f: [[120,78,0,135,135,-45,-45,null,null,null,null,0,0,0],[120,78,0,90,90,-90,-90,null,null,null,null,0,0,0]], a: [[78,36,120,14,162,36,1]] },
+  calfraise: { v: "f", f: [[120,76,0,25,10,-25,-10,2,0,-2,0],[120,85,0,25,10,-25,-10,2,0,-2,0]], a: [[170,126,170,108,170,90]] },
+  mollet1:   { v: "p", f: [[120,77,0,70,70,-70,-70,0,0,-10,-120],[120,85,0,70,70,-70,-70,0,0,-10,-120]], a: [[170,126,170,108,170,90]] },
+  russian:   { v: "p", f: [[90,128,-30,80,80,80,80,115,115,115,115]], a: [[130,90,152,108,130,126,1]] },
+  planchetouch: { v: "p", f: [[102,111,61,120,-160,0,0,-61,-61,-61,-61],[102,111,61,0,0,0,0,-61,-61,-61,-61]], a: [[160,66,166,82,142,90]] }
+});
+POSES.pompesserrees = POSES.pompes;
+
+const POSES_CALME = {
+  grandissement: { v: "f", f: [[120,76,0,172,188,-172,-188,2,0,-2,0],[120,85,0,8,3,-8,-3,0,0,0,0]], a: [[170,110,170,70,170,30]] },
+  nuqueFlex: { v: "p", f: [[110,80,0,60,-140,58,-138,0,0,0,0,0,55],[110,80,0,8,3,6,2,0,0,0,0]], a: [[142,34,148,48,138,60]] },
+  nuqueLat:  { v: "f", f: [[120,80,0,150,-92,-15,-10,0,0,0,0,0,30],[120,80,0,8,3,-8,-3,0,0,0,0]], a: [[128,16,152,20,156,42]] },
+  brasCroise: { v: "f", f: [[120,80,0,-80,-80,10,-170,0,0,0,0],[120,80,0,8,3,-8,-3,0,0,0,0]], a: [[96,70,84,62,70,64]] },
+  triceps:   { v: "f", f: [[120,80,0,160,-70,124,124,0,0,0,0],[120,80,0,8,3,-8,-3,0,0,0,0]], a: [[158,18,164,34,156,50]] },
+  dosMains:  { v: "p", f: [[110,80,12,-125,-125,-125,-125,0,0,0,0,0,-10],[110,80,0,5,5,5,5,0,0,0,0]], a: [[78,48,62,36,56,22]] },
+  poignets:  { v: "p", f: [[110,80,0,90,90,80,50,0,0,0,0],[110,80,0,8,3,6,2,0,0,0,0]], a: [[170,40,176,56,168,70]] },
+  murPecs:   { v: "p", m: 150, f: [[105,82,18,90,180,90,180,40,10,-20,-20],[95,80,0,90,180,90,180,0,0,0,0]], a: [[70,58,90,54,110,60]] },
+  genouxPoitrine: { v: "p", f: [[130,128,-90,135,120,133,118,215,80,220,85],[130,130,-90,90,90,90,90,90,90,90,90]], a: [[152,92,136,84,118,94]] },
+  torsionAllongee: { v: "p", u: "Vue de dessus", f: [[85,75,90,180,180,0,0,10,-80,15,-75],[85,75,90,180,180,0,0,95,-85,100,-80]], a: [[60,92,76,112,100,110]] },
+  lateralDebout: { v: "f", f: [[112,84,25,155,155,155,155,0,0,0,0],[120,84,0,178,178,-178,-178,0,0,0,0]], a: [[104,-2,150,-6,172,30]] },
+  flexionAssise: { v: "p", f: [[70,132,62,80,80,80,80,92,92,92,92,0],[70,132,0,90,90,90,90,92,92,92,92]], a: [[56,100,90,90,124,108]] },
+  figure4:   { v: "p", f: [[130,130,-90,138,122,136,120,195,85,160,20],[130,130,-90,90,90,90,90,160,20,160,20]], a: [[152,116,138,100,120,88]] },
+  papillon:  { v: "f", f: [[120,126,0,29,29,-29,-29,75,-90,-75,90,0,0,24],[120,126,0,29,29,-29,-29,60,-95,-60,95]], a: [[172,118,178,130,172,142]] },
+  quadDebout: { v: "p", f: [[110,80,0,-20,-30,60,80,-3,-150,0,0],[110,80,0,8,3,6,2,0,0,0,0]], a: [[118,98,134,92,150,98]] },
+  ischioCouche: { v: "p", f: [[130,130,-90,135,130,133,128,185,185,90,90],[130,130,-90,90,90,90,90,90,90,90,90]], a: [[150,80,138,64,126,56]] },
+  molletMur: { v: "p", m: 163, f: [[105,96,15,90,90,90,90,60,5,-35,-35],[115,80,0,90,90,90,90,0,0,0,0]], a: [[78,100,94,96,110,100]] },
+  soleaire:  { v: "p", m: 163, f: [[108,90,15,90,90,90,90,50,0,-30,0],[115,80,0,90,90,90,90,0,0,0,0]], a: [[78,100,94,96,110,100]] },
+  straddle:  { v: "f", f: [[120,126,0,10,5,-10,-5,82,82,-82,-82,0,0,22],[120,126,0,10,5,-10,-5,82,82,-82,-82,0,0,34]], a: [[120,100,120,112,120,124]] }
+};
+
+/* ============ RETOUR AU CALME : étirements et cohérence cardiaque ============
+   Étirements : tableau compact [id, nom, description, muscles]. Cohérence : routines "souffle" (rythme inspire / expire). */
+Object.assign(EXERCICES, Object.fromEntries([
+  ["grandissement", "Grandissement", "Debout, entrelace les doigts, monte les bras au-dessus de la tête et grandis-toi en te mettant sur la pointe des pieds. Respire profondément, puis relâche.", "Dos, épaules, flancs, mollets"],
+  ["nuqueFlex", "Menton vers la poitrine", "Debout, mains derrière la tête, laisse le poids des bras amener doucement le menton vers la poitrine. Aucune traction, juste le poids.", "Nuque, haut du dos"],
+  ["nuqueLat", "Inclinaison de la nuque", "Debout, incline la tête sur le côté et pose la main sur le dessus de la tête, sans tirer. L’autre épaule reste basse. Change de côté à mi-temps.", "Trapèzes, côté du cou"],
+  ["brasCroise", "Épaule bras croisé", "Amène un bras tendu en travers de la poitrine et maintiens-le avec l’autre bras, au-dessus du coude. Garde l’épaule basse. Change de bras à mi-temps.", "Arrière de l’épaule, haut du dos"],
+  ["triceps", "Étirement du triceps", "Lève un bras, plie le coude et pose la main derrière la tête. Avec l’autre main, pousse doucement le coude vers l’arrière. Change de bras à mi-temps.", "Triceps, côté du dos, épaule"],
+  ["dosMains", "Ouverture de poitrine", "Debout, joins les mains dans le dos, bras tendus, et lève-les doucement en ouvrant la poitrine. Regard droit devant, épaules basses.", "Pectoraux, avant de l’épaule"],
+  ["poignets", "Étirement des poignets", "Bras tendu devant toi, paume vers l’avant, tire doucement les doigts vers toi avec l’autre main. Change de main à mi-temps.", "Avant-bras, poignets"],
+  ["murPecs", "Pectoraux contre le mur", "Debout près d’un mur, avant-bras plaqué contre le mur et coude à hauteur d’épaule. Avance doucement le buste jusqu’à sentir l’étirement. Change de bras à mi-temps.", "Pectoraux, avant de l’épaule"],
+  ["genouxPoitrine", "Genoux contre la poitrine", "Allongé sur le dos, ramène les genoux vers la poitrine et entoure-les avec les bras. Berce-toi doucement de gauche à droite.", "Bas du dos, fessiers, hanches"],
+  ["torsionAllongee", "Torsion allongée", "Allongé sur le dos, bras en croix, laisse tomber les genoux fléchis d’un côté, regard de l’autre côté. Change de côté à mi-temps.", "Lombaires, obliques, hanches"],
+  ["lateralDebout", "Inclinaison latérale", "Debout, un bras levé, incline le buste sur le côté sans te pencher vers l’avant. Respire dans le flanc étiré. Change de côté à mi-temps.", "Flancs, obliques, dorsaux"],
+  ["flexionAssise", "Pince assise", "Assis, jambes tendues devant toi, penche-toi vers l’avant en gardant le dos long et va chercher les pieds ou les chevilles. Genoux légèrement souples.", "Ischio-jambiers, bas du dos"],
+  ["figure4", "Fessier en 4 allongé", "Allongé sur le dos, pose la cheville sur le genou opposé et tire la cuisse du dessous vers toi. Change de jambe à mi-temps.", "Fessiers, piriforme, hanches"],
+  ["papillon", "Papillon", "Assis, plantes de pieds collées, genoux ouverts. Garde le dos long et appuie doucement sur les genoux ou penche le buste vers l’avant.", "Adducteurs, aine, hanches"],
+  ["quadDebout", "Quadriceps debout", "Debout, attrape ta cheville derrière toi et amène le talon vers le fessier, genoux serrés, bassin vers l’avant. Change de jambe à mi-temps.", "Quadriceps, fléchisseurs de hanche"],
+  ["ischioCouche", "Ischios allongé", "Allongé sur le dos, lève une jambe tendue et tire-la doucement vers toi en tenant l’arrière de la cuisse. Change de jambe à mi-temps.", "Ischio-jambiers, mollets"],
+  ["molletMur", "Mollet contre le mur", "Mains au mur, une jambe en arrière tendue, talon bien au sol. Avance le bassin vers le mur. Change de jambe à mi-temps.", "Mollets (gastrocnémiens), tendon d’Achille"],
+  ["soleaire", "Mollet genou fléchi", "Mains au mur, jambe arrière légèrement fléchie, talon toujours au sol. Descends le bassin vers le sol. Change de jambe à mi-temps.", "Soléaire, tendon d’Achille, chevilles"],
+  ["straddle", "Jambes écartées assis", "Assis, jambes écartées en V, dos long. Penche-toi lentement vers l’avant en avançant les mains devant toi, sans forcer.", "Adducteurs, ischio-jambiers, bas du dos"],
+  ["fenteLatTenue", "Fente latérale tenue", "Jambes bien écartées, descends sur une jambe fléchie en gardant l’autre tendue, pied à plat. Change de côté à mi-temps.", "Adducteurs, aine, hanches"],
+  ["fenteBasse", "Fente basse, hanche en avant", "Un genou au sol, l’autre pied devant. Redresse le buste, serre le fessier de la jambe arrière et pousse le bassin vers l’avant. Change de jambe à mi-temps.", "Fléchisseurs de hanche, quadriceps"],
+  ["enfantStat", "Posture de l’enfant", "À genoux, assis sur les talons, avance les mains loin devant toi et laisse tomber le front vers le sol. Respire dans le dos.", "Dos, épaules, hanches, chevilles"],
+  ["chien", "Chien tête en bas", "Mains et pieds au sol, bassin haut en V inversé. Pousse le sol des mains et fais descendre les talons vers le sol. Fléchis un genou puis l’autre pour te délier.", "Mollets, ischios, épaules, dos"]
+].map(([id, nom, description, muscles]) => [id, { nom, duree: 30, video: null, description, muscles, etir: true }])));
+
+Object.assign(POSES, POSES_CALME);
+POSES.enfantStat = POSES.enfant;
+POSES.fenteLatTenue = POSES.lateral;
+POSES.fenteBasse = { v: "p", f: [POSES.fente.f[0]], a: [[72,98,92,96,112,100]] };
+POSES.chien = { ...POSES.dogpedal, f: [POSES.dogpedal.f[0]], a: [[150,70,142,56,134,46]] };
+
+const ETIR = Object.keys(EXERCICES).filter(id => EXERCICES[id].etir);
+Object.assign(ROUTINES, Object.fromEntries([
+  ["etNuque", "Nuque et trapèzes", "Cou, trapèzes, épaules", ["grandissement","nuqueFlex","nuqueLat","brasCroise","triceps"]],
+  ["etEpaules", "Épaules et bras", "Épaules, triceps, poignets", ["brasCroise","triceps","poignets","dosMains","murPecs"]],
+  ["etPecs", "Pectoraux et haut du dos", "Poitrine, épaules, dos", ["murPecs","dosMains","chien","enfantStat","grandissement"]],
+  ["etDos", "Dos et lombaires", "Dos, flancs, lombaires", ["enfantStat","catcow","genouxPoitrine","torsionAllongee","lateralDebout","flexionAssise"]],
+  ["etHanches", "Hanches et fessiers", "Fessiers, hanches, bas du dos", ["fenteBasse","figure4","papillon","torsionAllongee","enfantStat"]],
+  ["etCuisses", "Cuisses et hanches avant", "Quadriceps, fléchisseurs de hanche", ["grandissement","quadDebout","fenteBasse","fenteLatTenue","molletMur"]],
+  ["etIschios", "Arrière des cuisses", "Ischio-jambiers, bas du dos", ["cascade","flexionAssise","ischioCouche","chien","genouxPoitrine"]],
+  ["etMollets", "Mollets et chevilles", "Mollets, tendon d’Achille, chevilles", ["molletMur","soleaire","chien","ankles","quadDebout"]],
+  ["etAdduct", "Adducteurs et aine", "Intérieur des cuisses, hanches", ["papillon","fenteLatTenue","straddle","figure4","enfantStat"]],
+  ["etComplet", "Corps entier", "Du haut en bas, en 8 étirements", ["grandissement","cascade","quadDebout","fenteBasse","chien","enfantStat","torsionAllongee","brasCroise"]]
+].map(([k, titre, detail, exercices]) => [k, { type: "calme", cat: "etir", titre, detail, couleur: "#2A9D8F", exercices }])));
+Object.keys(ROUTINES).filter(k => ROUTINES[k].cat === "etir").forEach(k => CONSEILLES[k] = ETIR);
+
+/* Cohérence cardiaque : séances de respiration guidée. Un bloc = une technique répétée en cycles [libellé, secondes, taille du cercle 0,45 → 1].
+   Les durées des blocs s'adaptent proportionnellement à la durée choisie. Sources : voir NOTES.md. */
+const BLOCS = {
+  libre: { titre: "Respiration libre", voix: "Free breathing", cycle: [["RESPIRE LIBREMENT", 10, 0.7]],
+    consigne: "Respire naturellement par le nez, une main sur le ventre. Laisse le souffle ralentir tout seul.",
+    resume: "Respiration naturelle, sans compter : on pose le souffle avant et après." },
+  coherence: { titre: "Cohérence cardiaque 5-5", voix: "Coherent breathing", cycle: [["INSPIRE", 5, 1], ["EXPIRE", 5, 0.45]],
+    consigne: "Inspire 5 secondes, expire 5 secondes, sans pause, par le nez. Le ventre se gonfle à l’inspiration.",
+    resume: "6 respirations par minute (0,1 Hz) : rythme où l’effet sur la variabilité cardiaque est en général maximal (Lehrer et Gevirtz, 2014). La respiration lente augmente la variabilité cardiaque (méta-analyse de Laborde et al., 2022, 223 études)." },
+  expireLongue: { titre: "Expiration allongée 4-6", voix: "Extended exhale", cycle: [["INSPIRE", 4, 1], ["EXPIRE", 6, 0.45]],
+    consigne: "Inspire 4 secondes par le nez, expire 6 secondes lentement, lèvres entrouvertes.",
+    resume: "Rythme lent, souvent ressenti comme plus apaisant. Pas d’avantage démontré sur le 5-5 pour la variabilité cardiaque (Meehan et Shaffer, 2024)." },
+  soupir: { titre: "Soupir cyclique", voix: "Cyclic sighing", cycle: [["INSPIRE", 3, 0.8], ["ENCORE UN PEU", 2, 1], ["EXPIRE LONGUEMENT", 7, 0.45]],
+    consigne: "Inspire par le nez, ajoute une deuxième petite inspiration pour finir de remplir les poumons, puis expire lentement et complètement par la bouche.",
+    resume: "5 min par jour pendant 4 semaines : meilleur gain d’humeur positive que la méditation (Balban et al., 2023, 108 adultes, étude préliminaire). Le rythme chronométré ici est un choix de l’appli." },
+  carree: { titre: "Respiration carrée 4-4-4-4", voix: "Box breathing", cycle: [["INSPIRE", 4, 1], ["RETIENS", 4, 1], ["EXPIRE", 4, 0.45], ["POUMONS VIDES", 4, 0.45]],
+    consigne: "Inspire 4 s, retiens 4 s, expire 4 s, reste poumons vides 4 s. Raccourcis les pauses si tu es mal à l’aise.",
+    resume: "Testée par Balban et al. (2023) : améliore l’humeur, mais pas plus que la méditation. Preuves limitées, utile surtout pour se concentrer." }
+};
+const rythme = (i, e) => ({ titre: `Rythme ${(60 / (i + e)).toFixed(1).replace(".", ",")} resp./min`, voix: "Resonance pace", cycle: [["INSPIRE", i, 1], ["EXPIRE", e, 0.45]],
+  consigne: "Respire sans forcer à ce rythme et note ton ressenti : plus calme, plus à l’aise ? Garde en tête celui qui te convient le mieux.",
+  resume: "La fréquence de résonance se situe en moyenne autour de 6 respirations par minute, avec des différences selon les personnes (Lehrer et Gevirtz, 2014)." });
+const SEANCES = [
+  ["coherEffort", "Après l’effort", "Séance complète : reprise du souffle, soupir cyclique, cohérence", [[BLOCS.libre, 60], [BLOCS.soupir, 180], [BLOCS.coherence, 240], [BLOCS.libre, 60]],
+    "Enchaînement du plus libre au plus guidé : on reprend le souffle, on ralentit avec le soupir cyclique, puis on se cale sur 6 respirations par minute."],
+  ["coherFocus", "Concentration et stress", "Séance complète : respiration carrée, soupir cyclique", [[BLOCS.libre, 60], [BLOCS.carree, 180], [BLOCS.soupir, 120], [BLOCS.libre, 60]],
+    "Avant une compétition, un examen ou un moment tendu : la respiration carrée occupe l’attention, le soupir cyclique fait redescendre."],
+  ["coherSoir", "Fin de journée", "Séance complète : soupir cyclique, expiration allongée", [[BLOCS.libre, 60], [BLOCS.soupir, 180], [BLOCS.expireLongue, 240], [BLOCS.libre, 120]],
+    "Pour décompresser le soir. Les preuves sur le sommeil lui-même restent limitées : c’est une aide à la détente."],
+  ["coherReso", "Trouver son rythme", "Séance complète : 5 rythmes, de 6,7 à 4,6 respirations par minute", [[rythme(4, 5), 120], [rythme(5, 5), 120], [rythme(5, 6), 120], [rythme(6, 6), 120], [rythme(6, 7), 120]],
+    "Inspiré du protocole de la fréquence de résonance (Lehrer et Gevirtz, 2014). Sans capteur cardiaque on ne mesure rien : choisis simplement le rythme où tu te sens le plus à l’aise."],
+  ["coherExpress", "Express", "Cohérence 5-5 · 3 min", [[BLOCS.coherence, 180]], "Format court de la cohérence cardiaque."],
+  ["coherClassique", "Cohérence classique", "Cohérence 5-5 · 5 min", [[BLOCS.coherence, 300]], "Le format de référence : 6 respirations par minute pendant 5 minutes."],
+  ["coherSoupir", "Soupir cyclique", "Soupir cyclique · 5 min", [[BLOCS.soupir, 300]], "Le format testé dans l’étude de Balban et al. (2023) : 5 minutes par jour."],
+  ["coherCarree", "Respiration carrée", "4-4-4-4 · 5 min", [[BLOCS.carree, 300]], "Une technique de concentration, à effet modeste sur l’humeur."],
+  ["coherRecup", "Expiration allongée", "Inspire 4 s, expire 6 s · 5 min", [[BLOCS.expireLongue, 300]], "Rythme lent à expiration plus longue, simple et confortable."]
+];
+SEANCES.forEach(([k]) => delete ROUTINES[k]);
+Object.assign(ROUTINES, Object.fromEntries(SEANCES.map(([k, titre, detail, blocs, etude]) => {
+  const total = blocs.reduce((t, [, d]) => t + d, 0);
+  return [k, { type: "calme", cat: "coherence", souffle: true, titre, couleur: "#3B82C4", exercices: [], minutes: Math.round(total / 60), etude,
+    detail: detail.includes("·") ? detail : detail + " · " + total / 60 + " min",
+    blocs: blocs.map(([b, duree]) => ({ ...b, duree })) }];
+})));
+
+
+/* ============ SÉANCES AVEC MATÉRIEL ============
+   Tableau compact [id, nom, matériel, description, muscles]. Pose et nom parlé : POSES_MAT et VOIX. */
+Object.assign(EXERCICES, Object.fromEntries([
+  ["goblet", "Squat gobelet", "kettlebell, haltère ou disque", "Tiens la charge contre la poitrine, coudes serrés. Descends en squat profond, dos droit, puis remonte en poussant dans les talons.", "Quadriceps, fessiers, gainage"],
+  ["kbSwing", "Swing kettlebell", "kettlebell", "Pieds écartés, charnière de hanche : balance la kettlebell entre les jambes puis propulse les hanches vers l’avant. Les bras guident, la force vient des hanches.", "Fessiers, ischio-jambiers, dos, épaules"],
+  ["kbPress", "Développé kettlebell une main", "kettlebell", "Kettlebell au creux de l’épaule, gainage serré : pousse à la verticale jusqu’au bras tendu, puis redescends sous contrôle. Change de bras à mi-temps.", "Épaules, triceps, gainage"],
+  ["dbPress", "Développé couché haltères", "banc, haltères", "Allongé sur le banc, pieds au sol : descends les haltères à hauteur de poitrine puis pousse jusqu’aux bras tendus.", "Pectoraux, épaules, triceps"],
+  ["dbRow", "Rowing haltère un bras", "banc, haltère", "Une main appuyée sur le banc, dos plat : tire l’haltère vers la hanche en gardant le coude près du corps. Change de bras à mi-temps.", "Dorsaux, rhomboïdes, biceps"],
+  ["dbShoulder", "Développé épaules haltères", "haltères", "Debout, haltères à hauteur d’épaules : pousse au-dessus de la tête sans cambrer le dos, puis redescends.", "Épaules, triceps"],
+  ["dbLunge", "Fentes arrière avec haltères", "haltères", "Un haltère dans chaque main, recule un pied et descends jusqu’à frôler le sol avec le genou, puis reviens. Alterne les jambes.", "Quadriceps, fessiers, ischio-jambiers"],
+  ["dbCurl", "Curl haltères", "haltères", "Debout, coudes collés au corps : monte les haltères vers les épaules puis redescends lentement.", "Biceps, avant-bras"],
+  ["dbRDL", "Soulevé de terre roumain haltères", "haltères", "Haltères devant les cuisses, jambes presque tendues : recule les hanches en gardant le dos plat, descends sous les genoux puis remonte.", "Ischio-jambiers, fessiers, lombaires"],
+  ["dbLateral", "Élévations latérales", "haltères", "Haltères le long du corps : monte les bras sur les côtés jusqu’à l’horizontale, coudes légèrement fléchis, puis redescends lentement.", "Épaules (deltoïdes)"],
+  ["bulgare", "Squat bulgare haltères", "banc, haltères", "Pied arrière posé sur le banc, haltères dans les mains : descends à la verticale sur la jambe avant puis remonte. Change de jambe à mi-temps.", "Quadriceps, fessiers, équilibre"],
+  ["hipThrust", "Hip thrust sur banc", "banc, disque", "Haut du dos sur le banc, disque sur les hanches : pousse dans les talons pour monter le bassin, serre les fessiers en haut, puis redescends.", "Fessiers, ischio-jambiers"],
+  ["stepUp", "Montées sur banc", "banc", "Pose un pied sur le banc et monte en poussant dans la jambe d’appui, genou opposé vers le haut, puis redescends. Change de jambe à mi-temps.", "Quadriceps, fessiers, équilibre"],
+  ["dips", "Dips sur banc", "banc", "Mains sur le bord du banc derrière toi, jambes tendues devant : fléchis les coudes à 90° puis repousse.", "Triceps, pectoraux, épaules"],
+  ["ezCurl", "Curl barre Z", "barre Z", "Debout, mains sur les prises inclinées, coudes fixes : monte la barre vers la poitrine puis redescends sous contrôle.", "Biceps, avant-bras"],
+  ["ezSkull", "Barre au front", "barre Z, banc", "Allongé sur le banc, barre bras tendus : fléchis uniquement les coudes pour descendre la barre vers le front, puis tends les bras.", "Triceps"],
+  ["ezRow", "Rowing barre Z buste penché", "barre Z", "Buste penché, dos plat : tire la barre vers le bas du ventre en rapprochant les omoplates, puis redescends.", "Dorsaux, trapèzes, biceps"],
+  ["ezBench", "Développé couché barre Z", "barre Z, banc", "Allongé sur le banc, descends la barre jusqu’au bas de la poitrine puis pousse jusqu’aux bras tendus.", "Pectoraux, triceps, épaules"],
+  ["poulieTirage", "Tirage vertical poulie haute", "poulie verticale", "Assis, cuisses calées : tire la barre vers le haut de la poitrine en abaissant les coudes, puis remonte lentement.", "Grand dorsal, biceps"],
+  ["poulieTriceps", "Extensions triceps à la poulie", "poulie verticale", "Debout, coudes collés aux côtes : pousse la barre vers le bas jusqu’à tendre les bras, puis remonte à hauteur de poitrine.", "Triceps"],
+  ["poulieCrunch", "Crunch à la poulie", "poulie verticale", "À genoux face à la poulie, corde près du front : enroule le buste vers les genoux en contractant les abdos, puis reviens.", "Abdominaux"],
+  ["poulieBucheron", "Bûcheron à la poulie", "poulie verticale", "De l’épaule vers la hanche opposée, tire en diagonale avec rotation du buste, bras presque tendus. Change de côté à mi-temps.", "Obliques, épaules, gainage"],
+  ["bandRow", "Tirage assis à l’élastique", "élastique", "Assis, élastique autour des pieds : tire vers le ventre en serrant les omoplates, puis reviens.", "Dorsaux, biceps"],
+  ["bandChest", "Développé poitrine à l’élastique", "élastique", "Élastique passé dans le dos, mains à hauteur de poitrine : tends les bras vers l’avant puis reviens.", "Pectoraux, triceps"],
+  ["bandWalk", "Marche latérale à l’élastique", "élastique", "Élastique autour des chevilles ou des genoux, genoux fléchis : fais des pas latéraux sans rejoindre les pieds.", "Moyen fessier, hanches"],
+  ["bandPullApart", "Écartement d’élastique", "élastique", "Bras tendus devant toi, élastique entre les mains : écarte les bras en serrant les omoplates puis reviens.", "Arrière des épaules, haut du dos"],
+  ["roue", "Roulette abdominale", "roulette", "À genoux, mains sur la roulette : roule vers l’avant en gardant le dos plat et les abdos serrés, puis reviens.", "Abdominaux, épaules, gainage"],
+  ["discRussian", "Rotations russes avec disque", "poids simple", "Assis, buste incliné, pieds décollés, un disque entre les mains : tourne de droite à gauche.", "Obliques, abdominaux"],
+  ["discWood", "Bûcheron avec disque", "poids simple", "Debout, disque au-dessus d’une épaule : descends-le en diagonale vers la hanche opposée en pivotant. Change de côté à mi-temps.", "Obliques, épaules, hanches"],
+  ["tractions", "Tractions", "barre de traction", "Prise large, suspendu bras tendus : monte jusqu’à passer le menton au-dessus de la barre, puis redescends lentement.", "Grand dorsal, biceps, avant-bras"],
+  ["chinups", "Tractions prise supination", "barre de traction", "Paumes vers toi, mains à largeur d’épaules : monte jusqu’à passer le menton au-dessus de la barre, puis redescends sous contrôle.", "Biceps, dorsaux"],
+  ["relevesJambes", "Relevés de jambes suspendu", "barre de traction", "Suspendu à la barre, monte les jambes tendues jusqu’à l’horizontale sans te balancer, puis redescends lentement.", "Abdominaux bas, fléchisseurs de hanche"],
+  ["pike", "Pompes pike", "", "Hanches hautes en V inversé : fléchis les coudes pour amener la tête vers le sol entre les mains, puis repousse.", "Épaules, triceps"],
+  ["hollow", "Gainage dos rond", "", "Allongé sur le dos, lombaires collées au sol, bras tendus derrière la tête, jambes tendues décollées : tiens la position.", "Abdominaux profonds"]
+].map(([id, nom, mat, description, muscles]) => [id, { nom, duree: 40, video: null, description, muscles: muscles + (mat ? " · " + mat : ""), mat: !!mat }])));
+
+const POSES_MAT = {
+  goblet: {v:"p",f:[[95,108,20,15,150,15,150,75,5,72,0],[100,82,0,15,150,15,150,0,0,0,0]],a:[[160,70,162,92,160,112]],o:[["kb","m",8]]},
+  kbSwing: {v:"p",f:[[100,82,0,90,90,90,90,0,0,0,0],[80,88,60,9.8,-37.9,9.8,-37.9,25,-5,25,-5]],a:[[100,128,142,132,168,90]],o:[["kb","m",14]]},
+  kbPress: {v:"p",f:[[110,82,0,178,178,8,3,0,0,0,0],[110,82,0,20,160,8,3,0,0,0,0]],a:[[150,80,150,40,150,2]],o:[["kb","mn",0]]},
+  dbPress: {v:"p",f:[[145,102,-90,180,180,180,180,75,0,75,0],[145,102,-90,70,180,70,180,75,0,75,0]],a:[[96,86,96,66,96,46]],o:[["banc",70,113,110],["barre","m",18]]},
+  dbRow: {v:"p",f:[[80,86,70,-40,25,45.9,18.1,15,-8,-12,5],[80,86,70,5,5,45.9,18.1,15,-8,-12,5]],a:[[128,128,118,108,106,92]],o:[["banc",120,113,70],["barre","mn",18]]},
+  dbShoulder: {v:"f",f:[[120,82,0,165,185,-165,-185,3,0,-3,0],[120,82,0,105,180,-105,-180,3,0,-3,0]],a:[[172,70,172,40,172,10]],o:[["barre","mn",18],["barre","mf",18]]},
+  dbLunge: {v:"p",f:[[115,105,0,0,0,0,0,80,0,-20,-80],[115,82,0,0,0,0,0,0,0,0,0]],a:[[75,70,75,92,75,114]],o:[["barre","mn",18]]},
+  dbCurl: {v:"p",f:[[110,82,0,0,160,0,160,0,0,0,0],[110,82,0,0,0,0,0,0,0,0,0]],a:[[140,100,152,78,138,56]],o:[["barre","m",18]]},
+  dbRDL: {v:"p",f:[[95,82,65,0,0,0,0,10,-5,10,-5],[95,82,0,0,0,0,0,0,0,0,0]],a:[[108,98,88,96,66,98]],o:[["barre","m",18]]},
+  dbLateral: {v:"f",f:[[120,82,0,90,90,-90,-90,3,0,-3,0],[120,82,0,8,8,-8,-8,3,0,-3,0]],a:[[178,84,190,62,182,44]],o:[["barre","mn",18],["barre","mf",18]]},
+  bulgare: {v:"p",f:[[112,100,10,0,0,0,0,70,0,-35,-125],[112,86,0,0,0,0,0,20,5,-25,-100]],a:[[168,60,168,84,168,108]],o:[["banc",40,113,70],["barre","m",18]]},
+  hipThrust: {v:"p",f:[[120,100,-100,88,88,88,88,75,5,75,5]],a:[[120,76,120,60,120,44]],o:[["banc",30,113,65],["disc","m"]]},
+  stepUp: {v:"p",f:[[140,53,0,-25,-10,45,70,0,0,100,-20]],a:[[100,64,100,44,100,24]],o:[["banc",110,113,75]]},
+  dips: {v:"p",f:[[110,125,-5,-94.6,-8.1,-94.6,-8.1,75,75,75,75],[106,107,-5,-46.1,-15.1,-46.1,-15.1,60,60,60,60]],a:[[88,92,88,108,88,124]],o:[["banc",30,113,60]]},
+  ezCurl: {v:"f",f:[[120,82,0,8,168,-8,-168,3,0,-3,0],[120,82,0,8,3,-8,-3,3,0,-3,0]],a:[[172,100,178,80,172,60]],o:[["barre","m",46]]},
+  ezSkull: {v:"p",f:[[145,102,-90,180,180,180,180,75,0,75,0],[145,102,-90,180,-51,180,-51,75,0,75,0]],a:[[120,92,128,72,120,52]],o:[["banc",70,113,110],["barre","m",36]]},
+  ezRow: {v:"p",f:[[90,86,65,-45,30,-45,30,10,-5,10,-5],[90,86,65,0,0,0,0,10,-5,10,-5]],a:[[135,118,122,104,108,92]],o:[["barre","m",36]]},
+  ezBench: {v:"p",f:[[145,102,-90,180,180,180,180,75,0,75,0],[145,102,-90,70,180,70,180,75,0,75,0]],a:[[96,86,96,66,96,46]],o:[["banc",70,113,110],["barre","m",36]]},
+  poulieTirage: {v:"p",f:[[110,108,-10,10,150,10,150,90,0,90,0],[110,108,-10,165,175,165,175,90,0,90,0]],a:[[150,38,152,60,150,82]],o:[["banc",84,118,44],["barre","m",40],["cable","m",[118,-8]]]},
+  poulieTriceps: {v:"p",f:[[110,82,0,5,0,5,0,0,0,0,0],[110,82,0,5,120,5,120,0,0,0,0]],a:[[150,60,152,80,150,100]],o:[["barre","m",24],["cable","m",[128,-10]]]},
+  poulieCrunch: {v:"p",f:[[100,100,50,20,170,20,170,0,-90,0,-90,8,25,34],[100,100,10,20,170,20,170,0,-90,0,-90]],a:[[150,70,150,86,140,102]],o:[["barre","m",14],["cable","m",[140,-10]]]},
+  poulieBucheron: {v:"f",f:[[120,82,0,40,40,40,40,15,0,-15,0],[120,82,0,-150,-150,-150,-150,15,0,-15,0]],a:[[96,20,120,60,150,100]],o:[["barre","m",14],["cable","m",[60,-10]]]},
+  bandRow: {v:"p",f:[[80,135,-5,-35,70,-35,70,90,90,90,90],[80,135,-5,90,90,90,90,90,90,90,90]],a:[[130,98,110,104,92,112]],o:[["bande","m","pn"]]},
+  bandChest: {v:"p",f:[[110,82,0,90,90,90,90,0,0,0,0],[110,82,0,-20,70,-20,70,0,0,0,0]],a:[[130,40,150,44,168,48]],o:[["bande","m",[22,48]]]},
+  bandWalk: {v:"f",f:[[120,84,0,15,5,-15,-5,18,18,-18,-18],[120,84,0,15,5,-15,-5,8,8,-8,-8]],a:[[160,126,176,118,190,126]],o:[["bande","pn","pf"]]},
+  bandPullApart: {v:"f",f:[[120,82,0,90,90,-90,-90,3,0,-3,0],[120,82,0,70,-110,-70,110,3,0,-3,0]],a:[[172,60,186,56,200,60],[68,60,54,56,40,60]],o:[["bande","mn","mf"]]},
+  roue: {v:"p",f:[[70,105,85,48,48,48,48,0,-90,0,-90],[70,105,60,22,22,22,22,0,-90,0,-90]],a:[[100,90,125,86,146,100]],o:[["roue","m"]]},
+  discRussian: {v:"p",f:[[90,128,-30,80,80,80,80,115,115,115,115]],a:[[130,90,152,108,130,126,1]],o:[["disc","m"]]},
+  discWood: {v:"f",f:[[120,82,0,40,40,40,40,15,0,-15,0],[120,82,0,-150,-150,-150,-150,15,0,-15,0]],a:[[96,20,120,60,150,100]],o:[["disc","m"]]},
+  tractions: {v:"f",f:[[120,48,0,64.9,-156.6,-64.9,156.6,6,0,-6,0],[120,82,0,167.5,159.2,-167.5,-159.2,4,0,-4,0]],a:[[176,60,176,34,176,8]],o:[["tbar",50,190,4]]},
+  chinups: {v:"p",f:[[100,50,0,82,-134.2,82,-134.2,-15,-70,-20,-75],[100,82,0,182.6,155.5,182.6,155.5,10,-30,8,-35]],a:[[150,60,150,34,150,8]],o:[["barre","m",20]]},
+  relevesJambes: {v:"p",f:[[100,82,0,182.6,155.5,182.6,155.5,90,90,90,90,6,0,34],[100,82,0,182.6,155.5,182.6,155.5,0,0,0,0]],a:[[135,128,152,110,152,84]],o:[["barre","m",20]]},
+  pike: {v:"p",f:[[124,106,-128,-100.2,-38.1,-100.2,-38.1,50,50,50,50],[128,97,-122,-58,-58,-58,-58,47,47,47,47]],a:[[88,86,96,100,100,118]]},
+  hollow: {v:"p",f:[[130,132,-80,-100,-100,-100,-100,105,105,105,105],[130,132,-90,-90,-90,-90,-90,90,90,90,90]],a:[[190,120,198,106,192,92]]}
+};
+Object.assign(POSES, POSES_MAT);
+
+const MATOS = Object.keys(EXERCICES).filter(id => EXERCICES[id].mat || id === "pike" || id === "hollow");
+Object.assign(ROUTINES, Object.fromEntries([
+  ["renfoCourseMat", "course", "renfoCourse", "Renfo course à pied · matériel", "Jambes à l’unilatéral, fessiers, gainage", ["bulgare","stepUp","dbRDL","hipThrust","bandWalk","kbSwing","hollow","relevesJambes"]],
+  ["renfoBoxeMat", "boxe", "renfoBoxe", "Renfo boxe · matériel", "Explosivité, pecs, dos, rotation du tronc", ["kbSwing","dbPress","dbRow","poulieBucheron","discRussian","tractions","roue","pike"]],
+  ["renfoSurfMat", "surf", "renfoSurf", "Renfo surf · matériel", "Dos, épaules, gainage, jambes", ["tractions","poulieTirage","dbRow","pike","bandPullApart","goblet","hollow","discWood"]],
+  ["renfoSkiMat", "ski", "renfoSki", "Renfo ski · matériel", "Cuisses, fessiers, gainage, équilibre", ["goblet","bulgare","kbSwing","dbRDL","bandWalk","roue","discRussian","stepUp"]],
+  ["renfoHautMat", "haut", "renfoHaut", "Renfo haut du corps · matériel", "Pectoraux, dos, épaules, bras, abdos", ["dbPress","tractions","dbShoulder","ezRow","ezCurl","poulieTriceps","dips","relevesJambes"]],
+  ["renfoBasMat", "bas", "renfoBas", "Renfo bas du corps · matériel", "Cuisses, fessiers, ischio-jambiers", ["goblet","dbLunge","dbRDL","hipThrust","bulgare","kbSwing","stepUp","bandWalk"]],
+  ["renfoCompletMat", "complet", "renfoComplet", "Renfo haut et bas du corps · matériel", "Tout le corps", ["goblet","dbPress","dbRow","kbSwing","tractions","dbLunge","roue","hollow"]]
+].map(([k, grp, base, titre, detail, exercices]) => [k, { type: "seance", grp, mat: true, titre, detail, couleur: ROUTINES[base].couleur, exercices }])));
+Object.keys(ROUTINES).filter(k => ROUTINES[k].mat).forEach(k => CONSEILLES[k] = [...new Set([...ROUTINES[k].exercices, ...MATOS, ...CONSEILLES[k.replace("Mat", "")]])]);
+
+/* ============ ÉTAT ============ */
+const $ = id => document.getElementById(id);
+let routine = null, routineCle = null, liste = [], index = 0, reste = 0, timer = null, enPause = false, audio = null;
+
+/* Durée commune à tous les exercices (réglable, mémorisée sur l’appareil) */
+let dureeGlobale = 20;
+
+/* Voix : annonce le nom de chaque exercice (synthèse vocale du navigateur) */
+let voixActive = true, tVoix = null;
+
+/* Liste d’exercices de la routine en cours (modifiable, mémorisée par routine sur l’appareil) */
+let ids = [];
+let mode = "echauffement", repos = 20, enRepos = false, reps = 8, recup = 60, cycles = 3;
+
+/* Charge les durées mémorisées : réglages séparés pour les échauffements et les séances */
+function chargerDuree(cle = routineCle) {
+  const lire = (cle, min, max, def) => {
+    try { const n = parseInt(localStorage.getItem(cle), 10); if (n >= min && n <= max) return n; } catch (e) {}
+    return def;
+  };
+  if (mode === "tabata") {
+    dureeGlobale = lire("dureeTabata", 5, 120, 20);
+    repos = lire("reposTabata", 0, 120, 10);
+    reps = lire("repsTabata", 1, 30, 8);
+    recup = lire("recupTabata", 0, 300, 60);
+    cycles = lire("cyclesTabata", 1, 30, 3);
+  } else if (mode === "seance") {
+    dureeGlobale = lire("dureeSeance", 5, 120, 40);
+    repos = lire("repos", 0, 120, 20);
+  } else if (mode === "calme") {
+    dureeGlobale = lire("dureeCalme", 5, 120, 30);
+  } else if (mode === "souffle") {
+    dureeGlobale = lire("minutes_" + cle, 1, 30, ROUTINES[cle].minutes);
+  } else {
+    dureeGlobale = lire("dureeGlobale", 5, 120, 20);
+  }
+}
+
+function chargerIds(cle) {
+  try {
+    const s = JSON.parse(localStorage.getItem("routine_" + cle));
+    if (Array.isArray(s) && s.every(id => EXERCICES[id])) return s;
+  } catch (e) {}
+  return [...ROUTINES[cle].exercices];
+}
+
+function sauverIds() {
+  try { localStorage.setItem("routine_" + routineCle, JSON.stringify(ids)); } catch (e) {}
+}
+
+function fermerAjout() {
+  $("ajout").classList.add("hidden");
+  $("ajoutBtn").textContent = "Ajouter";
+  $("ajoutBtn").setAttribute("aria-expanded", "false");
+}
+
+function majAjout() {
+  const dedans = new Set(ids);
+  $("defBtn").disabled = ids.join() === ROUTINES[routineCle].exercices.join();
+  const reco = CONSEILLES[routineCle].filter(id => !dedans.has(id));
+  const autres = Object.keys(EXERCICES).filter(id => !dedans.has(id) && !reco.includes(id));
+  const li = id => `<li>${mini(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div><button class="ajouter" data-id="${id}" aria-label="Ajouter ${EXERCICES[id].nom}">+</button></li>`;
+  $("aReco").innerHTML = reco.length ? reco.map(li).join("") : "<li><small>Tous les exercices conseillés sont déjà dans ta routine.</small></li>";
+  $("aAutres").innerHTML = autres.length ? autres.map(li).join("") : "<li><small>Aucun autre exercice disponible.</small></li>";
+}
+try { if (localStorage.getItem("voix") === "0") voixActive = false; } catch (e) {}
+
+/* Voix : uniquement « Paul », en anglais. Noms lus en anglais */
+const VOIX = {
+  inchworm: "Inchworm", wgs: "World’s greatest stretch", openbook: "Active open book", thread: "Thread the needle", wipers: "Windshield wipers",
+  catcow: "Active cat cow", cossack: "Cossack squat", shadow: "Shadow boxing with pivots", dogpedal: "Downward dog with pedaling", scorpion: "Scorpion",
+  hip9090: "Ninety ninety hip switches", rdl: "Single leg Romanian deadlift", fente: "Reverse lunge with arms up", pont: "Dynamic glute bridge",
+  askip: "A skip", armcircles: "Arm circles", armcross: "Cross and open arms", scap: "Scapular push ups", twist: "Standing trunk rotations",
+  tspin: "Plank with T rotation", slips: "Boxing slips", footwork: "Light footwork", lateral: "Lateral lunge", bird: "Bird dog",
+  sumo: "Sumo squat with toe touch", cobra: "Cobra to downward dog", legfwd: "Front and back leg swings", legside: "Side leg swings",
+  heelkick: "Butt kicks", kneeup: "High knees", lungetwist: "Walking lunge with rotation", calfraise: "Calf raises", skater: "Skater steps",
+  hydrant: "Fire hydrant", ankles: "Ankle circles", squat: "Squat", fentesalt: "Alternating forward lunges", pontuni: "Single leg glute bridge",
+  mollet1: "Single leg calf raises", chaise: "Wall sit", planche: "Plank", planchelat: "Side plank", climbers: "Mountain climbers",
+  squatsaute: "Jump squats", deadbug: "Dead bug", pompes: "Push ups", pompesserrees: "Close grip push ups", burpees: "Burpees",
+  russian: "Russian twists", superman: "Superman", planchetouch: "Plank with shoulder taps", enfant: "Active child’s pose",
+  cascade: "Waterfall forward fold", paddle: "Surf paddling", popup: "Surf pop up", surfsquat: "Surfer squat", skisquat: "Skier position",
+  skihop: "Skier side hops",
+  grandissement: "Reach tall",
+  nuqueFlex: "Chin to chest neck stretch",
+  nuqueLat: "Side neck stretch",
+  brasCroise: "Cross body shoulder stretch",
+  triceps: "Triceps stretch",
+  dosMains: "Chest opener",
+  poignets: "Wrist stretch",
+  murPecs: "Wall chest stretch",
+  genouxPoitrine: "Knees to chest",
+  torsionAllongee: "Lying spinal twist",
+  lateralDebout: "Standing side bend",
+  flexionAssise: "Seated forward fold",
+  figure4: "Figure four stretch",
+  papillon: "Butterfly stretch",
+  quadDebout: "Standing quad stretch",
+  ischioCouche: "Lying hamstring stretch",
+  molletMur: "Wall calf stretch",
+  soleaire: "Bent knee calf stretch",
+  straddle: "Seated straddle stretch",
+  fenteLatTenue: "Side lunge stretch",
+  fenteBasse: "Low lunge hip stretch",
+  enfantStat: "Child’s pose",
+  chien: "Downward dog",
+  goblet: "Goblet squat",
+  kbSwing: "Kettlebell swing",
+  kbPress: "Kettlebell press",
+  dbPress: "Dumbbell bench press",
+  dbRow: "One arm dumbbell row",
+  dbShoulder: "Dumbbell shoulder press",
+  dbLunge: "Dumbbell reverse lunge",
+  dbCurl: "Dumbbell curl",
+  dbRDL: "Dumbbell Romanian deadlift",
+  dbLateral: "Lateral raises",
+  bulgare: "Bulgarian split squat",
+  hipThrust: "Hip thrust",
+  stepUp: "Step ups",
+  dips: "Bench dips",
+  ezCurl: "EZ bar curl",
+  ezSkull: "Skull crushers",
+  ezRow: "EZ bar bent over row",
+  ezBench: "EZ bar bench press",
+  poulieTirage: "Lat pulldown",
+  poulieTriceps: "Triceps pushdown",
+  poulieCrunch: "Cable crunch",
+  poulieBucheron: "Cable wood chop",
+  bandRow: "Band seated row",
+  bandChest: "Band chest press",
+  bandWalk: "Banded side steps",
+  bandPullApart: "Band pull apart",
+  roue: "Ab wheel rollout",
+  discRussian: "Plate Russian twists",
+  discWood: "Plate wood chop",
+  tractions: "Pull ups",
+  chinups: "Chin ups",
+  relevesJambes: "Hanging leg raises",
+  pike: "Pike push ups",
+  hollow: "Hollow body hold"
+};
+const dire = e => VOIX[e.id] || e.nom;
+
+/* Voix « Paul » uniquement ; à défaut, voix anglaise par défaut du téléphone */
+const voixPaul = () => ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).find(x => /\bpaul\b/i.test(x.name));
+
+function parler(texte) {
+  if (!voixActive || !("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  clearTimeout(tVoix);
+  tVoix = setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(texte);
+    u.lang = "en-US"; u.rate = 0.95;
+    const v = voixPaul();
+    if (v) { u.voice = v; u.lang = v.lang; }
+    speechSynthesis.speak(u);
+  }, 700);
+}
+try { const d = parseInt(localStorage.getItem("dureeGlobale"), 10); if (d >= 5 && d <= 120) dureeGlobale = d; } catch (e) {}
+
+const CLE_DUREE = { tabata: "dureeTabata", seance: "dureeSeance", calme: "dureeCalme", echauffement: "dureeGlobale" };
+const pas = () => mode === "souffle" ? 1 : 5;
+function setDuree(d) {
+  dureeGlobale = mode === "souffle" ? Math.min(30, Math.max(1, d)) : Math.min(120, Math.max(5, d));
+  try { localStorage.setItem(mode === "souffle" ? "minutes_" + routineCle : CLE_DUREE[mode], dureeGlobale); } catch (e) {}
+  if (routineCle) ouvrirApercu(routineCle);
+}
+
+function ecran(nom) {
+  ["accueil","menu","home","preview","session","end"].forEach(s => $(s).classList.toggle("hidden", s !== nom));
+  $("quitBtn").classList.toggle("hidden", nom === "menu" || nom === "accueil");
+  $("quitBtn").dataset.conf = "";
+  $("quitBtn").textContent = "✕ Menu";
+}
+
+/* ============ SON (bip généré, aucun fichier) ============ */
+function bip(freq = 880, ms = 150, vol = 0.15, forme = "sine", decalage = 0, attaque = 0.015) {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state === "suspended") audio.resume();
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = forme; o.frequency.value = freq;
+    o.connect(g); g.connect(audio.destination);
+    const t = audio.currentTime + decalage, fin = t + ms / 1000;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + attaque);
+    g.gain.exponentialRampToValueAtTime(0.0001, fin);
+    o.start(t); o.stop(fin + 0.02);
+  } catch (e) { /* le son est facultatif */ }
+}
+
+/* Les 3 sons de la séance */
+const sons = {
+  // chaque seconde : tic grave, court et discret
+  tic: () => bip(450, 40, 0.08, "sine"),
+  // 3 dernières secondes : bip doux et rond, qui s’estompe
+  alerte: () => bip(784, 260, 0.25, "sine"),
+  // changement d’exercice : cloche de boxe anglaise (frappes rapides, résonance métallique)
+  change: () => {
+    const partiels = [[1, 1], [2, 0.6], [2.76, 0.45], [5.4, 0.25]];
+    for (let k = 0; k < 1; k++) {
+      partiels.forEach(([r, a]) => bip(700 * r, 1700 / Math.pow(r, 0.7), 0.2 * a, "sine", k * 0.08, 0.003));
+    }
+    
+    
+  }
+};
+
+/* ============ ACCUEIL ============ */
+const modeDe = r => r.tabata ? "tabata" : r.souffle ? "souffle" : r.type === "seance" ? "seance" : r.type === "calme" ? "calme" : "echauffement";
+function ouvrirRoutine(cle) {
+  mode = modeDe(ROUTINES[cle]); chargerDuree(cle); ids = chargerIds(cle); fermerAjout(); ouvrirApercu(cle);
+}
+Object.entries(ROUTINES).forEach(([cle, r]) => {
+  const b = document.createElement("button");
+  if (r.type === "seance") return;
+  b.className = "choice"; b.style.setProperty("--c", r.couleur);
+  b.innerHTML = `<strong>${r.titre}</strong><span>${r.detail}${r.souffle ? "" : " · " + r.exercices.length + " exercices"}</span>`;
+  b.onclick = () => ouvrirRoutine(cle);
+  b.dataset.cle = cle;
+  if (r.cat) b.dataset.cat = r.cat;
+  $(r.type === "calme" ? "choicesK" : "choices").appendChild(b);
+});
+Object.entries(CATS).forEach(([k, c]) => {
+  const b = document.createElement("button");
+  b.className = "choice"; b.style.setProperty("--c", c.couleur);
+  b.innerHTML = `<strong>${c.titre}</strong><span>${c.detail}</span>`;
+  b.onclick = () => vueCat(k);
+  $("choicesC").appendChild(b);
+});
+function bouton(parent, titre, detail, couleur, fn) {
+  const b = document.createElement("button");
+  b.className = "choice"; b.style.setProperty("--c", couleur);
+  b.innerHTML = `<strong>${titre}</strong><span>${detail}</span>`;
+  b.onclick = fn;
+  parent.appendChild(b);
+}
+bouton($("choicesP"), "Construire une séance", "Renfo par sport, au poids du corps ou avec matériel", "#7B5EA7", () => vueSCats());
+bouton($("choicesP"), "Tabata", "Minuteur : effort, repos, répétitions et cycles réglables", "#D9480F", () => ouvrirRoutine("tabata"));
+const SEANCE = k => Object.keys(ROUTINES).find(c => ROUTINES[c].grp === k && !ROUTINES[c].mat);
+["course", "boxe", "surf", "ski"].forEach(k => bouton($("choicesCS"), CATS[k].titre, ROUTINES[SEANCE(k)].detail, CATS[k].couleur, () => vueMode(k)));
+bouton($("choicesCS"), "Renfo du corps", "Haut du corps, bas du corps ou tout le corps", CATS.renfo.couleur, () => vueZones());
+[["haut", "Haut du corps"], ["bas", "Bas du corps"], ["complet", "Haut et bas du corps"]].forEach(([k, t]) => bouton($("choicesZ"), t, ROUTINES[SEANCE(k)].detail, ROUTINES[SEANCE(k)].couleur, () => vueMode(k)));
+
+function ouvrirApercu(cle) {
+  routine = ROUTINES[cle]; routineCle = cle;
+  liste = ids.map(id => ({ ...EXERCICES[id], id, duree: dureeGlobale }));
+  const tb = mode === "tabata", so = mode === "souffle";
+  $("dureeVal").textContent = dureeGlobale + (so ? " min" : " s");
+  $("reposRow").classList.toggle("hidden", mode !== "seance" && !tb);
+  $("reposVal").textContent = repos + " s";
+  $("repsRow").classList.toggle("hidden", !tb);
+  $("cyclesRow").classList.toggle("hidden", !tb);
+  $("cyclesVal").textContent = cycles;
+  $("pList").classList.toggle("hidden", tb);
+  $("ajoutBtn").closest(".reglage").classList.toggle("hidden", tb || so);
+  $("recupRow").classList.toggle("hidden", !tb);
+  $("repsVal").textContent = reps;
+  $("recupVal").textContent = recup + " s";
+  const ld = document.querySelector('label[for="dureeVal"]'), lr = document.querySelector('label[for="reposVal"]');
+  ld.firstChild.textContent = tb ? "Temps d’exercice" : so ? "Durée de la séance" : mode === "calme" ? "Durée de chaque étirement" : "Durée par exercice";
+  ld.querySelector("small").textContent = tb ? "Durée de chaque effort" : so ? "En minutes, les exercices s’adaptent" : "Appliquée à tous les exercices";
+  lr.firstChild.textContent = tb ? "Temps de repos" : "Repos entre exercices";
+  lr.querySelector("small").textContent = tb ? "Pause entre deux répétitions" : "Pause avant l’exercice suivant";
+    document.documentElement.style.setProperty("--accent", routine.couleur);
+  const plan = so ? planSouf(routine, dureeGlobale) : [];
+  const total = so ? plan.reduce((t, q) => t + q.sec, 0) : mode === "tabata"
+    ? cycles * (reps * dureeGlobale + (reps - 1) * repos) + (cycles - 1) * recup
+    : liste.reduce((s, e) => s + e.duree, 0) + (mode === "seance" ? repos * Math.max(0, liste.length - 1) : 0);
+  $("pTitle").textContent = mode !== "echauffement" ? routine.titre : "Échauffement " + routine.titre.toLowerCase();
+  $("pInfo").textContent = `${tb ? cycles + " cycle" + (cycles > 1 ? "s" : "") : so ? routine.blocs.length + " exercice" + (routine.blocs.length > 1 ? "s" : "") : liste.length + " exercices"} · environ ${Math.round(total / 60 * 10) / 10} min`.replace(".", ",");
+  $("pList").innerHTML = so
+    ? routine.blocs.map((b, j) => `<li><div><b>${j + 1}. ${b.titre} · ${Math.round(plan.filter(q => q.j === j).reduce((t, q) => t + q.sec, 0) / 6) / 10} min</b><small>${b.resume}</small></div></li>`).join("")
+      + `<li><div><small>${routine.etude} Séance de bien-être, pas un avis médical : arrête-toi en cas de vertige.</small></div></li>`
+    : ids.length
+    ? ids.map((id, i) => `<li data-i="${i}">${mini(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div><button class="suppr" data-i="${i}" aria-label="Retirer ${EXERCICES[id].nom}">×</button></li>`).join("")
+    : "<li><small>Aucun exercice. Ajoutes-en au moins un pour commencer.</small></li>";
+  $("start").disabled = !tb && !so && ids.length === 0;
+  if (!tb && !so) majAjout();
+  ecran("preview");
+}
+
+/* ============ SÉANCE ============ */
+function demarrer() {
+  index = 0; enPause = false; enRepos = false;
+  $("name").className = "name"; $("name").style.color = "";
+  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  $("bars").innerHTML = liste.map(() => "<i><b></b></i>").join("");
+  ecran("session");
+  sons.change();
+  afficher();
+}
+
+function afficher() {
+  const e = liste[index];
+  reste = e.duree;
+  $("count").textContent = `Exercice ${index + 1} sur ${liste.length}`;
+  $("name").textContent = e.nom;
+  $("time").style.color = "";
+  parler(dire(e));
+  $("desc").textContent = e.description;
+  $("zones").textContent = e.muscles;
+  $("mediaBox").innerHTML = e.video
+    ? `<video class="media" src="${e.video}" autoplay loop muted playsinline></video>` : dessiner(e);
+  [...$("bars").children].forEach((el, i) => {
+    el.classList.toggle("done", i < index);
+    el.firstChild.style.width = i < index ? "100%" : "0";
+  });
+  majTemps();
+  clearInterval(timer);
+  timer = setInterval(tic, 1000);
+  $("pause").textContent = enPause ? "Reprendre" : "Pause";
+}
+
+function majTemps() {
+  $("time").textContent = reste;
+  const e = liste[index];
+  $("bars").children[index].firstChild.style.width = ((e.duree - reste) / e.duree * 100) + "%";
+}
+
+function tic() {
+  if (enPause) return;
+  reste--;
+  if (reste <= 3 && reste > 0) sons.alerte(); else if (reste > 3 && !enRepos) sons.tic();
+  if (reste <= 0) return suivant(true);
+  if (enRepos) { $("time").textContent = reste; return; }
+  majTemps();
+}
+
+function suivant(auto) {
+  if (enRepos) { enRepos = false; index++; if (auto) sons.change(); return afficher(); }
+  if (index >= liste.length - 1) return terminer();
+  if (auto && mode === "seance" && repos > 0) return afficherRepos();
+  index++;
+  if (auto) sons.change();
+  afficher();
+}
+
+function precedent() { if (enRepos) enRepos = false; else if (index > 0) index--; afficher(); }
+
+/* ============ TABATA ============
+   Un cycle = un exercice répété "reps" fois (effort + repos). Entre deux cycles : récupération. */
+let tab = { c: 0, r: 0, ph: "ex" };
+
+function demarrerTab() {
+  tab = { c: 0, r: 0, ph: "ex" };
+  enPause = false; enRepos = false;
+  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  $("bars").innerHTML = "<i><b></b></i>".repeat(cycles);
+  ecran("session");
+  sons.change();
+  afficherTab();
+}
+
+function afficherTab() {
+  const P = { ex: ["EXERCICE", dureeGlobale, "#D9480F"], rep: ["REPOS", repos, "#2F7D3A"], rec: ["RÉCUPÉRATION", recup, "#3A6EA5"] }[tab.ph];
+  reste = P[1];
+  $("count").textContent = tab.ph === "rec"
+    ? `Cycle ${tab.c + 1} terminé · prochain : cycle ${tab.c + 2} sur ${cycles}`
+    : `Cycle ${tab.c + 1} sur ${cycles} · Répétition ${tab.r + 1} sur ${reps}`;
+  $("name").className = "name grand";
+  $("name").textContent = P[0];
+  $("name").style.color = P[2];
+  $("time").style.color = P[2];
+  $("time").textContent = reste;
+  $("desc").textContent = ""; $("zones").textContent = ""; $("mediaBox").innerHTML = "";
+  [...$("bars").children].forEach((el, i) => {
+    const pct = i < tab.c ? 100 : i > tab.c ? 0
+      : tab.ph === "rec" ? 100 : Math.round((tab.r + (tab.ph === "rep" ? 1 : 0)) / reps * 100);
+    el.firstChild.style.width = pct + "%";
+    el.classList.toggle("done", pct === 100);
+  });
+  clearInterval(timer);
+  timer = setInterval(ticTab, 1000);
+  $("pause").textContent = enPause ? "Reprendre" : "Pause";
+  if (tab.ph === "rec") parler("Recovery");
+  else if (tab.ph === "ex" && tab.r === 0) parler("Round " + (tab.c + 1));
+}
+
+function ticTab() {
+  if (enPause) return;
+  reste--;
+  if (reste <= 3 && reste > 0) sons.alerte(); else if (reste > 3) sons.tic();
+  if (reste <= 0) return suivantTab(true);
+  $("time").textContent = reste;
+}
+
+function suivantTab(auto) {
+  const n = cycles;
+  if (tab.ph === "ex") {
+    if (tab.r < reps - 1) { if (repos > 0) tab.ph = "rep"; else tab.r++; }
+    else if (tab.c < n - 1) { if (recup > 0) tab.ph = "rec"; else { tab.c++; tab.r = 0; } }
+    else return terminer();
+  } else if (tab.ph === "rep") { tab.r++; tab.ph = "ex"; }
+  else { tab.c++; tab.r = 0; tab.ph = "ex"; }
+  if (auto) sons.change();
+  afficherTab();
+}
+
+function precedentTab() {
+  if (tab.ph !== "ex") tab.ph = "ex";
+  else if (tab.r > 0) tab.r--;
+  else if (tab.c > 0) { tab.c--; tab.r = reps - 1; }
+  afficherTab();
+}
+
+function setCycles(n) {
+  cycles = Math.min(30, Math.max(1, n));
+  try { localStorage.setItem("cyclesTabata", cycles); } catch (e) {}
+  if (routineCle) ouvrirApercu(routineCle);
+}
+function setReps(n) {
+  reps = Math.min(30, Math.max(1, n));
+  try { localStorage.setItem("repsTabata", reps); } catch (e) {}
+  if (routineCle) ouvrirApercu(routineCle);
+}
+function setRecup(n) {
+  recup = Math.min(300, Math.max(0, n));
+  try { localStorage.setItem("recupTabata", recup); } catch (e) {}
+  if (routineCle) ouvrirApercu(routineCle);
+}
+
+/* ============ COHÉRENCE CARDIAQUE ============
+   Respiration guidée : inspire / expire en alternance, avec un cercle qui gonfle et se dégonfle. */
+let souf = { plan: [], i: 0 };
+
+/* Déroule les blocs en une liste de phases ; les durées sont mises à l'échelle de la durée choisie (minutes) */
+function planSouf(r, minutes) {
+  const f = minutes * 60 / r.blocs.reduce((t, b) => t + b.duree, 0), plan = [];
+  r.blocs.forEach((b, j) => {
+    const len = b.cycle.reduce((t, p) => t + p[1], 0), n = Math.max(1, Math.round(b.duree * f / len));
+    for (let c = 0; c < n; c++) b.cycle.forEach(([label, sec, to]) => plan.push({ j, c, n, label, sec, to }));
+  });
+  return plan;
+}
+
+function demarrerSouf() {
+  souf = { plan: planSouf(routine, dureeGlobale), i: 0 };
+  enPause = false; enRepos = false;
+  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  $("bars").innerHTML = routine.blocs.map(() => "<i><b></b></i>").join("");
+  ecran("session");
+  sons.change();
+  afficherSouf();
+}
+
+function afficherSouf() {
+  const p = souf.plan[souf.i], b = routine.blocs[p.j], de = souf.i ? souf.plan[souf.i - 1].to : 0.45;
+  const c = p.to > de ? "var(--accent)" : p.to < de ? "#2F7D3A" : "var(--muted)";
+  const debutBloc = p.c === 0 && p.label === b.cycle[0][0];
+  reste = p.sec;
+  $("count").textContent = `Exercice ${p.j + 1} sur ${routine.blocs.length} · ${b.titre}`;
+  $("name").className = "name grand";
+  $("name").textContent = p.label;
+  $("name").style.color = c; $("time").style.color = c;
+  $("time").textContent = reste;
+  $("desc").textContent = b.consigne;
+  $("zones").textContent = `Cycle ${p.c + 1} sur ${p.n}`;
+  $("mediaBox").innerHTML = `<div class="souffle"><i style="--de:${de};--vers:${p.to};animation-duration:${p.sec}s;animation-play-state:${enPause ? "paused" : "running"}"></i></div>`;
+  [...$("bars").children].forEach((el, j) => {
+    const phases = souf.plan.filter(q => q.j === j), faites = phases.filter(q => souf.plan.indexOf(q) < souf.i).length;
+    const pct = j < p.j ? 100 : j > p.j ? 0 : Math.round(faites / phases.length * 100);
+    el.firstChild.style.width = pct + "%"; el.classList.toggle("done", pct === 100);
+  });
+  clearInterval(timer);
+  timer = setInterval(ticSouf, 1000);
+  $("pause").textContent = enPause ? "Reprendre" : "Pause";
+  if (debutBloc && souf.i) { bip(660, 900, 0.12); bip(880, 900, 0.08, "sine", 0.15); }
+  else if (p.to !== de) bip(p.to > de ? 523 : 392, 650, 0.1);
+  if (debutBloc) parler(b.voix);
+}
+
+function ticSouf() {
+  if (enPause) return;
+  reste--;
+  if (reste <= 0) return suivantSouf();
+  $("time").textContent = reste;
+}
+
+function suivantSouf() {
+  if (souf.i >= souf.plan.length - 1) return terminer();
+  souf.i++;
+  afficherSouf();
+}
+
+function precedentSouf() { if (souf.i > 0) souf.i--; afficherSouf(); }
+
+/* Phase de repos entre deux exercices (séances) : on voit déjà le prochain exercice */
+function afficherRepos() {
+  enRepos = true;
+  const e = liste[index + 1];
+  reste = repos;
+  $("count").textContent = `Repos · prochain : exercice ${index + 2} sur ${liste.length}`;
+  $("name").textContent = "Repos";
+  $("time").style.color = "var(--muted)";
+  $("time").textContent = reste;
+  $("desc").textContent = "Prochain exercice : " + e.nom + ". " + e.description;
+  $("zones").textContent = e.muscles;
+  $("mediaBox").innerHTML = e.video
+    ? `<video class="media" src="${e.video}" autoplay loop muted playsinline></video>` : dessiner(e);
+  [...$("bars").children].forEach((el, i) => {
+    el.classList.toggle("done", i <= index);
+    el.firstChild.style.width = i <= index ? "100%" : "0";
+  });
+  clearInterval(timer);
+  timer = setInterval(tic, 1000);
+  $("pause").textContent = enPause ? "Reprendre" : "Pause";
+  bip(440, 350, 0.2, "sine");
+  parler("Rest. Next exercise: " + dire(e));
+}
+
+function terminer() {
+  clearInterval(timer);
+  sons.change();
+  const [titre, sous] = {
+    echauffement: ["Échauffement terminé", "Tu es prêt pour ta séance."],
+    calme: ["Étirements terminés", "Tes muscles te remercient. Pense à t’hydrater."],
+    souffle: ["Respiration terminée", "Reste un instant, les yeux fermés, avant de reprendre."]
+  }[mode] || ["Séance terminée", "Bien joué ! Pense à t’hydrater et à t’étirer."];
+  $("fTitre").textContent = titre; $("fSub").textContent = sous;
+  ecran("end");
+}
+
+function pause() {
+  enPause = !enPause;
+  $("pause").textContent = enPause ? "Reprendre" : "Pause";
+  const rond = document.querySelector(".souffle i");
+  if (rond) rond.style.animationPlayState = enPause ? "paused" : "running";
+}
+
+/* ============ ÉVÉNEMENTS ============ */
+$("back").onclick = () => ecran("home");
+const MOTEUR = { tabata: [demarrerTab, suivantTab, precedentTab], souffle: [demarrerSouf, suivantSouf, precedentSouf] };
+const moteur = i => (MOTEUR[mode] || [demarrer, suivant, precedent])[i];
+$("start").onclick = () => moteur(0)();
+$("next").onclick = () => moteur(1)(false);
+$("prev").onclick = () => moteur(2)();
+$("pause").onclick = pause;
+$("restart").onclick = () => ecran("menu");
+
+/* Bouton Menu en haut à droite : en séance, un premier appui demande confirmation (3 s) */
+let tQuit = null;
+$("quitBtn").onclick = () => {
+  const enSeance = !$("session").classList.contains("hidden");
+  if (enSeance && $("quitBtn").dataset.conf !== "1") {
+    $("quitBtn").dataset.conf = "1";
+    $("quitBtn").textContent = "Quitter ?";
+    clearTimeout(tQuit);
+    tQuit = setTimeout(() => { $("quitBtn").dataset.conf = ""; $("quitBtn").textContent = "✕ Menu"; }, 3000);
+    return;
+  }
+  clearTimeout(tQuit);
+  clearInterval(timer);
+  enRepos = false; enPause = false;
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  ecran("menu");
+};
+
+/* Menu principal et réglage du repos */
+let vueListe = "cats";
+const VUES = ["choicesP", "choicesCS", "choicesC", "choices", "choicesZ", "choicesM", "choicesR", "choicesK"];
+function vue(nom, etat, titre, sous) {
+  vueListe = etat;
+  VUES.forEach(v => $(v).classList.toggle("hidden", v !== nom));
+  $("hTitre").textContent = titre; $("hSub").textContent = sous;
+  ecran("home");
+}
+const vueCats = () => vue("choicesC", "cats", "Échauffements", "Choisis ton sport, on s’occupe du reste.");
+const vuePlan = () => vue("choicesP", "plan", "Planifier une séance", "Construis ta séance ou lance un Tabata.");
+const vueSCats = () => vue("choicesCS", "scats", "Construire une séance", "Choisis ton sport.");
+function sousListe(conteneur, cat, etat, titre, sous) {
+  const btns = [...$(conteneur).children].filter(b => b.dataset.cat === cat);
+  if (btns.length === 1) return btns[0].click();
+  [...$(conteneur).children].forEach(b => b.classList.toggle("hidden", b.dataset.cat !== cat));
+  vue(conteneur, etat, titre, sous);
+}
+const vueCat = cat => sousListe("choices", cat, "cat", CATS[cat].titre, "Choisis ton échauffement.");
+const vueZones = () => vue("choicesZ", "zones", "Renfo du corps", "Choisis ta zone : haut, bas ou tout le corps.");
+let grpCourant = "";
+function vueMode(grp) {
+  grpCourant = grp;
+  const poids = SEANCE(grp), mat = poids + "Mat", c = ROUTINES[poids].couleur;
+  $("choicesM").innerHTML = "";
+  bouton($("choicesM"), "Poids du corps", "Sans matériel · " + ROUTINES[poids].exercices.length + " exercices", c, () => ouvrirRoutine(poids));
+  bouton($("choicesM"), "Avec matériel", "Kettlebell, haltères, barre Z, banc, poulie, élastique… · " + ROUTINES[mat].exercices.length + " exercices", c, () => ouvrirRoutine(mat));
+  vue("choicesM", "smode", ROUTINES[poids].titre, "Choisis ton type de séance.");
+}
+const vueCalme = () => vue("choicesR", "calme", "Retour au calme", "Cohérence cardiaque ou étirements.");
+const vueK = (cat, titre, sous) => sousListe("choicesK", cat, "kcat", titre, sous);
+bouton($("choicesR"), "Cohérence cardiaque", "Respiration guidée : express, classique, récupération", "#3B82C4", () => vueK("coherence", "Cohérence cardiaque", "Choisis ta séance de respiration."));
+bouton($("choicesR"), "Étirements", "10 séances, une par zone du corps", "#2A9D8F", () => vueK("etir", "Étirements", "Choisis la zone du corps à étirer."));
+function ouvrirListe(type) { type === "seance" ? vuePlan() : vueCats(); }
+document.addEventListener("click", () => { if (!$("accueil").classList.contains("hidden")) ecran("menu"); });
+$("mEch").onclick = () => ouvrirListe("echauffement");
+$("mSeance").onclick = () => ouvrirListe("seance");
+$("mCalme").onclick = vueCalme;
+$("homeBack").onclick = () => ({ cat: vueCats, zones: vueSCats, smode: () => ["haut", "bas", "complet"].includes(grpCourant) ? vueZones() : vueSCats(), scats: vuePlan, kcat: vueCalme }[vueListe] || (() => ecran("menu")))();
+
+function setRepos(r) {
+  repos = Math.min(120, Math.max(0, r));
+  try { localStorage.setItem(mode === "tabata" ? "reposTabata" : "repos", repos); } catch (e) {}
+  if (routineCle) ouvrirApercu(routineCle);
+}
+$("rMoins").onclick = () => setRepos(repos - 5);
+$("rPlus").onclick = () => setRepos(repos + 5);
+$("cycMoins").onclick = () => setCycles(cycles - 1);
+$("cycPlus").onclick = () => setCycles(cycles + 1);
+$("repMoins").onclick = () => setReps(reps - 1);
+$("repPlus").onclick = () => setReps(reps + 1);
+$("recMoins").onclick = () => setRecup(recup - 5);
+$("recPlus").onclick = () => setRecup(recup + 5);
+$("dureeVal").closest(".reglage").after($("reposRow"));
+$("reposRow").after($("repsRow"));
+$("repsRow").after($("cyclesRow"));
+$("cyclesRow").after($("recupRow"));
+
+$("ajoutBtn").onclick = () => {
+  const ouvert = $("ajout").classList.toggle("hidden") === false;
+  $("ajoutBtn").textContent = ouvert ? "Fermer" : "Ajouter";
+  $("ajoutBtn").setAttribute("aria-expanded", ouvert);
+};
+$("pList").onclick = ev => {
+  const b = ev.target.closest(".suppr");
+  if (!b) return;
+  ids.splice(Number(b.dataset.i), 1);
+  sauverIds();
+  ouvrirApercu(routineCle);
+};
+/* Réorganiser : on maintient un exercice (0,4 s) puis on le fait glisser */
+let drag = null;
+$("pList").addEventListener("contextmenu", ev => ev.preventDefault());
+$("pList").addEventListener("pointerdown", ev => {
+  const li = ev.target.closest("li");
+  if (!li || li.dataset.i === undefined || ev.target.closest(".suppr")) return;
+  drag = { li, x: ev.clientX, y: ev.clientY, actif: false };
+  drag.t = setTimeout(() => {
+    drag.actif = true;
+    li.classList.add("drag");
+    if (navigator.vibrate) navigator.vibrate(30);
+  }, 400);
+});
+document.addEventListener("pointermove", ev => {
+  if (!drag) return;
+  if (!drag.actif) {
+    if (Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) > 10) { clearTimeout(drag.t); drag = null; }
+    return;
+  }
+  const cible = [...$("pList").children].find(l => {
+    const r = l.getBoundingClientRect();
+    return l !== drag.li && ev.clientY >= r.top && ev.clientY <= r.bottom;
+  });
+  if (cible) {
+    const r = cible.getBoundingClientRect();
+    $("pList").insertBefore(drag.li, ev.clientY > r.top + r.height / 2 ? cible.nextSibling : cible);
+  }
+  if (ev.clientY < 90) window.scrollBy(0, -14);
+  else if (ev.clientY > window.innerHeight - 90) window.scrollBy(0, 14);
+});
+document.addEventListener("touchmove", ev => { if (drag && drag.actif) ev.preventDefault(); }, { passive: false });
+function finDrag() {
+  if (!drag) return;
+  clearTimeout(drag.t);
+  const etait = drag.actif;
+  drag = null;
+  if (!etait) return;
+  const ordre = [...$("pList").children].map(l => Number(l.dataset.i));
+  ids = ordre.map(i => ids[i]);
+  sauverIds();
+  ouvrirApercu(routineCle);
+}
+document.addEventListener("pointerup", finDrag);
+document.addEventListener("pointercancel", finDrag);
+
+$("ajout").onclick = ev => {
+  const b = ev.target.closest(".ajouter");
+  if (!b) return;
+  ids.push(b.dataset.id);
+  sauverIds();
+  ouvrirApercu(routineCle);
+};
+$("defBtn").onclick = () => {
+  ids = [...ROUTINES[routineCle].exercices];
+  sauverIds();
+  ouvrirApercu(routineCle);
+};
+$("moins").onclick = () => setDuree(dureeGlobale - pas());
+$("plus").onclick = () => setDuree(dureeGlobale + pas());
+
+function majVoixBtn() {
+  $("voixBtn").textContent = voixActive ? "Activée" : "Coupée";
+  $("voixBtn").setAttribute("aria-pressed", voixActive);
+}
+$("voixBtn").onclick = () => {
+  voixActive = !voixActive;
+  try { localStorage.setItem("voix", voixActive ? "1" : "0"); } catch (e) {}
+  if (!voixActive && "speechSynthesis" in window) speechSynthesis.cancel();
+  majVoixBtn();
+};
+majVoixBtn();
+</script>
+</body>
+</html>
