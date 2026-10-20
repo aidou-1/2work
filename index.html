@@ -3,105 +3,154 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Échauffement actif</title>
+<title>2 WORK</title>
+<meta name="theme-color" content="#022095">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* 2 WORK : bleu du logo, typo sportive condensée (Barlow Condensed) pour les titres et le chrono */
   :root {
-    --bg: #E8EBEE; --ink: #1B2A41; --muted: #5B6778; --card: #F7F8F9;
-    --boxe: #C8283C; --course: #0E7C86; --accent: var(--boxe);
+    --brand: #1A3BC2; --brand-fonce: #022095;
+    --bg: #F2F4FA; --surface: #FFFFFF; --soft: #E6EAF5; --ligne: #E1E5F0;
+    --ink: #0E1A3A; --muted: #5D6A85;
+    --accent: var(--brand);
+    --titre: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --texte: "Barlow", "Segoe UI", Roboto, Arial, sans-serif;
+    --r: 18px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0A1030; --surface: #141C44; --soft: #1F2958; --ligne: #253064; --ink: #EEF1FA; --muted: #A3AECB; }
   }
   * { box-sizing: border-box; margin: 0; }
   :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-  body { font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--ink);
-         min-height: 100vh; display: flex; justify-content: center; }
-  main { width: 100%; max-width: 560px; padding: 58px 18px 40px; }
-  .quit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); right: 12px; z-index: 5; padding: 9px 16px; border-radius: 999px; background: var(--card); color: var(--ink); font-weight: bold; box-shadow: 0 1px 6px rgba(0,0,0,.25); }
-  h1 { font-size: 1.7rem; letter-spacing: -0.02em; margin-bottom: 4px; }
-  .sub { color: var(--muted); margin-bottom: 24px; }
+  body { font-family: var(--texte); font-size: 16px; line-height: 1.45; background: var(--bg); color: var(--ink);
+         min-height: 100vh; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; transition: background .3s; }
+  main { width: 100%; max-width: 560px; padding: 64px 16px 40px; }
   .hidden { display: none !important; }
-  button { font: inherit; cursor: pointer; border: 0; border-radius: 10px; }
-  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; border-radius: 999px; -webkit-tap-highlight-color: transparent; }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  button:active:not(:disabled) { transform: scale(.97); }
 
-  .choices { display: grid; gap: 12px; }
-  .choice { text-align: left; padding: 20px; background: var(--card); color: var(--ink);
-            border-left: 10px solid var(--c); }
-  .choice strong { display: block; font-size: 1.3rem; }
-  .choice span { color: var(--muted); font-size: .9rem; }
+  h1 { font-family: var(--titre); font-weight: 700; font-size: clamp(2.3rem, 10vw, 2.9rem); line-height: 1; letter-spacing: -.005em; margin-bottom: 8px; }
+  .sub { color: var(--muted); margin-bottom: 24px; max-width: 40ch; }
+  .sec { font-family: var(--titre); font-weight: 600; font-size: 1.35rem; margin: 18px 0 -6px; }
 
-  .back { background: none; color: var(--muted); padding: 6px 0; margin-bottom: 10px; }
-  .list { list-style: none; padding: 0; margin: 16px 0 22px; background: var(--card); border-radius: 10px; }
-  .list li { padding: 12px 16px; border-bottom: 1px solid #DDE1E6; }
+  /* Écran d'accueil : plein bleu, logo seul */
+  body:has(#accueil:not(.hidden)) { background: var(--brand-fonce); }
+  .accueil { cursor: pointer; min-height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px; color: #fff; }
+  .logo { width: 190px; }
+  .logo img { display: block; width: 100%; height: auto; }
+  .signature { font-size: .8rem; letter-spacing: .06em; opacity: .7; margin: 6px 0 40px; }
+  .touche { font-weight: 500; padding: 12px 22px; border-radius: 999px; background: rgba(255,255,255,.12); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
+
+  /* Bouton Menu flottant */
+  .quit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 12px; z-index: 5; padding: 9px 16px; background: var(--surface); color: var(--ink);
+          font-weight: 600; font-size: .9rem; box-shadow: 0 2px 10px rgba(14,26,58,.12); }
+  .back { background: var(--soft); color: var(--ink); font-weight: 600; font-size: .9rem; padding: 8px 14px; margin-bottom: 18px; }
+
+  /* Listes de choix : rangées pleines, pastille de couleur et chevron */
+  .choices { display: grid; gap: 10px; }
+  .choice { position: relative; text-align: left; padding: 18px 48px 18px 24px; background: var(--surface); border-radius: var(--r); overflow: hidden; }
+  .choice::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: var(--c); }
+  .choice::after { content: ""; position: absolute; right: 20px; top: 50%; width: 9px; height: 9px; border: solid var(--muted); border-width: 2.5px 2.5px 0 0; transform: translateY(-50%) rotate(45deg); }
+  .choice strong { display: block; font-family: var(--titre); font-weight: 700; font-size: 1.55rem; line-height: 1.05; margin-bottom: 3px; }
+  .choice span { color: var(--muted); font-size: .92rem; }
+  /* Menu principal : trois grands blocs de couleur */
+  #menu .choice { background: var(--c); color: #fff; min-height: 118px; padding: 22px 52px 22px 22px; display: flex; flex-direction: column; justify-content: flex-end; }
+  #menu .choice::before { display: none; }
+  #menu .choice::after { border-color: rgba(255,255,255,.85); }
+  #menu .choice strong { font-size: 2.1rem; }
+  #menu .choice span { color: rgba(255,255,255,.85); }
+
+  /* Aperçu : liste d'exercices groupée */
+  .list { list-style: none; padding: 0; margin: 16px 0 20px; background: var(--surface); border-radius: var(--r); overflow: hidden; }
+  .list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--ligne); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   .list li:last-child { border: 0; }
-  .list b { display: block; }
-  .list small { color: var(--muted); }
-  .primary { width: 100%; padding: 16px; background: var(--accent); color: #fff; font-weight: bold; font-size: 1.1rem; }
-
-  .reglage { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border-radius: 10px; padding: 12px 16px; margin: 0 0 16px; }
-  .reglage label { font-weight: bold; }
-  .toggle { padding: 10px 16px; min-width: 6.5em; white-space: nowrap; font-weight: bold; background: var(--ink); color: var(--bg); }
-  .toggle[aria-pressed="false"] { background: transparent; color: var(--muted); border: 2px solid var(--muted); }
-  .list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .list li div { min-width: 0; }
-  .suppr, .ajouter { flex: none; width: 40px; height: 40px; font-size: 1.4rem; line-height: 1; background: transparent; border: 2px solid currentColor; border-radius: 50%; }
+  .list li > div { flex: 1; min-width: 0; }
+  .list b { display: block; font-weight: 600; line-height: 1.25; }
+  .list small { color: var(--muted); font-size: .85rem; }
+  /* Réorganisation : carte décollée qui suit le doigt, place en pointillés, les autres glissent */
+  .list.tri li { transition: transform .22s cubic-bezier(.2, .75, .25, 1); }
+  .list li.place { background: var(--soft); outline: 2px dashed color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: -6px; border-radius: 14px; }
+  .list li.place > * { visibility: hidden; }
+  .list li.flottant { position: fixed; z-index: 50; margin: 0; background: var(--surface); border: 0; border-radius: 16px; pointer-events: none; transition: none;
+                      box-shadow: 0 22px 44px -10px rgba(14,26,58,.45), 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); transform: scale(1.04) rotate(-1.2deg); }
+  .list li.flottant.pose { transition: top .22s cubic-bezier(.2, .75, .25, 1), transform .22s, box-shadow .22s; transform: none; box-shadow: 0 4px 10px rgba(14,26,58,.15); }
+  .mini { flex: none; width: 72px; height: 49px; background: #EEF1F8; border-radius: 10px; object-fit: cover; }
+  .suppr, .ajouter { flex: none; width: 38px; height: 38px; font-size: 1.3rem; line-height: 1; background: var(--soft); }
   .suppr { color: var(--muted); }
-  .ajouter { color: var(--accent); }
-  .sec { font-size: 1.05rem; margin: 6px 0 -4px; }
-  .primary:disabled { opacity: .4; cursor: not-allowed; }
-  .reglage { flex-wrap: wrap; }
-  .reglage label { flex: 1 1 9em; }
-  .contour { background: transparent; color: var(--ink); border: 2px solid var(--muted); }
-  .toggle:disabled { opacity: .4; cursor: not-allowed; }
-  .illus { background: #EDF1F6; color: #3B4757; border-radius: 10px; margin: 14px 0; overflow: hidden; }
-  .illus svg { display: block; width: 100%; height: auto; }
-  .souffle { height: 210px; display: flex; align-items: center; justify-content: center; }
-  .souffle i { width: 190px; height: 190px; border-radius: 50%; background: var(--accent); opacity: .8; animation: souffle ease-in-out forwards; }
-  @keyframes souffle { from { transform: scale(var(--de)); } to { transform: scale(var(--vers)); } }
-  .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 8px 12px 10px; font-size: .82rem; }
+  .ajouter { color: #fff; background: var(--accent); }
+
+  /* Réglages */
+  .reglage { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border-radius: var(--r); padding: 14px 16px; margin: 0 0 10px; }
+  .reglage label { flex: 1 1 9em; font-weight: 600; }
+  .reglage small { display: block; color: var(--muted); font-weight: 400; font-size: .85rem; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button:not(.toggle) { width: 44px; height: 44px; font-size: 1.4rem; font-weight: 600; background: var(--soft); color: var(--ink); }
+  .stepper output { min-width: 3.2em; text-align: center; font-family: var(--titre); font-weight: 700; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+  .toggle { padding: 10px 18px; min-width: 6.5em; white-space: nowrap; font-weight: 600; background: var(--accent); color: #fff; }
+  .toggle[aria-pressed="false"], .contour { background: var(--soft); color: var(--muted); }
+  .toggle:disabled { opacity: .45; cursor: not-allowed; }
+
+  .primary { width: 100%; min-height: 58px; margin-top: 10px; padding: 14px; background: var(--accent); color: #fff; font-family: var(--titre); font-weight: 700; font-size: 1.45rem; letter-spacing: .01em;
+             box-shadow: 0 8px 20px -8px var(--accent); }
+  .primary:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+  /* Illustrations */
+  .illus { background: var(--surface); color: #3B4757; border-radius: var(--r); margin: 14px 0; overflow: hidden; }
+  .illus svg { display: block; width: 100%; height: auto; background: #EEF1F8; }
+  .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 9px 14px 11px; font-size: .82rem; color: var(--muted); }
   .legende i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #3F4B5C; margin-right: 6px; vertical-align: -2px; }
   .legende .p1 { background: #8B99AD; }
   .legende .p2 { background: #fff; border-color: #1E2733; }
-  .legende .vue { margin-left: auto; font-weight: bold; }
-  .mini { flex: none; width: 72px; height: 49px; background: #EDF1F6; border: 1px solid #C5CED9; border-radius: 8px; }
-  .list li > div { flex: 1; }
-  .list li { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-  .list li.drag { background: var(--bg); box-shadow: 0 6px 18px rgba(0,0,0,.25); transform: scale(1.02); position: relative; z-index: 1; }
-  .reglage small { display: block; color: var(--muted); font-weight: normal; }
-  .stepper { display: flex; align-items: center; gap: 6px; }
-  .stepper button:not(.toggle) { width: 44px; height: 44px; font-size: 1.4rem; font-weight: bold; background: var(--ink); color: var(--bg); }
-  .stepper output { min-width: 3.4em; text-align: center; font-weight: bold; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
-  .bars { display: flex; gap: 4px; margin: 6px 0 22px; }
-  .bars i { flex: 1; height: 8px; border-radius: 4px; background: #CBD1D8; overflow: hidden; }
+  .legende .vue { margin-left: auto; font-weight: 600; color: var(--ink); }
+  .media { display: block; margin: 14px 0; border-radius: var(--r); width: 100%; background: #EEF1F8; aspect-ratio: 16/9; object-fit: cover; }
+  .souffle { height: 220px; display: flex; align-items: center; justify-content: center; }
+  .souffle i { width: 190px; height: 190px; border-radius: 50%; background: var(--accent); opacity: .85; box-shadow: 0 0 0 18px color-mix(in srgb, var(--accent) 18%, transparent); animation: souffle ease-in-out forwards; }
+  @keyframes souffle { from { transform: scale(var(--de)); } to { transform: scale(var(--vers)); } }
+
+  /* Séance : le chrono est la pièce maîtresse */
+  .bars { display: flex; gap: 4px; margin: 4px 0 22px; padding-right: 96px; }
+  .bars i { flex: 1; height: 6px; border-radius: 3px; background: var(--soft); overflow: hidden; }
   .bars i b { display: block; height: 100%; width: 0; background: var(--accent); }
   .bars i.done b { width: 100%; }
-
-  .count { font-size: 1.1rem; color: var(--muted); }
-  .time { font-size: clamp(6rem, 30vw, 9rem); font-weight: bold; line-height: 1; color: var(--accent);
-          font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
-  .accueil { cursor: pointer; min-height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; }
-  .logo { width: 150px; background: #022095; border-radius: 28px; padding: 18px 14px; }
-  .logo img { display: block; width: 100%; height: auto; }
-  .signature { font-size: .75rem; letter-spacing: .08em; color: var(--muted); margin: 2px 0 26px; }
-  .touche { color: var(--muted); font-size: .9rem; animation: pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 50% { opacity: .35; } }
-  @media (prefers-reduced-motion: reduce) { .touche { animation: none; } }
-  .name.grand { font-size: clamp(2.2rem, 11vw, 3.4rem); font-weight: 800; letter-spacing: .02em; margin: 4px 0 0; line-height: 1.05; }
-  .name { font-size: 1.7rem; margin: 10px 0 8px; letter-spacing: -0.01em; }
-  .desc { font-size: 1.05rem; line-height: 1.45; max-width: 46ch; }
+  .count { color: var(--muted); font-weight: 500; }
+  .time { font-family: var(--titre); font-weight: 800; font-size: clamp(8rem, 42vw, 12rem); line-height: .85; margin: 6px 0 4px; color: var(--accent);
+          font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .name { font-family: var(--titre); font-weight: 700; font-size: 2.1rem; line-height: 1.02; margin: 8px 0 6px; }
+  .name.grand { font-size: clamp(2.6rem, 12vw, 3.6rem); font-weight: 800; margin: 4px 0 0; }
+  .desc { font-size: 1.05rem; line-height: 1.5; max-width: 46ch; }
   .zones { margin-top: 10px; color: var(--muted); font-size: .9rem; }
-  .media { margin: 16px 0; border-radius: 10px; width: 100%; background: #CBD1D8; aspect-ratio: 16/9; object-fit: cover; }
+  .controls { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 10px; margin-top: 26px; position: sticky; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  .controls button { min-height: 56px; padding: 12px; background: var(--surface); font-weight: 600; box-shadow: 0 2px 10px rgba(14,26,58,.08); }
+  .controls .main { background: var(--accent); color: #fff; font-family: var(--titre); font-weight: 700; font-size: 1.35rem; }
 
-  .controls { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; margin-top: 26px; }
-  .controls button { padding: 14px; background: var(--card); color: var(--ink); font-weight: bold; }
-  .controls .main { background: var(--ink); color: #fff; }
-  .end { text-align: center; padding-top: 60px; }
-  .end h2 { font-size: 2rem; margin-bottom: 10px; }
-  .end .primary { margin-top: 24px; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #131B27; --ink: #E8EBEE; --muted: #9AA6B6; --card: #1D2838; }
-    .list li { border-bottom-color: #2B384B; }
-    .bars i, .media { background: #2B384B; }
-    .controls .main { background: #E8EBEE; color: #131B27; }
-    .primary { color: #fff; }
-  }
+  .end { text-align: center; padding-top: 72px; }
+  .end h2 { font-family: var(--titre); font-weight: 800; font-size: clamp(2.8rem, 13vw, 3.8rem); line-height: .95; margin-bottom: 12px; color: var(--accent); }
+  .end .sub { margin: 0 auto 28px; }
+
+  /* Transitions entre écrans : on « entre » dans un menu (zoom avant), on en ressort au retour */
+  ::view-transition { pointer-events: none; background: #022095; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; animation-timing-function: cubic-bezier(.2, .75, .25, 1); animation-fill-mode: both; }
+  html[data-sens="avant"]::view-transition-old(root) { animation-name: vt-sort-avant; }
+  html[data-sens="avant"]::view-transition-new(root) { animation-name: vt-entre-avant; }
+  html[data-sens="retour"]::view-transition-old(root) { animation-name: vt-sort-retour; }
+  html[data-sens="retour"]::view-transition-new(root) { animation-name: vt-entre-retour; }
+  @keyframes vt-sort-avant { to { opacity: 0; transform: scale(1.07); } }
+  @keyframes vt-entre-avant { from { opacity: 0; transform: scale(.93); } }
+  @keyframes vt-sort-retour { to { opacity: 0; transform: scale(.93); } }
+  @keyframes vt-entre-retour { from { opacity: 0; transform: scale(1.07); } }
+  /* Repli pour les navigateurs sans View Transitions : l'écran apparaît en zoom doux */
+  main > section.entre-avant { animation: vt-entre-avant .5s cubic-bezier(.2, .75, .25, 1) both; }
+  main > section.entre-retour { animation: vt-entre-retour .5s cubic-bezier(.2, .75, .25, 1) both; }
+  /* Pendant la séance : fondu à chaque nouvel exercice */
+  #session.frais .name, #session.frais #mediaBox, #session.frais .desc, #session.frais .zones { animation: frais .53s ease-out both; }
+  #session.frais #mediaBox { animation-delay: .07s; }
+  @keyframes frais { from { opacity: 0; transform: translateY(8px); } }
+  @media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root), main > section, #session * { animation: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .touche { animation: none; } body { transition: none; } button:active:not(:disabled) { transform: none; } }
 </style>
 </head>
 <body>
@@ -115,12 +164,12 @@
   </section>
 
   <section id="menu" class="hidden">
-    <h1>Échauffement actif</h1>
-    <p class="sub">Que veux-tu faire ?</p>
+    <h1>On s’y met ?</h1>
+    <p class="sub">Échauffe-toi, entraîne-toi, puis récupère.</p>
     <div class="choices">
-      <button class="choice" id="mEch" style="--c:#3A6EA5"><strong>Échauffements</strong><span>Boxe, course à pied, renforcement</span></button>
-      <button class="choice" id="mSeance" style="--c:#7B5EA7"><strong>Planifier une séance</strong><span>Renforcement musculaire : course à pied et boxe</span></button>
-      <button class="choice" id="mCalme" style="--c:#2A9D8F"><strong>Retour au calme</strong><span>Cohérence cardiaque, étirements</span></button>
+      <button class="choice" id="mEch" style="--c:#1A3BC2"><strong>Échauffements</strong><span>Boxe, course, handball, cyclisme, yoga, surf, ski</span></button>
+      <button class="choice" id="mSeance" style="--c:#6236C9"><strong>Planifier une séance</strong><span>Renfo par sport, salle de musculation, Tabata</span></button>
+      <button class="choice" id="mCalme" style="--c:#0F8A78"><strong>Retour au calme</strong><span>Cohérence cardiaque, étirements</span></button>
     </div>
   </section>
 
@@ -129,6 +178,7 @@
     <h1 id="hTitre">Échauffements</h1>
     <p class="sub" id="hSub">Choisis ton activité, on s’occupe du reste.</p>
     <div class="choices hidden" id="choicesP"></div>
+    <div class="choices hidden" id="choicesG"></div>
     <div class="choices hidden" id="choicesCS"></div>
     <div class="choices hidden" id="choicesC"></div>
     <div class="choices hidden" id="choices"></div>
@@ -164,7 +214,7 @@
       </div>
     </div>
     <div class="reglage">
-      <label for="voixBtn">Voix<small>Annonce le nom de chaque exercice (en anglais)</small></label>
+      <label for="voixBtn">Voix<small id="voixInfo">Annonce le nom de chaque exercice (en anglais)</small></label>
       <button id="voixBtn" class="toggle" aria-pressed="true">Activée</button>
     </div>
     <div class="reglage hidden" id="reposRow">
@@ -216,6 +266,15 @@
       <button id="pause" class="main">Pause</button>
       <button id="next">Passer</button>
     </div>
+  </section>
+
+  <!-- Compte à rebours avant le départ -->
+  <section id="pret" class="hidden" aria-live="assertive">
+    <p class="count">Prépare-toi</p>
+    <div class="time" id="pretTime">4</div>
+    <h2 class="name" id="pretNom">Pose ton téléphone</h2>
+    <p class="desc">Ça commence dans quelques secondes.</p>
+    <div class="controls" style="grid-template-columns:1fr"><button id="pretGo" class="main">Commencer maintenant</button></div>
   </section>
 
   <!-- Écran 4 : fin -->
@@ -675,7 +734,7 @@ function figure(p, S, v) {
 
 /* Matériel : dessiné au bout des mains ("mn", "mf", "m" = milieu des deux) ou des pieds ("pn", "pf"), ou à des coordonnées [x, y].
    Fixes (banc, barre de traction) : sous le personnage. Mobiles : par-dessus, en fantôme pour la position de départ. */
-const FIXES = ["banc", "tbar"];
+const FIXES = ["banc", "tbar", "pad", "tube", "pile"];
 function objets(liste, J, fantome) {
   const f = n => n.toFixed(1), gris = "#9AA6B5", ct = "#3B4757";
   const pos = a => Array.isArray(a) ? a : a === "m" ? [(J.mn[0] + J.mf[0]) / 2, (J.mn[1] + J.mf[1]) / 2] : J[a];
@@ -692,6 +751,11 @@ function objets(liste, J, fantome) {
     bande: (a, b) => { const p = pos(a), q = pos(b); return `<path d="M${f(p[0])} ${f(p[1])}Q${f((p[0] + q[0]) / 2)} ${f((p[1] + q[1]) / 2 + 5)} ${f(q[0])} ${f(q[1])}" fill="none" stroke="#E8590C" stroke-width="3.5" stroke-linecap="round"/>`; },
     cable: (a, q) => trait(pos(a), q, 2.5, ct) + rond(q[0], q[1], 5, "#fff"),
     banc: (x, y, w) => trait([x + 8, y + 5], [x + 8, 145], 4, ct) + trait([x + w - 8, y + 5], [x + w - 8, 145], 4, ct) + `<rect x="${x}" y="${y}" width="${w}" height="9" rx="4" fill="${gris}" stroke="${ct}" stroke-width="2.5"/>`,
+    // machines de salle : coussin (pad), armature (tube), pile de poids, plaque mobile orientée
+    pad: (pts, w = 9) => ["#3B4757", "#9AA6B5"].map((c, i) => `<polyline points="${pts.join(" ")}" fill="none" stroke="${c}" stroke-width="${i ? w : w + 5}" stroke-linecap="round" stroke-linejoin="round"/>`).join(""),
+    tube: pts => `<polyline points="${pts.join(" ")}" fill="none" stroke="#9AA6B5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`,
+    pile: (x, y, h = 44) => `<rect x="${x}" y="${y}" width="18" height="${h}" rx="2" fill="${gris}" stroke="${ct}" stroke-width="2.5"/>` + Array.from({ length: Math.floor(h / 7) - 1 }, (_, i) => trait([x, y + 7 * (i + 1)], [x + 18, y + 7 * (i + 1)], 1.5, ct)).join(""),
+    plaque: (a, ang = 0, L = 22) => { const [x, y] = pos(a), dx = Math.sin(ang * Math.PI / 180) * L / 2, dy = Math.cos(ang * Math.PI / 180) * L / 2; return trait([x - dx, y - dy], [x + dx, y + dy], 12, ct) + trait([x - dx, y - dy], [x + dx, y + dy], 7, gris); },
     tbar: (x1, x2, y) => trait([x1, y], [x1, 145], 3, "#9AA6B5") + trait([x2, y], [x2, 145], 3, "#9AA6B5") + trait([x1, y], [x2, y], 6, ct) + trait([x1, y], [x2, y], 3, gris)
   };
   return `<g opacity="${fantome ? 0.45 : 1}">${liste.map(([t, ...a]) => forme[t](...a)).join("")}</g>`;
@@ -838,6 +902,9 @@ const BLOCS = {
     consigne: "Inspire 4 s, retiens 4 s, expire 4 s, reste poumons vides 4 s. Raccourcis les pauses si tu es mal à l’aise.",
     resume: "Testée par Balban et al. (2023) : améliore l’humeur, mais pas plus que la méditation. Preuves limitées, utile surtout pour se concentrer." }
 };
+/* Consigne vocale de chaque phase (en anglais, comme le reste de la voix) */
+const SOUFFLE_VOIX = { "INSPIRE": "Breathe in", "EXPIRE": "Breathe out", "ENCORE UN PEU": "A little more",
+  "EXPIRE LONGUEMENT": "Slowly breathe out", "RETIENS": "Hold", "POUMONS VIDES": "Hold, lungs empty", "RESPIRE LIBREMENT": "Breathe freely" };
 const rythme = (i, e) => ({ titre: `Rythme ${(60 / (i + e)).toFixed(1).replace(".", ",")} resp./min`, voix: "Resonance pace", cycle: [["INSPIRE", i, 1], ["EXPIRE", e, 0.45]],
   consigne: "Respire sans forcer à ce rythme et note ton ressenti : plus calme, plus à l’aise ? Garde en tête celui qui te convient le mieux.",
   resume: "La fréquence de résonance se situe en moyenne autour de 6 respirations par minute, avec des différences selon les personnes (Lehrer et Gevirtz, 2014)." });
@@ -954,6 +1021,119 @@ Object.assign(ROUTINES, Object.fromEntries([
 ].map(([k, grp, base, titre, detail, exercices]) => [k, { type: "seance", grp, mat: true, titre, detail, couleur: ROUTINES[base].couleur, exercices }])));
 Object.keys(ROUTINES).filter(k => ROUTINES[k].mat).forEach(k => CONSEILLES[k] = [...new Set([...ROUTINES[k].exercices, ...MATOS, ...CONSEILLES[k.replace("Mat", "")]])]);
 
+/* ============ HANDBALL ET CYCLISME ============ */
+Object.assign(EXERCICES, Object.fromEntries([
+  ["lancer", "Lancers à vide", 20, "", "Gestuelle de tir sans ballon : bras armé derrière la tête, pas d’appel, puis lance vers l’avant en relâchant. Commence doucement et accélère peu à peu.", "Épaules, coiffe des rotateurs, tronc, hanches"],
+  ["pasChasse", "Pas chassés défensifs", 20, "", "Position basse, bras levés comme en défense : déplace-toi en pas chassés à droite puis à gauche, sans croiser les pieds.", "Fessiers, adducteurs, quadriceps, chevilles"],
+  ["sautTir", "Sauts de tir en suspension", 20, "", "Deux pas d’élan, impulsion sur une jambe, genou opposé monté et bras armé : simule le tir en l’air, puis réceptionne-toi en douceur sur les deux pieds.", "Mollets, quadriceps, épaules, gainage"],
+  ["rotEpaule", "Rotations d’épaules 90/90", 20, "", "Bras écartés à l’horizontale, coudes fléchis à 90° : pivote les avant-bras de bas en haut sans bouger les coudes, lentement.", "Coiffe des rotateurs, épaules"],
+  ["bandRotExt", "Rotation externe à l’élastique", 40, "élastique", "Coude à hauteur d’épaule et fléchi à 90°, élastique accroché bas devant toi : pivote l’avant-bras vers le haut sans bouger le coude, puis redescends lentement. Change de bras à mi-temps.", "Coiffe des rotateurs, arrière des épaules"],
+  ["pedalage", "Pédalage sur le dos", 20, "", "Allongé sur le dos, jambes en l’air : pédale lentement en faisant de grands cercles, bas du dos collé au sol.", "Hanches, quadriceps, ischio-jambiers, abdos"]
+].map(([id, nom, duree, mat, description, muscles]) => [id, { nom, duree, video: null, description, muscles: muscles + (mat ? " · " + mat : ""), mat: !!mat }])));
+const POSES_SPORT = {
+  lancer: {v:"p",f:[[120,84,18,70,45,-35,-20,25,10,-35,-60],[105,84,-12,-120,165,100,100,25,5,-25,-15]],a:[[70,30,110,6,160,32]]},
+  pasChasse: {v:"f",f:[[140,83,0,150,175,-150,-175,12,-5,-12,5],[95,86,0,150,175,-150,-175,30,0,-30,0]],a:[[88,134,118,126,148,134]]},
+  sautTir: {v:"p",f:[[130,66,-6,-120,165,150,150,95,5,-10,-20],[88,86,8,-110,160,140,140,20,0,-15,-5]],a:[[188,118,190,92,188,66]]},
+  rotEpaule: {v:"f",f:[[120,82,0,90,180,-90,-180,3,0,-3,0],[120,82,0,90,0,-90,0,3,0,-3,0]],a:[[184,72,196,50,184,28],[56,72,44,50,56,28]]},
+  bandRotExt: {v:"f",f:[[120,82,0,90,180,-8,-3,3,0,-3,0],[120,82,0,90,0,-8,-3,3,0,-3,0]],a:[[184,72,196,50,184,28]],o:[["bande","mn",[200,142]]]},
+  pedalage: {v:"p",f:[[110,128,-90,90,90,90,90,160,95,112,112],[110,128,-90,90,90,90,90,112,112,160,95]],a:[[172,58,196,74,176,98]]}
+};
+Object.assign(POSES, POSES_SPORT);
+MATOS.push("bandRotExt");
+Object.keys(CONSEILLES).filter(k => ROUTINES[k] && ROUTINES[k].mat).forEach(k => CONSEILLES[k].push("bandRotExt"));
+Object.assign(CATS, {
+  handball: { titre: "Handball", detail: "Épaules, coiffe des rotateurs, appuis, sauts", couleur: "#C2410C" },
+  cyclisme: { titre: "Cyclisme", detail: "Hanches, jambes, dos", couleur: "#2F855A" }
+});
+// ordre d'affichage : les nouveaux sports juste après la course à pied
+["renfo", "yoga", "surf", "ski"].forEach(k => { const c = CATS[k]; delete CATS[k]; CATS[k] = c; });
+/* [clé, cat ou grp, titre, détail, exercices, conseillés en plus] ; les clés ...Mat sont les séances avec matériel */
+[
+  ["handball", "handball", "Handball", "Épaules, appuis, sauts", ["legfwd","legside","armcircles","rotEpaule","pasChasse","lancer","skater","sautTir"], ["armcross","scap","openbook","thread","lateral","kneeup","heelkick","calfraise","footwork","twist","wgs","hip9090","ankles"]],
+  ["cyclisme", "cyclisme", "Cyclisme", "Dos, hanches, jambes", ["catcow","openbook","hip9090","legfwd","pont","pedalage","fente","calfraise"], ["wgs","scorpion","dogpedal","thread","hydrant","sumo","legside","ankles","kneeup","heelkick","cascade","bird"]],
+  ["renfoHandball", "handball", "Renfo handball", "Sauts, appuis latéraux, épaules, gainage", ["squatsaute","skater","pompes","superman","fentesalt","russian","planchelat","pontuni"], ["squat","burpees","planche","planchetouch","climbers","pompesserrees","deadbug","chaise","mollet1","scap","tspin","rotEpaule"]],
+  ["renfoCyclisme", "cyclisme", "Renfo cyclisme", "Cuisses, fessiers, dos, gainage", ["squat","chaise","fentesalt","pontuni","mollet1","planche","superman","deadbug"], ["squatsaute","planchelat","bird","skater","pont","rdl","climbers","russian"]],
+  ["renfoHandballMat", "handball", "Renfo handball · matériel", "Puissance, épaules protégées, rotation du tronc", ["kbSwing","bulgare","dbRow","bandRotExt","poulieBucheron","dbRDL","bandPullApart","roue"], []],
+  ["renfoCyclismeMat", "cyclisme", "Renfo cyclisme · matériel", "Cuisses, fessiers, chaîne postérieure, dos", ["goblet","bulgare","dbRDL","hipThrust","stepUp","dbRow","roue","hollow"], []]
+].forEach(([k, g, titre, detail, exercices, plus]) => {
+  const seance = k.startsWith("renfo"), mat = k.endsWith("Mat");
+  ROUTINES[k] = seance ? { type: "seance", grp: g, mat, titre, detail, couleur: CATS[g].couleur, exercices } : { cat: g, titre, detail, couleur: CATS[g].couleur, exercices };
+  CONSEILLES[k] = [...new Set([...exercices, ...(mat ? [...MATOS, ...CONSEILLES[k.replace("Mat", "")]] : plus)])];
+});
+
+const VOIX_SALLE = {};
+/* ============ SALLE DE MUSCULATION ============
+   Exercices sur machines et poids libres des salles grand public. Séances jouées en séries (mode "salle"). */
+Object.assign(EXERCICES, Object.fromEntries([
+  ["squatBarre", "Squat à la barre", "barre, rack", "Barre posée sur le haut du dos, pieds largeur d’épaules : descends en poussant les hanches en arrière, cuisses au moins parallèles, dos droit, puis remonte.", "Quadriceps, fessiers, gainage", "Back squat"],
+  ["presseCuisses", "Presse à cuisses", "presse", "Dos bien plaqué au dossier, pieds largeur de hanches sur la plateforme : descends jusqu’à 90° aux genoux puis pousse sans verrouiller les genoux.", "Quadriceps, fessiers", "Leg press"],
+  ["legExt", "Leg extension", "machine", "Assis, boudin calé au-dessus des chevilles : tends les jambes jusqu’à l’horizontale, marque une seconde, puis redescends lentement.", "Quadriceps", "Leg extension"],
+  ["legCurl", "Leg curl allongé", "machine", "Allongé sur le ventre, boudin derrière les chevilles : ramène les talons vers les fesses sans décoller le bassin, puis redescends lentement.", "Ischio-jambiers", "Lying leg curl"],
+  ["molletsMachine", "Mollets à la machine", "machine", "Épaules sous les coussins, avant des pieds sur la marche : monte le plus haut possible sur la pointe des pieds puis descends sous la marche pour étirer.", "Mollets", "Standing calf raise"],
+  ["abducteurs", "Abducteurs à la machine", "machine", "Assis, coussins contre l’extérieur des genoux : écarte les cuisses en contrôlant, puis reviens sans laisser les poids se toucher.", "Moyen fessier, hanches", "Hip abduction machine"],
+  ["souleveTerre", "Soulevé de terre", "barre", "Barre au-dessus du milieu des pieds, dos plat, bras tendus : pousse dans le sol en gardant la barre contre les jambes jusqu’à être debout, puis redescends sous contrôle.", "Fessiers, ischio-jambiers, dos, trapèzes", "Deadlift"],
+  ["rowPoulie", "Tirage horizontal à la poulie", "poulie basse", "Assis, pieds calés, dos droit : tire la poignée vers le nombril en serrant les omoplates, puis tends les bras sans arrondir le dos.", "Dorsaux, rhomboïdes, biceps", "Seated cable row"],
+  ["pullover", "Pullover à la poulie", "poulie haute", "Debout, buste légèrement penché, bras presque tendus : descends la barre vers les cuisses en gardant les coudes fixes, puis remonte lentement.", "Grand dorsal, triceps longs", "Straight arm pulldown"],
+  ["facePull", "Face pull", "poulie, corde", "Corde à hauteur du visage : tire vers le front en écartant les mains, coudes hauts, puis reviens bras tendus.", "Arrière des épaules, coiffe des rotateurs, trapèzes", "Face pull"],
+  ["benchBarre", "Développé couché à la barre", "barre, banc, rack", "Allongé, omoplates serrées, pieds au sol : descends la barre au bas des pectoraux puis pousse jusqu’aux bras tendus. Avec une charge lourde, fais-toi assister.", "Pectoraux, triceps, avant des épaules", "Barbell bench press"],
+  ["inclineHalteres", "Développé incliné haltères", "banc incliné, haltères", "Banc incliné à 30-45° : descends les haltères à hauteur du haut des pectoraux puis pousse vers le haut en les rapprochant.", "Haut des pectoraux, épaules, triceps", "Incline dumbbell press"],
+  ["chestPress", "Chest press à la machine", "machine", "Assis, poignées à hauteur de poitrine : pousse vers l’avant jusqu’aux bras tendus, puis reviens lentement sans décoller le dos.", "Pectoraux, triceps", "Machine chest press"],
+  ["pecDeck", "Pec deck (butterfly)", "machine", "Assis, bras ouverts sur les coussins : referme les bras devant toi en serrant les pectoraux, puis rouvre lentement.", "Pectoraux", "Pec deck fly"],
+  ["crossover", "Écarté à la poulie vis-à-vis", "poulies hautes", "Debout entre les deux poulies, bras ouverts, coudes légèrement fléchis : ramène les mains devant le bassin en arc de cercle, puis rouvre.", "Pectoraux", "Cable crossover"],
+  ["militaire", "Développé militaire", "barre", "Debout, gainé, barre au niveau du menton : pousse au-dessus de la tête jusqu’aux bras tendus sans cambrer, puis redescends.", "Épaules, triceps, gainage", "Overhead press"],
+  ["oiseau", "Oiseau à la machine", "machine", "Assis face à la machine, bras tendus devant toi : ouvre les bras vers l’arrière en serrant les omoplates, puis reviens.", "Arrière des épaules, haut du dos", "Reverse fly"],
+  ["shrugs", "Haussements d’épaules", "haltères", "Debout, haltères le long du corps : monte les épaules vers les oreilles, tiens une seconde, puis relâche sans rouler les épaules.", "Trapèzes", "Dumbbell shrugs"],
+  ["curlMarteau", "Curl marteau", "haltères", "Debout, paumes face à face, coudes collés au corps : monte l’haltère vers l’épaule puis redescends. Alterne les bras.", "Biceps, avant-bras", "Hammer curl"],
+  ["extNuque", "Extension triceps à la nuque", "haltère", "Haltère tenu à deux mains au-dessus de la tête : descends-le derrière la nuque en fléchissant les coudes, puis tends les bras.", "Triceps", "Overhead triceps extension"]
+].map(([id, nom, mat, description, muscles, voix]) => (VOIX_SALLE[id] = voix, [id, { nom, duree: 45, video: null, description, muscles: muscles + " · " + mat, mat: true }]))));
+const POSES_SALLE = {
+  squatBarre: {v:"p",f:[[95,106,32,-60,165,-60,165,75,5,72,0],[100,82,0,-40,176,-40,176,0,0,0,0]],a:[[160,60,162,84,160,108]],o:[["disc","mn"]]},
+  presseCuisses: {v:"p",f:[[80,112,-58,40,95,40,95,128.3,131.7,128.3,131.7],[80,112,-58,40,95,40,95,124.5,129.2,124.5,129.2]],a:[[118,108,140,96,160,74]],o:[["pad",[[88,124],[42,96]]],["pad",[[70,124],[104,124]]],["tube",[[96,142],[200,30]]],["plaque","pn",-45,34]]},
+  legExt: {v:"p",f:[[96,106,-6,25,90,25,90,90,90,90,90],[96,106,-6,25,90,25,90,90,15,90,15]],a:[[170,128,184,118,186,100]],o:[["pad",[[84,118],[124,118]]],["pad",[[78,114],[72,62]]],["tube",[[80,145],[80,118]]],["pile",24,96],["roue","pn"]]},
+  legCurl: {v:"p",f:[[110,103,90,90,90,90,90,-90,-170,-90,-170],[110,103,90,90,90,90,90,-90,-90,-90,-90]],a:[[28,96,30,74,48,60]],o:[["banc",40,113,160],["roue","pn"]]},
+  molletsMachine: {v:"p",f:[[120,72,0,175,5,175,5,0,0,0,0],[120,80,0,175,5,175,5,0,0,0,0]],a:[[166,120,166,104,166,88]],o:[["pad",[[104,141],[140,141]],8],["tube",[[92,145],[92,22]]],["plaque","mn",90,26]]},
+  abducteurs: {v:"f",f:[[120,86,0,20,0,-20,0,40,0,-40,0],[120,86,0,20,0,-20,0,12,8,-12,-8]],a:[[168,136,186,128,196,112],[72,136,54,128,44,112]],o:[["pad",[[96,100],[144,100]]],["tube",[[120,145],[120,104]]]],u:"Vue de face"},
+  souleveTerre: {v:"p",f:[[128,82,0,0,0,0,0,0,0,0,0],[82,94,60,0,0,0,0,50,-10,50,-10]],a:[[176,124,178,100,176,76]],o:[["disc","mn"]]},
+  rowPoulie: {v:"p",f:[[96,118,-8,-14.4,121.7,-14.4,121.7,69,91.4,69,91.4],[96,118,12,90,90,90,90,69,91.4,69,91.4]],a:[[176,72,152,68,128,72]],o:[["pad",[[78,128],[118,128]]],["pad",[[160,138],[164,112]],7],["cable","mn",[206,108]],["barre","mn",12]]},
+  pullover: {v:"p",f:[[100,82,25,20,20,20,20,0,0,0,0],[100,82,25,140,140,140,140,0,0,0,0]],a:[[178,40,174,74,150,100]],o:[["cable","m",[210,-6]],["barre","m",22]]},
+  facePull: {v:"p",f:[[100,82,-8,166.4,30.3,166.4,30.3,10,0,-10,0],[100,82,-8,100,100,100,100,10,0,-10,0]],a:[[168,64,150,52,128,60]],o:[["cable","m",[210,34]],["roue","m"]]},
+  benchBarre: {v:"p",f:[[145,102,-90,180,180,180,180,75,0,75,0],[145,102,-90,70,180,70,180,75,0,75,0]],a:[[78,86,78,66,78,46]],o:[["tube",[[64,145],[64,50]]],["banc",70,113,110],["disc","m"]]},
+  inclineHalteres: {v:"p",f:[[100,108,-52,190.3,157.9,190.3,157.9,82.2,4.4,82.3,0.5],[100,108,-52,182.7,43.4,182.7,43.4,82.2,4.4,82.3,0.5]],a:[[124,58,124,40,124,22]],o:[["pad",[[110,120],[56,82]]],["tube",[[96,145],[96,122]]],["barre","m",18]]},
+  chestPress: {v:"p",f:[[96,106,-8,90,90,90,90,90,10,90,10],[96,106,-8,2.1,136.6,2.1,136.6,90,10,90,10]],a:[[120,40,144,36,168,40]],o:[["pad",[[84,118],[124,118]]],["pad",[[78,114],[72,62]]],["tube",[[80,145],[80,118]]],["pile",24,96],["plaque","mn",0,18]]},
+  pecDeck: {v:"p",f:[[96,106,-6,80,175,80,175,90,10,90,10],[96,106,-6,-80,175,-80,175,90,10,90,10]],a:[[60,40,96,22,132,40]],o:[["pad",[[84,118],[124,118]]],["pad",[[78,114],[72,62]]],["tube",[[80,145],[80,118]]],["plaque","mn",0,18]]},
+  crossover: {v:"f",f:[[120,82,0,8.5,-22.9,-8.5,22.9,6,0,-6,0],[120,82,0,114.4,110.1,-114.4,-110.1,6,0,-6,0]],a:[[194,46,176,74,146,90],[46,46,64,74,94,90]],o:[["cable","mn",[226,-6]],["cable","mf",[14,-6]]],u:"Vue de face"},
+  militaire: {v:"p",f:[[110,82,0,190.3,157.9,190.3,157.9,0,0,0,0],[110,82,0,167.7,12.8,167.7,12.8,0,0,0,0]],a:[[160,50,160,28,160,6]],o:[["disc","mn"]]},
+  oiseau: {v:"p",f:[[96,106,6,-75,-75,-75,-75,90,10,90,10],[96,106,6,90,90,90,90,90,10,90,10]],a:[[136,44,100,26,62,44]],o:[["pad",[[84,118],[124,118]]],["pad",[[118,112],[126,66]]],["tube",[[110,145],[110,118]]],["plaque","mn",0,16]]},
+  shrugs: {v:"f",f:[[120,82,0,8,3,-8,-3,3,0,-3,0,0,0,40],[120,82,0,8,3,-8,-3,3,0,-3,0]],a:[[178,58,178,42,178,26]],o:[["barre","mn",18],["barre","mf",18]]},
+  curlMarteau: {v:"p",f:[[110,82,0,0,165,0,0,0,0,0,0],[110,82,0,0,0,0,0,0,0,0,0]],a:[[140,100,152,78,138,56]],o:[["barre","mn",18]]},
+  extNuque: {v:"p",f:[[110,82,0,176,180,176,180,0,0,0,0],[110,82,0,168,-40,168,-40,0,0,0,0]],a:[[78,46,74,24,96,4]],o:[["barre","m",14]]}
+};
+Object.assign(POSES, POSES_SALLE);
+// Développé épaules à la machine (ajouté avec les visuels 3D)
+EXERCICES.shoulderMachine = { nom: "Développé épaules à la machine", duree: 45, video: null, mat: true,
+  description: "Assis, dos plaqué au dossier, poignées à hauteur d’épaules : pousse au-dessus de la tête sans verrouiller les coudes, puis redescends lentement.",
+  muscles: "Épaules, triceps · machine" };
+VOIX_SALLE.shoulderMachine = "Machine shoulder press";
+POSES_SALLE.shoulderMachine = { v: "f", f: [[120,86,0,165,185,-165,-185,12,8,-12,-8],[120,86,0,105,180,-105,-180,12,8,-12,-8]], a: [[172,66,172,36,172,6]], o: [["pad",[[96,100],[144,100]]],["barre","mn",14],["barre","mf",14]], u: "Vue de face" };
+POSES.shoulderMachine = POSES_SALLE.shoulderMachine;
+const SALLE = Object.keys(POSES_SALLE);
+/* [clé, titre, détail, couleur, exercices] : séances typiques de salle, jouées en séries */
+[
+  ["legDay", "Leg day · jambes", "Cuisses, fessiers, ischios, mollets", "#AD5A0C", ["squatBarre","presseCuisses","legExt","legCurl","dbLunge","molletsMachine"]],
+  ["chestDay", "Chest day · pectoraux", "Pectoraux, avant des épaules, triceps", "#C8283C", ["benchBarre","inclineHalteres","chestPress","pecDeck","crossover","dips"]],
+  ["backDay", "Back day · dos", "Dos, trapèzes, biceps", "#1D6FA5", ["souleveTerre","tractions","poulieTirage","rowPoulie","dbRow","pullover"]],
+  ["shoulderDay", "Shoulder day · épaules", "Épaules et trapèzes", "#7B5EA7", ["militaire","shoulderMachine","dbLateral","oiseau","facePull","shrugs"]],
+  ["armDay", "Arm day · bras", "Biceps, triceps, avant-bras", "#0E7C86", ["ezCurl","poulieTriceps","curlMarteau","extNuque","dbCurl","ezSkull"]],
+  ["pushDay", "Push day · poussée", "Pectoraux, épaules, triceps", "#B83280", ["benchBarre","militaire","inclineHalteres","dbLateral","poulieTriceps","extNuque"]],
+  ["pullDay", "Pull day · tirage", "Dos, arrière des épaules, biceps", "#2F855A", ["tractions","rowPoulie","poulieTirage","facePull","ezCurl","curlMarteau"]],
+  ["gluteDay", "Glute day · fessiers", "Fessiers, ischios, hanches", "#C2410C", ["hipThrust","bulgare","dbRDL","abducteurs","legCurl","stepUp"]],
+  ["fullBody", "Full body · corps entier", "Jambes, pectoraux, dos, épaules, abdos", "#3949AB", ["squatBarre","benchBarre","rowPoulie","militaire","legCurl","poulieCrunch"]],
+  ["absDay", "Abs day · abdos", "Abdominaux, obliques, gainage", "#4A5568", ["poulieCrunch","relevesJambes","roue","poulieBucheron","hollow","planche"]]
+].forEach(([k, titre, detail, couleur, exercices]) => {
+  ROUTINES[k] = { type: "seance", salle: true, titre, detail, couleur, exercices };
+  CONSEILLES[k] = [...new Set([...exercices, ...SALLE, ...MATOS, "pompes", "planche", "planchelat", "deadbug"])];
+});
+
 /* ============ ÉTAT ============ */
 const $ = id => document.getElementById(id);
 let routine = null, routineCle = null, liste = [], index = 0, reste = 0, timer = null, enPause = false, audio = null;
@@ -980,6 +1160,10 @@ function chargerDuree(cle = routineCle) {
     reps = lire("repsTabata", 1, 30, 8);
     recup = lire("recupTabata", 0, 300, 60);
     cycles = lire("cyclesTabata", 1, 30, 3);
+  } else if (mode === "salle") {
+    dureeGlobale = lire("dureeSalle", 5, 120, 45);
+    repos = lire("reposSalle", 0, 180, 90);
+    cycles = lire("seriesSalle", 1, 6, 3);
   } else if (mode === "seance") {
     dureeGlobale = lire("dureeSeance", 5, 120, 40);
     repos = lire("repos", 0, 120, 20);
@@ -1015,7 +1199,7 @@ function majAjout() {
   $("defBtn").disabled = ids.join() === ROUTINES[routineCle].exercices.join();
   const reco = CONSEILLES[routineCle].filter(id => !dedans.has(id));
   const autres = Object.keys(EXERCICES).filter(id => !dedans.has(id) && !reco.includes(id));
-  const li = id => `<li>${mini(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div><button class="ajouter" data-id="${id}" aria-label="Ajouter ${EXERCICES[id].nom}">+</button></li>`;
+  const li = id => `<li>${vignette(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div><button class="ajouter" data-id="${id}" aria-label="Ajouter ${EXERCICES[id].nom}">+</button></li>`;
   $("aReco").innerHTML = reco.length ? reco.map(li).join("") : "<li><small>Tous les exercices conseillés sont déjà dans ta routine.</small></li>";
   $("aAutres").innerHTML = autres.length ? autres.map(li).join("") : "<li><small>Aucun autre exercice disponible.</small></li>";
 }
@@ -1092,28 +1276,31 @@ const VOIX = {
   chinups: "Chin ups",
   relevesJambes: "Hanging leg raises",
   pike: "Pike push ups",
-  hollow: "Hollow body hold"
+  hollow: "Hollow body hold",
+  lancer: "Throwing motion", pasChasse: "Defensive shuffles", sautTir: "Jump shots", rotEpaule: "Shoulder rotations",
+  bandRotExt: "Band external rotation", pedalage: "Air cycling"
 };
+Object.assign(VOIX, VOIX_SALLE);
 const dire = e => VOIX[e.id] || e.nom;
 
 /* Voix « Paul » uniquement ; à défaut, voix anglaise par défaut du téléphone */
 const voixPaul = () => ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).find(x => /\bpaul\b/i.test(x.name));
 
-function parler(texte) {
+function parler(texte, delai = 700, vitesse = 0.95) {
   if (!voixActive || !("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   clearTimeout(tVoix);
   tVoix = setTimeout(() => {
     const u = new SpeechSynthesisUtterance(texte);
-    u.lang = "en-US"; u.rate = 0.95;
+    u.lang = "en-US"; u.rate = vitesse;
     const v = voixPaul();
     if (v) { u.voice = v; u.lang = v.lang; }
     speechSynthesis.speak(u);
-  }, 700);
+  }, delai);
 }
 try { const d = parseInt(localStorage.getItem("dureeGlobale"), 10); if (d >= 5 && d <= 120) dureeGlobale = d; } catch (e) {}
 
-const CLE_DUREE = { tabata: "dureeTabata", seance: "dureeSeance", calme: "dureeCalme", echauffement: "dureeGlobale" };
+const CLE_DUREE = { salle: "dureeSalle", tabata: "dureeTabata", seance: "dureeSeance", calme: "dureeCalme", echauffement: "dureeGlobale" };
 const pas = () => mode === "souffle" ? 1 : 5;
 function setDuree(d) {
   dureeGlobale = mode === "souffle" ? Math.min(30, Math.max(1, d)) : Math.min(120, Math.max(5, d));
@@ -1121,8 +1308,25 @@ function setDuree(d) {
   if (routineCle) ouvrirApercu(routineCle);
 }
 
-function ecran(nom) {
-  ["accueil","menu","home","preview","session","end"].forEach(s => $(s).classList.toggle("hidden", s !== nom));
+let tPret, ecranCourant = "accueil", sensRetour = false;
+const mouvementReduit = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* Change d'écran. "avant" : modifications du DOM à faire dans la même transition (ex. changer de liste).
+   Pour revenir en arrière, appeler retour(() => ...) : la transition part dans l'autre sens. */
+function ecran(nom, avant) {
+  if (nom !== "pret") clearInterval(tPret);
+  const change = nom !== ecranCourant || avant, sens = sensRetour ? "retour" : "avant";
+  sensRetour = false;
+  const maj = () => { if (avant) avant(); afficherEcran(nom); };
+  if (!change || mouvementReduit()) return maj();
+  document.documentElement.dataset.sens = sens;
+  if (document.startViewTransition) return document.startViewTransition(maj);
+  maj();
+  const el = $(nom); el.classList.remove("entre-avant", "entre-retour"); void el.offsetWidth; el.classList.add("entre-" + sens);
+}
+const retour = fn => { sensRetour = true; fn(); };
+function afficherEcran(nom) {
+  ecranCourant = nom;
+  ["accueil","menu","home","preview","session","pret","end"].forEach(s => $(s).classList.toggle("hidden", s !== nom));
   $("quitBtn").classList.toggle("hidden", nom === "menu" || nom === "accueil");
   $("quitBtn").dataset.conf = "";
   $("quitBtn").textContent = "✕ Menu";
@@ -1162,7 +1366,7 @@ const sons = {
 };
 
 /* ============ ACCUEIL ============ */
-const modeDe = r => r.tabata ? "tabata" : r.souffle ? "souffle" : r.type === "seance" ? "seance" : r.type === "calme" ? "calme" : "echauffement";
+const modeDe = r => r.tabata ? "tabata" : r.souffle ? "souffle" : r.salle ? "salle" : r.type === "seance" ? "seance" : r.type === "calme" ? "calme" : "echauffement";
 function ouvrirRoutine(cle) {
   mode = modeDe(ROUTINES[cle]); chargerDuree(cle); ids = chargerIds(cle); fermerAjout(); ouvrirApercu(cle);
 }
@@ -1191,24 +1395,31 @@ function bouton(parent, titre, detail, couleur, fn) {
   parent.appendChild(b);
 }
 bouton($("choicesP"), "Construire une séance", "Renfo par sport, au poids du corps ou avec matériel", "#7B5EA7", () => vueSCats());
+bouton($("choicesP"), "Salle de musculation", "Leg day, chest day, back day, push, pull… sur machines et poids libres", "#334E68", () => vueSalle());
+Object.keys(ROUTINES).filter(k => ROUTINES[k].salle).forEach(k => bouton($("choicesG"), ROUTINES[k].titre, ROUTINES[k].detail + " · " + ROUTINES[k].exercices.length + " exercices", ROUTINES[k].couleur, () => ouvrirRoutine(k)));
 bouton($("choicesP"), "Tabata", "Minuteur : effort, repos, répétitions et cycles réglables", "#D9480F", () => ouvrirRoutine("tabata"));
 const SEANCE = k => Object.keys(ROUTINES).find(c => ROUTINES[c].grp === k && !ROUTINES[c].mat);
-["course", "boxe", "surf", "ski"].forEach(k => bouton($("choicesCS"), CATS[k].titre, ROUTINES[SEANCE(k)].detail, CATS[k].couleur, () => vueMode(k)));
+["course", "boxe", "handball", "cyclisme", "surf", "ski"].forEach(k => bouton($("choicesCS"), CATS[k].titre, ROUTINES[SEANCE(k)].detail, CATS[k].couleur, () => vueMode(k)));
 bouton($("choicesCS"), "Renfo du corps", "Haut du corps, bas du corps ou tout le corps", CATS.renfo.couleur, () => vueZones());
 [["haut", "Haut du corps"], ["bas", "Bas du corps"], ["complet", "Haut et bas du corps"]].forEach(([k, t]) => bouton($("choicesZ"), t, ROUTINES[SEANCE(k)].detail, ROUTINES[SEANCE(k)].couleur, () => vueMode(k)));
 
 function ouvrirApercu(cle) {
   routine = ROUTINES[cle]; routineCle = cle;
-  liste = ids.map(id => ({ ...EXERCICES[id], id, duree: dureeGlobale }));
-  const tb = mode === "tabata", so = mode === "souffle";
+  const tb = mode === "tabata", so = mode === "souffle", sa = mode === "salle";
+  // en salle, chaque exercice est joué en plusieurs séries (repos entre chaque)
+  liste = ids.flatMap(id => Array.from({ length: sa ? cycles : 1 }, (_, k) => ({ ...EXERCICES[id], id, duree: dureeGlobale, ...(sa && { serie: k + 1, series: cycles }) })));
   $("dureeVal").textContent = dureeGlobale + (so ? " min" : " s");
-  $("reposRow").classList.toggle("hidden", mode !== "seance" && !tb);
+  $("reposRow").classList.toggle("hidden", mode !== "seance" && !tb && !sa);
   $("reposVal").textContent = repos + " s";
   $("repsRow").classList.toggle("hidden", !tb);
-  $("cyclesRow").classList.toggle("hidden", !tb);
+  $("cyclesRow").classList.toggle("hidden", !tb && !sa);
+  const lc = document.querySelector('label[for="cyclesVal"]');
+  lc.firstChild.textContent = sa ? "Séries par exercice" : "Nombre de cycles";
+  lc.querySelector("small").textContent = sa ? "Chaque exercice est répété, avec un repos entre les séries" : "Enchaînements répétés, avec une récupération entre chaque";
   $("cyclesVal").textContent = cycles;
   $("pList").classList.toggle("hidden", tb);
   $("ajoutBtn").closest(".reglage").classList.toggle("hidden", tb || so);
+  $("voixInfo").textContent = so ? "Annonce quand inspirer, retenir et expirer : idéal allongé, sans regarder l’écran (en anglais)" : "Annonce le nom de chaque exercice (en anglais)";
   $("recupRow").classList.toggle("hidden", !tb);
   $("repsVal").textContent = reps;
   $("recupVal").textContent = recup + " s";
@@ -1217,18 +1428,19 @@ function ouvrirApercu(cle) {
   ld.querySelector("small").textContent = tb ? "Durée de chaque effort" : so ? "En minutes, les exercices s’adaptent" : "Appliquée à tous les exercices";
   lr.firstChild.textContent = tb ? "Temps de repos" : "Repos entre exercices";
   lr.querySelector("small").textContent = tb ? "Pause entre deux répétitions" : "Pause avant l’exercice suivant";
+  ld.firstChild.textContent = sa ? "Durée de l’exercice" : ld.firstChild.textContent;
     document.documentElement.style.setProperty("--accent", routine.couleur);
   const plan = so ? planSouf(routine, dureeGlobale) : [];
   const total = so ? plan.reduce((t, q) => t + q.sec, 0) : mode === "tabata"
     ? cycles * (reps * dureeGlobale + (reps - 1) * repos) + (cycles - 1) * recup
-    : liste.reduce((s, e) => s + e.duree, 0) + (mode === "seance" ? repos * Math.max(0, liste.length - 1) : 0);
+    : liste.reduce((s, e) => s + e.duree, 0) + (mode === "seance" || sa ? repos * Math.max(0, liste.length - 1) : 0);
   $("pTitle").textContent = mode !== "echauffement" ? routine.titre : "Échauffement " + routine.titre.toLowerCase();
-  $("pInfo").textContent = `${tb ? cycles + " cycle" + (cycles > 1 ? "s" : "") : so ? routine.blocs.length + " exercice" + (routine.blocs.length > 1 ? "s" : "") : liste.length + " exercices"} · environ ${Math.round(total / 60 * 10) / 10} min`.replace(".", ",");
+  $("pInfo").textContent = `${tb ? cycles + " cycle" + (cycles > 1 ? "s" : "") : so ? routine.blocs.length + " exercice" + (routine.blocs.length > 1 ? "s" : "") : sa ? ids.length + " exercices × " + cycles + " série" + (cycles > 1 ? "s" : "") : liste.length + " exercices"} · environ ${Math.round(total / 60 * 10) / 10} min`.replace(".", ",");
   $("pList").innerHTML = so
     ? routine.blocs.map((b, j) => `<li><div><b>${j + 1}. ${b.titre} · ${Math.round(plan.filter(q => q.j === j).reduce((t, q) => t + q.sec, 0) / 6) / 10} min</b><small>${b.resume}</small></div></li>`).join("")
       + `<li><div><small>${routine.etude} Séance de bien-être, pas un avis médical : arrête-toi en cas de vertige.</small></div></li>`
     : ids.length
-    ? ids.map((id, i) => `<li data-i="${i}">${mini(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div><button class="suppr" data-i="${i}" aria-label="Retirer ${EXERCICES[id].nom}">×</button></li>`).join("")
+    ? ids.map((id, i) => `<li data-i="${i}">${vignette(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div><button class="suppr" data-i="${i}" aria-label="Retirer ${EXERCICES[id].nom}">×</button></li>`).join("")
     : "<li><small>Aucun exercice. Ajoutes-en au moins un pour commencer.</small></li>";
   $("start").disabled = !tb && !so && ids.length === 0;
   if (!tb && !so) majAjout();
@@ -1246,17 +1458,35 @@ function demarrer() {
   afficher();
 }
 
+/* Vidéos d'exercices : fichiers videos/<id>.mp4 déposés à côté de index.html.
+   Pour en ajouter une, il suffit d'ajouter son identifiant à VIDEOS. Si le fichier manque, le dessin s'affiche. */
+const VIDEOS = ["inchworm", "squatBarre", "poulieTirage", "pecDeck", "rowPoulie", "shoulderMachine", "legExt"];
+/* Vignette des listes : la vidéo en boucle si elle existe, sinon le petit dessin */
+const vignette = id => EXERCICES[id].video
+  ? `<video class="mini" src="${EXERCICES[id].video}" autoplay loop muted playsinline preload="metadata" onerror="this.outerHTML=mini('${id}')"></video>`
+  : mini(id);
+VIDEOS.forEach(id => { if (EXERCICES[id]) EXERCICES[id].video = `videos/${id}.mp4`; });
+function media(e) {
+  const box = $("mediaBox");
+  if (!e.video) return box.innerHTML = dessiner(e);
+  box.innerHTML = `<video class="media" src="${e.video}" autoplay loop muted playsinline preload="auto" aria-label="${e.nom} en vidéo"></video>`;
+  box.querySelector("video").onerror = () => { box.innerHTML = dessiner(e); };
+}
+
+/* Fondu du contenu de la séance à chaque nouvel exercice */
+function fondu() { const el = $("session"); el.classList.remove("frais"); void el.offsetWidth; el.classList.add("frais"); }
+
 function afficher() {
+  fondu();
   const e = liste[index];
   reste = e.duree;
-  $("count").textContent = `Exercice ${index + 1} sur ${liste.length}`;
+  $("count").textContent = e.series ? `Exercice ${Math.floor(index / e.series) + 1} sur ${liste.length / e.series} · série ${e.serie} sur ${e.series}` : `Exercice ${index + 1} sur ${liste.length}`;
   $("name").textContent = e.nom;
   $("time").style.color = "";
-  parler(dire(e));
+  parler(dire(e) + (e.series ? ", set " + e.serie : ""));
   $("desc").textContent = e.description;
   $("zones").textContent = e.muscles;
-  $("mediaBox").innerHTML = e.video
-    ? `<video class="media" src="${e.video}" autoplay loop muted playsinline></video>` : dessiner(e);
+  media(e);
   [...$("bars").children].forEach((el, i) => {
     el.classList.toggle("done", i < index);
     el.firstChild.style.width = i < index ? "100%" : "0";
@@ -1285,7 +1515,7 @@ function tic() {
 function suivant(auto) {
   if (enRepos) { enRepos = false; index++; if (auto) sons.change(); return afficher(); }
   if (index >= liste.length - 1) return terminer();
-  if (auto && mode === "seance" && repos > 0) return afficherRepos();
+  if (auto && (mode === "seance" || mode === "salle") && repos > 0) return afficherRepos();
   index++;
   if (auto) sons.change();
   afficher();
@@ -1308,6 +1538,7 @@ function demarrerTab() {
 }
 
 function afficherTab() {
+  fondu();
   const P = { ex: ["EXERCICE", dureeGlobale, "#D9480F"], rep: ["REPOS", repos, "#2F7D3A"], rec: ["RÉCUPÉRATION", recup, "#3A6EA5"] }[tab.ph];
   reste = P[1];
   $("count").textContent = tab.ph === "rec"
@@ -1360,8 +1591,8 @@ function precedentTab() {
 }
 
 function setCycles(n) {
-  cycles = Math.min(30, Math.max(1, n));
-  try { localStorage.setItem("cyclesTabata", cycles); } catch (e) {}
+  cycles = Math.min(mode === "salle" ? 6 : 30, Math.max(1, n));
+  try { localStorage.setItem(mode === "salle" ? "seriesSalle" : "cyclesTabata", cycles); } catch (e) {}
   if (routineCle) ouvrirApercu(routineCle);
 }
 function setReps(n) {
@@ -1422,7 +1653,9 @@ function afficherSouf() {
   $("pause").textContent = enPause ? "Reprendre" : "Pause";
   if (debutBloc && souf.i) { bip(660, 900, 0.12); bip(880, 900, 0.08, "sine", 0.15); }
   else if (p.to !== de) bip(p.to > de ? 523 : 392, 650, 0.1);
-  if (debutBloc) parler(b.voix);
+  // voix : titre de l'exercice au début de chaque bloc, puis chaque changement de phase (immédiat, débit calme)
+  const prec = souf.i ? souf.plan[souf.i - 1].label : "";
+  if (debutBloc || p.label !== prec) parler((debutBloc ? b.voix + ". " : "") + SOUFFLE_VOIX[p.label], 0, 0.85);
 }
 
 function ticSouf() {
@@ -1442,17 +1675,17 @@ function precedentSouf() { if (souf.i > 0) souf.i--; afficherSouf(); }
 
 /* Phase de repos entre deux exercices (séances) : on voit déjà le prochain exercice */
 function afficherRepos() {
+  fondu();
   enRepos = true;
   const e = liste[index + 1];
   reste = repos;
-  $("count").textContent = `Repos · prochain : exercice ${index + 2} sur ${liste.length}`;
+  $("count").textContent = e.series ? `Repos · prochaine : série ${e.serie} sur ${e.series}` : `Repos · prochain : exercice ${index + 2} sur ${liste.length}`;
   $("name").textContent = "Repos";
   $("time").style.color = "var(--muted)";
   $("time").textContent = reste;
-  $("desc").textContent = "Prochain exercice : " + e.nom + ". " + e.description;
+  $("desc").textContent = (e.series ? "Prochaine série : " : "Prochain exercice : ") + e.nom + ". " + e.description;
   $("zones").textContent = e.muscles;
-  $("mediaBox").innerHTML = e.video
-    ? `<video class="media" src="${e.video}" autoplay loop muted playsinline></video>` : dessiner(e);
+  media(e);
   [...$("bars").children].forEach((el, i) => {
     el.classList.toggle("done", i <= index);
     el.firstChild.style.width = i <= index ? "100%" : "0";
@@ -1461,7 +1694,7 @@ function afficherRepos() {
   timer = setInterval(tic, 1000);
   $("pause").textContent = enPause ? "Reprendre" : "Pause";
   bip(440, 350, 0.2, "sine");
-  parler("Rest. Next exercise: " + dire(e));
+  parler("Rest. Next: " + dire(e) + (e.series ? ", set " + e.serie : ""));
 }
 
 function terminer() {
@@ -1479,19 +1712,37 @@ function terminer() {
 function pause() {
   enPause = !enPause;
   $("pause").textContent = enPause ? "Reprendre" : "Pause";
+  const vid = document.querySelector("#mediaBox video");
+  if (vid) enPause ? vid.pause() : vid.play().catch(() => {});
   const rond = document.querySelector(".souffle i");
   if (rond) rond.style.animationPlayState = enPause ? "paused" : "running";
 }
 
 /* ============ ÉVÉNEMENTS ============ */
-$("back").onclick = () => ecran("home");
+$("back").onclick = () => retour(() => ecran("home"));
 const MOTEUR = { tabata: [demarrerTab, suivantTab, precedentTab], souffle: [demarrerSouf, suivantSouf, precedentSouf] };
 const moteur = i => (MOTEUR[mode] || [demarrer, suivant, precedent])[i];
-$("start").onclick = () => moteur(0)();
+/* Compte à rebours de PREP secondes avant chaque activité : le temps de poser le téléphone */
+const PREP = 4;
+function lancer() { clearInterval(tPret); moteur(0)(); }
+function preparer() {
+  let n = PREP;
+  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  $("pretTime").textContent = n;
+  ecran("pret");
+  parler("Get ready");
+  tPret = setInterval(() => {
+    if (--n <= 0) return lancer();
+    $("pretTime").textContent = n;
+    if (n <= 3) sons.alerte(); else sons.tic();
+  }, 1000);
+}
+$("start").onclick = preparer;
+$("pretGo").onclick = lancer;
 $("next").onclick = () => moteur(1)(false);
 $("prev").onclick = () => moteur(2)();
 $("pause").onclick = pause;
-$("restart").onclick = () => ecran("menu");
+$("restart").onclick = () => retour(() => ecran("menu"));
 
 /* Bouton Menu en haut à droite : en séance, un premier appui demande confirmation (3 s) */
 let tQuit = null;
@@ -1508,26 +1759,29 @@ $("quitBtn").onclick = () => {
   clearInterval(timer);
   enRepos = false; enPause = false;
   if ("speechSynthesis" in window) speechSynthesis.cancel();
-  ecran("menu");
+  retour(() => ecran("menu"));
 };
 
 /* Menu principal et réglage du repos */
 let vueListe = "cats";
-const VUES = ["choicesP", "choicesCS", "choicesC", "choices", "choicesZ", "choicesM", "choicesR", "choicesK"];
-function vue(nom, etat, titre, sous) {
-  vueListe = etat;
-  VUES.forEach(v => $(v).classList.toggle("hidden", v !== nom));
-  $("hTitre").textContent = titre; $("hSub").textContent = sous;
-  ecran("home");
+const VUES = ["choicesP", "choicesG", "choicesCS", "choicesC", "choices", "choicesZ", "choicesM", "choicesR", "choicesK"];
+function vue(nom, etat, titre, sous, avant) {
+  ecran("home", () => {
+    if (avant) avant();
+    vueListe = etat;
+    VUES.forEach(v => $(v).classList.toggle("hidden", v !== nom));
+    $("hTitre").textContent = titre; $("hSub").textContent = sous;
+    scrollTo(0, 0);
+  });
 }
 const vueCats = () => vue("choicesC", "cats", "Échauffements", "Choisis ton sport, on s’occupe du reste.");
-const vuePlan = () => vue("choicesP", "plan", "Planifier une séance", "Construis ta séance ou lance un Tabata.");
+const vueSalle = () => vue("choicesG", "salle", "Salle de musculation", "Séances typiques, jouées en séries. Durée, repos et nombre de séries réglables.");
+const vuePlan = () => vue("choicesP", "plan", "Planifier une séance", "Construis ta séance, va à la salle ou lance un Tabata.");
 const vueSCats = () => vue("choicesCS", "scats", "Construire une séance", "Choisis ton sport.");
 function sousListe(conteneur, cat, etat, titre, sous) {
   const btns = [...$(conteneur).children].filter(b => b.dataset.cat === cat);
   if (btns.length === 1) return btns[0].click();
-  [...$(conteneur).children].forEach(b => b.classList.toggle("hidden", b.dataset.cat !== cat));
-  vue(conteneur, etat, titre, sous);
+  vue(conteneur, etat, titre, sous, () => [...$(conteneur).children].forEach(b => b.classList.toggle("hidden", b.dataset.cat !== cat)));
 }
 const vueCat = cat => sousListe("choices", cat, "cat", CATS[cat].titre, "Choisis ton échauffement.");
 const vueZones = () => vue("choicesZ", "zones", "Renfo du corps", "Choisis ta zone : haut, bas ou tout le corps.");
@@ -1549,11 +1803,11 @@ document.addEventListener("click", () => { if (!$("accueil").classList.contains(
 $("mEch").onclick = () => ouvrirListe("echauffement");
 $("mSeance").onclick = () => ouvrirListe("seance");
 $("mCalme").onclick = vueCalme;
-$("homeBack").onclick = () => ({ cat: vueCats, zones: vueSCats, smode: () => ["haut", "bas", "complet"].includes(grpCourant) ? vueZones() : vueSCats(), scats: vuePlan, kcat: vueCalme }[vueListe] || (() => ecran("menu")))();
+$("homeBack").onclick = () => retour(() => ({ cat: vueCats, zones: vueSCats, smode: () => ["haut", "bas", "complet"].includes(grpCourant) ? vueZones() : vueSCats(), scats: vuePlan, salle: vuePlan, kcat: vueCalme }[vueListe] || (() => ecran("menu")))());
 
 function setRepos(r) {
-  repos = Math.min(120, Math.max(0, r));
-  try { localStorage.setItem(mode === "tabata" ? "reposTabata" : "repos", repos); } catch (e) {}
+  repos = Math.min(mode === "salle" ? 180 : 120, Math.max(0, r));
+  try { localStorage.setItem({ tabata: "reposTabata", salle: "reposSalle" }[mode] || "repos", repos); } catch (e) {}
   if (routineCle) ouvrirApercu(routineCle);
 }
 $("rMoins").onclick = () => setRepos(repos - 5);
@@ -1581,47 +1835,82 @@ $("pList").onclick = ev => {
   sauverIds();
   ouvrirApercu(routineCle);
 };
-/* Réorganiser : on maintient un exercice (0,4 s) puis on le fait glisser */
+/* Réorganiser : on maintient un exercice (0,4 s), il se décolle et suit le doigt librement ;
+   les autres glissent pour lui laisser une place (pointillés), sans jamais le chevaucher. */
 let drag = null;
+const lignes = () => [...$("pList").children].filter(l => l.dataset.i !== undefined && !l.classList.contains("flottant"));
 $("pList").addEventListener("contextmenu", ev => ev.preventDefault());
 $("pList").addEventListener("pointerdown", ev => {
   const li = ev.target.closest("li");
   if (!li || li.dataset.i === undefined || ev.target.closest(".suppr")) return;
   drag = { li, x: ev.clientX, y: ev.clientY, actif: false };
-  drag.t = setTimeout(() => {
-    drag.actif = true;
-    li.classList.add("drag");
-    if (navigator.vibrate) navigator.vibrate(30);
-  }, 400);
+  drag.t = setTimeout(() => decoller(ev.clientX, ev.clientY), 400);
 });
+function decoller(x, y) {
+  const li = drag.li, items = lignes(), r = li.getBoundingClientRect();
+  Object.assign(drag, {
+    actif: true, x, y, items, de: items.indexOf(li), vers: items.indexOf(li), h: r.height,
+    dy: y - r.top, // position du doigt dans la carte
+    pos: items.map(l => { const q = l.getBoundingClientRect(); return { top: q.top + scrollY, h: q.height }; })
+  });
+  const f = li.cloneNode(true);
+  f.classList.add("flottant");
+  Object.assign(f.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+  $("pList").appendChild(f); drag.f = f;
+  $("pList").classList.add("tri");
+  li.classList.add("place");
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+function suivreDrag(y) {
+  const d = drag;
+  d.y = y;
+  d.f.style.top = (y - d.dy) + "px";
+  // place visée : nombre de cartes (hors celle déplacée) dont le milieu est au-dessus du centre de la carte flottante
+  const centre = y - d.dy + d.h / 2 + scrollY;
+  const vers = d.pos.filter((p, i) => i !== d.de && p.top + p.h / 2 < centre).length;
+  if (vers === d.vers) return;
+  d.vers = vers;
+  if (navigator.vibrate) navigator.vibrate(8);
+  // les autres cartes s'écartent ; la place en pointillés se cale à l'endroit visé
+  let decal = 0;
+  d.items.forEach((l, i) => {
+    if (i === d.de) return;
+    const bas = d.de < vers && i > d.de && i <= vers, haut = vers < d.de && i >= vers && i < d.de;
+    l.style.transform = bas ? `translateY(${-d.h}px)` : haut ? `translateY(${d.h}px)` : "";
+    if (bas) decal += d.pos[i].h; else if (haut) decal -= d.pos[i].h;
+  });
+  d.li.style.transform = decal ? `translateY(${decal}px)` : "";
+}
 document.addEventListener("pointermove", ev => {
   if (!drag) return;
   if (!drag.actif) {
     if (Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) > 10) { clearTimeout(drag.t); drag = null; }
     return;
   }
-  const cible = [...$("pList").children].find(l => {
-    const r = l.getBoundingClientRect();
-    return l !== drag.li && ev.clientY >= r.top && ev.clientY <= r.bottom;
-  });
-  if (cible) {
-    const r = cible.getBoundingClientRect();
-    $("pList").insertBefore(drag.li, ev.clientY > r.top + r.height / 2 ? cible.nextSibling : cible);
-  }
+  suivreDrag(ev.clientY);
   if (ev.clientY < 90) window.scrollBy(0, -14);
   else if (ev.clientY > window.innerHeight - 90) window.scrollBy(0, 14);
 });
+window.addEventListener("scroll", () => { if (drag && drag.actif) { drag.vers = -1; suivreDrag(drag.y); } }, { passive: true });
 document.addEventListener("touchmove", ev => { if (drag && drag.actif) ev.preventDefault(); }, { passive: false });
 function finDrag() {
   if (!drag) return;
   clearTimeout(drag.t);
-  const etait = drag.actif;
+  const d = drag;
   drag = null;
-  if (!etait) return;
-  const ordre = [...$("pList").children].map(l => Number(l.dataset.i));
-  ids = ordre.map(i => ids[i]);
-  sauverIds();
-  ouvrirApercu(routineCle);
+  if (!d.actif) return;
+  // la carte se pose dans la place libre, puis la liste est enregistrée
+  const cible = d.li.getBoundingClientRect();
+  d.f.classList.add("pose");
+  d.f.style.top = cible.top + "px";
+  const poser = () => {
+    const [x] = ids.splice(d.de, 1);
+    ids.splice(d.vers, 0, x);
+    sauverIds();
+    ouvrirApercu(routineCle);
+  };
+  if (mouvementReduit()) return poser();
+  setTimeout(poser, 220);
 }
 document.addEventListener("pointerup", finDrag);
 document.addEventListener("pointercancel", finDrag);
