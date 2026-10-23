@@ -104,7 +104,8 @@
   .stepper { display: flex; align-items: center; gap: 6px; }
   .stepper button:not(.toggle) { width: 44px; height: 44px; font-size: 1.4rem; font-weight: 600; background: var(--soft); color: var(--ink); }
   .stepper output { min-width: 3.2em; text-align: center; font-family: var(--titre); font-weight: 700; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
-  .toggle { padding: 10px 18px; min-width: 6.5em; white-space: nowrap; font-weight: 600; background: var(--accent); color: #fff; }
+  .plus-repos { display: block; margin: -4px auto 10px; padding: 8px 18px; border-radius: 999px; font-weight: 700; background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; }
+.toggle { padding: 10px 18px; min-width: 6.5em; white-space: nowrap; font-weight: 600; background: var(--accent); color: #fff; }
   .toggle[aria-pressed="false"], .contour { background: var(--soft); color: var(--muted); }
   .toggle:disabled { opacity: .45; cursor: not-allowed; }
 
@@ -749,6 +750,7 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
     <div class="bars" id="bars"></div>
     <p class="count" id="count"></p>
     <div class="time" id="time">20</div>
+    <button id="plusRepos" class="plus-repos hidden">+15 s</button>
     <h2 class="name" id="name"></h2>
     <div id="mediaBox"></div>
     <p class="desc" id="desc"></p>
@@ -1885,6 +1887,14 @@ let ids = [];
 let mode = "echauffement", repos = 20, enRepos = false, reps = 8, recup = 60, cycles = 3;
 
 /* Charge les durées mémorisées : réglages séparés pour les échauffements et les séances */
+/* Repos entre exercices / séries : proposé selon le type de séance, réglable dans l'aperçu, mémorisé séance par séance
+   (clé « reposSeances », incluse dans la sauvegarde). Pas de repos réglable là où il n'a pas de sens : échauffement, retour au calme, respiration. */
+const REPOS_LIBRES = { legDay: 120, backDay: 120, fullBody: 90, chestDay: 90, pushDay: 90, pullDay: 90, gluteDay: 90, shoulderDay: 75, armDay: 60, absDay: 45 };
+const reposLu = (id, def) => { try { const v = JSON.parse(localStorage.getItem("reposSeances") || "{}")[id]; if (Number.isFinite(v)) return v; } catch (e) {} return def; };
+function reposGarder(id, v) { try { const m = JSON.parse(localStorage.getItem("reposSeances") || "{}"); m[id] = v; localStorage.setItem("reposSeances", JSON.stringify(m)); } catch (e) {} }
+const reposPropose = (m, cle) => m === "salle" ? REPOS_LIBRES[cle] || 90 : ROUTINES[cle] && ROUTINES[cle].blessure ? 30 : 20;
+const reposTxt = r => r < 60 ? r + " s" : Math.floor(r / 60) + " min" + (r % 60 ? " " + String(r % 60).padStart(2, "0") : "");
+const r5 = x => Math.max(0, Math.round(x / 5) * 5);
 function chargerDuree(cle = routineCle) {
   const lire = (cle, min, max, def) => {
     try { const n = parseInt(localStorage.getItem(cle), 10); if (n >= min && n <= max) return n; } catch (e) {}
@@ -1900,11 +1910,11 @@ function chargerDuree(cle = routineCle) {
     cycles = lire("cyclesTabata", 1, 30, 3);
   } else if (mode === "salle") {
     dureeGlobale = lire("dureeSalle", 5, 120, 45);
-    repos = lire("reposSalle", 0, 180, 90);
+    repos = reposLu("libre:" + cle, lire("reposSalle", 0, 300, reposPropose("salle", cle)));
     cycles = lire("seriesSalle", 1, 6, 3);
   } else if (mode === "seance") {
     dureeGlobale = lire("dureeSeance", 5, 120, 40);
-    repos = lire("repos", 0, 120, 20);
+    repos = reposLu("seance:" + cle, lire("repos", 0, 180, reposPropose("seance", cle)));
   } else if (mode === "calme") {
     dureeGlobale = lire("dureeCalme", 5, 120, 30);
   } else if (mode === "souffle") {
@@ -2086,7 +2096,8 @@ function ecran(nom, avant) {
 const retour = fn => { sensRetour = true; fn(); };
 function afficherEcran(nom) {
   ecranCourant = nom;
-  if (nom !== "session") clearInterval(timer);   // aucun chrono ne tourne hors de la séance
+  if (nom !== "session") clearInterval(timer);
+  $("plusRepos").classList.add("hidden");   // aucun chrono ne tourne hors de la séance
   if (["menu", "reglages", "accueil", "profil", "planning", "page", "bienvenue"].includes(nom)) document.documentElement.style.setProperty("--accent", "var(--brand)");
   if (typeof garderEcran === "function") garderEcran(nom === "pret" || nom === "session");
   ["accueil","menu","home","preview","session","pret","end","reglages","muscle","progres","progs","prog","recap","profil","planning","page","bienvenue"].forEach(s => $(s).classList.toggle("hidden", s !== nom));
@@ -2179,8 +2190,9 @@ function ouvrirApercu(cle) {
   // en salle, chaque exercice est joué en plusieurs séries (repos entre chaque)
   liste = routine.plan ? routine.plan.map(q => ({ ...EXERCICES[q.id], id: q.id, duree: q.d, r: q.r, bn: q.bn, t: q.t, tt: q.tt, ft: q.ft, lab: q.lab, presc: q.presc, serie: q.serie, series: q.series })) : ids.flatMap(id => Array.from({ length: sa ? cycles : 1 }, (_, k) => ({ ...EXERCICES[id], id, duree: dureeGlobale, ...(sa && { serie: k + 1, series: cycles }) })));
   $("dureeVal").textContent = dureeGlobale + (so ? " min" : " s");
-  $("reposRow").classList.toggle("hidden", mode !== "seance" && !tb && !sa);
-  $("reposVal").textContent = repos + " s";
+  const rr = routine.reglerRepos, rProp = rr ? routine.reposProp : !routine.fixe && (sa || mode === "seance") ? reposPropose(mode, cle) : null;
+  $("reposRow").classList.toggle("hidden", rr ? false : mode !== "seance" && !tb && !sa);
+  $("reposVal").textContent = reposTxt(+(rr ? routine.repos : repos) || 0);
   $("repsRow").classList.toggle("hidden", !tb);
   $("cyclesRow").classList.toggle("hidden", !tb && !sa);
   const lc = document.querySelector('label[for="cyclesVal"]');
@@ -2198,8 +2210,8 @@ function ouvrirApercu(cle) {
   const ld = document.querySelector('label[for="dureeVal"]'), lr = document.querySelector('label[for="reposVal"]');
   ld.firstChild.textContent = T(sa ? "Durée de l’exercice" : tb ? "Temps d’exercice" : so ? "Durée de la séance" : mode === "calme" ? "Durée de chaque étirement" : "Durée par exercice");
   ld.querySelector("small").textContent = T(tb ? "Durée de chaque effort" : so ? "En minutes, les exercices s’adaptent" : "Appliquée à tous les exercices");
-  lr.firstChild.textContent = T(tb ? "Temps de repos" : "Repos entre exercices");
-  lr.querySelector("small").textContent = T(tb ? "Pause entre deux répétitions" : "Pause avant l’exercice suivant");
+  lr.firstChild.textContent = tb ? T("Temps de repos") : (sa || routine.gym) && !routine.circuit ? L("Repos entre les séries", "Rest between sets") : T("Repos entre exercices");
+  lr.querySelector("small").textContent = tb ? T("Pause entre deux répétitions") : rProp != null ? L("Proposé pour cette séance : ", "Suggested for this session: ") + reposTxt(rProp) + (routine.gym && !routine.circuit ? L(" · accessoires ajustés en proportion", " · accessories scaled to match") : routine.plan ? L(" · récupération entre les tours ajustée en proportion", " · recovery between rounds scaled to match") : "") : T("Pause avant l’exercice suivant");
     document.documentElement.style.setProperty("--accent", routine.couleur);
   const plan = so ? planSouf(routine, dureeGlobale) : [];
   const total = so ? plan.reduce((t, q) => t + q.sec, 0) : mode === "tabata"
@@ -2210,7 +2222,7 @@ function ouvrirApercu(cle) {
   const nb = (n, un, plus, v) => T(n > 1 ? plus : un, { n, ...v });
   const min = String(Math.round(total / 60 * 10) / 10).replace(".", LANGUE === "en" ? "." : ",");
   $("pInfo").textContent = (tb ? nb(cycles, "{n} cycle", "{n} cycles") : so ? nb(routine.blocs.length, "{n} exercice", "{n} exercices") : sa ? T(cycles > 1 ? "{n} exercices × {s} séries" : "{n} exercices × {s} série", { n: ids.length, s: cycles }) : T("{n} exercices", { n: liste.length })) + " · " + T("environ {m} min", { m: min });
-  $("dureeVal").closest(".reglage").classList.toggle("hidden", !!routine.plan); if (routine.plan) $("reposRow").classList.add("hidden");
+  $("dureeVal").closest(".reglage").classList.toggle("hidden", !!routine.plan); if (routine.plan && !rr) $("reposRow").classList.add("hidden");
   if (routine.plan) $("pInfo").textContent = L("environ {m} min · effort visé {r}/10", "about {m} min · target effort {r}/10").replace("{m}", Math.round(total / 60)).replace("{r}", routine.rpe);
   $("pList").innerHTML = routine.listeHtml ? routine.listeHtml : routine.blocsProg ? `<li class="etude prog-carte-jour"><div><small><b>${L("Semaine", "Week")} ${routine.semaine + 1} · ${L(SEMAINES[routine.semaine][0], SEMAINES[routine.semaine][1])}</b></small><small>🎯 ${routine.objectif}</small><small>💡 ${routine.conseil}</small></div></li>`
       + routine.blocsProg.map(b => `<li class="bloc-titre"><div><b>${b.n}</b><small>${b.t > 1 ? L("{t} tours", "{t} rounds").replace("{t}", b.t) + " · " : ""}${b.ex.length} ${L("exercices", "exercises")} · ${b.ex[0][1]} s${b.r ? " / " + b.r + " s " + L("de repos", "rest") : ""}${b.t > 1 ? " · " + b.rt + " s " + L("entre les tours", "between rounds") : ""}</small></div></li>`
@@ -2282,7 +2294,7 @@ function media(e) {
 function fondu() { const el = $("session"); el.classList.remove("frais"); void el.offsetWidth; el.classList.add("frais"); }
 
 function afficher() {
-  fondu();
+  fondu(); $("plusRepos").classList.add("hidden");
   const e = liste[index];
   reste = e.duree;
   $("count").textContent = e.lab ? e.lab : e.bn ? e.bn + (e.tt > 1 ? L(" · tour {t}/{n}", " · round {t}/{n}").replace("{t}", e.t).replace("{n}", e.tt) : "") + " · " + (index + 1) + "/" + liste.length : e.series ? T("Exercice {a} sur {b} · série {c} sur {d}", { a: Math.floor(index / e.series) + 1, b: liste.length / e.series, c: e.serie, d: e.series }) : T("Exercice {a} sur {b}", { a: index + 1, b: liste.length });
@@ -2503,7 +2515,9 @@ function afficherRepos() {
   $("pause").textContent = T(enPause ? "Reprendre" : "Pause");
   bip(440, 350, 0.2, "sine");
   parler(PH("repos") + annonce(e, liste[index], true));
+  $("plusRepos").classList.remove("hidden");
 }
+$("plusRepos").onclick = () => { if (enRepos) { reste += 15; $("time").textContent = reste; } };
 
 function terminer() {
   clearInterval(timer);
@@ -2894,15 +2908,16 @@ const PROGRAMMES = [
     [30, 30, [3, 4, 4, 2], "dyn"]]
 ];
 const progAvance = id => { try { return Math.min(NB_PROG, parseInt(localStorage.getItem("prog_" + id), 10) || 0); } catch (e) { return 0; } };
-function progJour(P, i) {   // construit la séance du jour i (0-27) : blocs, plan détaillé, textes
+function progJour(P, i, choix) {   // construit la séance du jour i (0-27) : blocs, plan détaillé, textes
   const [id, tFr, tEn, , , couleur, , , , , sem, [eff, rep, tours, ech]] = P, w = Math.floor(i / 7), test = i === NB_PROG - 1;
   const [type, fFr, fEn, ex, rac] = test ? sem[0] : sem[i % 7], ty = test ? "test" : type, ww = test ? 2 : w;
-  const ok = l => l.filter(e => EXERCICES[e]), blocs = [];
+  const ok = l => l.filter(e => EXERCICES[e]), blocs = []; let regl = {};
   if (type === "mobilite" || type === "recup") {
     if (type === "mobilite") blocs.push({ n: L("Réveil articulaire", "Joint warm-up"), t: 1, ex: ok(ECH.mob).map(e => [e, 30]), r: 5 });
     blocs.push({ n: L(type === "recup" ? "Séance de récupération" : "Circuit de mobilité", type === "recup" ? "Recovery session" : "Mobility circuit"), t: ww < 3 ? 2 : 1, ex: ok(ex).map(e => [e, type === "recup" ? 50 : 40 + Math.min(ww, 2) * 5]), r: 10, rt: 30 });
   } else {
-    const intense = type === "hiit", d = eff + [0, 5, 10, 0][ww] - (intense ? 5 : 0), r = Math.max(10, rep - [0, 0, 5, -5][ww] + (intense ? 5 : 0));
+    const intense = type === "hiit", d = eff + [0, 5, 10, 0][ww] - (intense ? 5 : 0), r0 = Math.max(10, rep - [0, 0, 5, -5][ww] + (intense ? 5 : 0)), r = choix ?? reposLu("prog:" + id + ":" + i, r0);
+    regl = { repos: r, reposProp: r0, reposId: "prog:" + id + ":" + i, reglerRepos: v => progJour(P, i, v) };
     blocs.push({ n: L("Échauffement", "Warm-up"), t: 1, ex: ok(ECH[ech]).map(e => [e, 30]), r: 5 });
     blocs.push({ n: L("Corps de séance", "Main workout"), t: test ? tours[2] : tours[w], ex: ok(ex).map(e => [e, d]), r, rt: Math.round(r * 2.5 / 5) * 5 });
     if (rac) blocs.push({ n: L("Retour au calme", "Cool-down"), t: 1, ex: ok(RAC[rac]).map(e => [e, 30]), r: 5 });
@@ -2913,7 +2928,7 @@ function progJour(P, i) {   // construit la séance du jour i (0-27) : blocs, pl
   const [c, nFr, nEn, oFr, oEn, rpe] = PTYPES[ty], cs = CONSEILS[ty][i % CONSEILS[ty].length];
   return { type: "seance", prog: id, progI: i, fixe: true, couleur: c, plan, blocsProg: blocs, exercices: plan.map(p => p.id),
     titre: L("J", "D") + (i + 1) + " · " + L(nFr, nEn) + (test ? "" : " · " + L(fFr, fEn)), titreFr: tFr + " J" + (i + 1), detail: "",
-    objectif: L(oFr, oEn), rpe: rpe[ww], conseil: L(...cs), semaine: w, nomProg: L(tFr, tEn), couleurProg: couleur, ty };
+    objectif: L(oFr, oEn), rpe: rpe[ww], conseil: L(...cs), semaine: w, nomProg: L(tFr, tEn), couleurProg: couleur, ty, ...regl };
 }
 const dureesProg = P => { const d = Array.from({ length: NB_PROG }, (_, i) => Math.round(progJour(P, i).plan.reduce((s, q) => s + q.d + q.r, 0) / 60)); return Math.min(...d) + "–" + Math.max(...d) + " min"; };
 function progTerminer(id, i) { if (i === progAvance(id)) try { localStorage.setItem("prog_" + id, i + 1); } catch (e) {} }
@@ -3258,8 +3273,9 @@ const SPLITS = {
   full: ["Full body", "Full body", "Tout le corps en une séance", "Whole body in one session", ["squatBarre", "benchBarre", "ezRow", "rdlBarre", "militaire", "poulieCrunch"], ["armcircles", "twist", "kneeup", "inchworm", "wgs"], ["chien", "fenteBasse", "murPecs", "enfantStat"]]
 };
 const tempoSec = t => t.split("-").reduce((s, x) => s + (x === "X" ? 1 : +x), 0);
-function seanceSalle(mId, sId) {
-  const M = METHODES[mId], [c, nFr, nEn, , , mp, ac, chP, chA, rir, tempo, rP, rA, rpe, circuit] = M, S = SPLITS[sId];
+function seanceSalle(mId, sId, choix) {
+  const M = METHODES[mId], [c, nFr, nEn, , , mp, ac, chP, chA, rir, tempo, rP, rA0, rpe, circuit] = M, S = SPLITS[sId];
+  const reposId = "salle:" + mId + ":" + sId, rep = choix ?? reposLu(reposId, rP), k = rP ? rep / rP : 1, rA = r5(rA0 * k), rTour = r5(90 * k);
   const ok = l => l.filter(e => EXERCICES[e]), ex = ok(S[4]), dur = reps => Math.min(90, Math.max(15, reps * tempoSec(tempo) + 4));
   const presc = (reps, ch) => `${reps} ${L("reps", "reps")} · tempo ${tempo} · ${ch} ${L("du max", "of max")} · RIR ${rir}`;
   const plan = [], blocs = [], add = (q) => plan.push(q);
@@ -3276,12 +3292,12 @@ function seanceSalle(mId, sId) {
   const nC = L(circuit ? "Circuit" : "Corps de séance", circuit ? "Circuit" : "Main workout"), lignes = [];
   if (circuit) {
     const T = mp[0];
-    for (let t = 1; t <= T; t++) ex.forEach((e, k) => add({ id: e, d: dur(mp[1]), r: k < ex.length - 1 ? rP : t < T ? 90 : 20, ft: k === ex.length - 1 && t < T, bn: nC, lab: nC + " · " + L("tour", "round") + " " + t + "/" + T + " · " + (k + 1) + "/" + ex.length, presc: presc(mp[2], chP) }));
-    ex.forEach(e => lignes.push([e, mp[0] + " " + L("tours", "rounds") + " × " + mp[2], `tempo ${tempo} · ${chP} · ${L("15 s entre exercices, 90 s entre tours", "15 s between exercises, 90 s between rounds")}`]));
+    for (let t = 1; t <= T; t++) ex.forEach((e, k) => add({ id: e, d: dur(mp[1]), r: k < ex.length - 1 ? rep : t < T ? rTour : 20, ft: k === ex.length - 1 && t < T, bn: nC, lab: nC + " · " + L("tour", "round") + " " + t + "/" + T + " · " + (k + 1) + "/" + ex.length, presc: presc(mp[2], chP) }));
+    ex.forEach(e => lignes.push([e, mp[0] + " " + L("tours", "rounds") + " × " + mp[2], `tempo ${tempo} · ${chP} · ${reposTxt(rep)} ${L("entre exercices", "between exercises")}, ${reposTxt(rTour)} ${L("entre tours", "between rounds")}`]));
   } else ex.forEach((e, k) => {
-    const [ser, reps, txt] = k < 2 ? mp : ac, ch = k < 2 ? chP : chA, r = k < 2 ? rP : rA;
+    const [ser, reps, txt] = k < 2 ? mp : ac, ch = k < 2 ? chP : chA, r = k < 2 ? rep : rA;
     for (let s = 1; s <= ser; s++) add({ id: e, d: dur(reps), r: s < ser ? r : k < ex.length - 1 ? r + 30 : 20, bn: nC, serie: s, series: ser, lab: EXERCICES[e].nom + " · " + L("série", "set") + " " + s + "/" + ser, presc: presc(txt, ch) });
-    lignes.push([e, ser + " × " + txt, `tempo ${tempo} · ${ch} · RIR ${rir} · ${L("repos", "rest")} ${r >= 120 ? r / 60 + " min" : r + " s"}`]);
+    lignes.push([e, ser + " × " + txt, `tempo ${tempo} · ${ch} · RIR ${rir} · ${L("repos", "rest")} ${reposTxt(r)}`]);
   });
   blocs.push({ n: nC, l: lignes });
   // 4. retour au calme
@@ -3291,7 +3307,8 @@ function seanceSalle(mId, sId) {
   const total = Math.round(plan.reduce((s, q) => s + q.d + q.r, 0) / 60);
   const html = `<li class="etude prog-carte-jour" style="--accent:${c}"><div><small><b>${L(nFr, nEn)} · ${L(S[0], S[1])}</b></small><small>🎯 ${L(METHODES[mId][3], METHODES[mId][4])}</small><small>⚖️ ${L("Charge : choisis un poids qui te laisse", "Load: pick a weight that leaves")} ${rir} ${L("répétitions en réserve (RIR) en fin de série.", "reps in reserve (RIR) at the end of the set.")}</small><small>💡 ${L(...cs)}</small></div></li>`
     + blocs.map(b => `<li class="bloc-titre"><div><b>${b.n}</b></div></li>` + b.l.map(([id, a, s]) => `<li class="bloc-ex">${vignette(id)}<div><b>${EXERCICES[id].nom}</b><small>${s || EXERCICES[id].muscles}</small></div><span class="duree">${a}</span></li>`).join("")).join("");
-  return { type: "seance", gym: 1, fixe: true, couleur: c, plan, exercices: plan.map(q => q.id), listeHtml: html, rpe, total,
+  return { type: "seance", gym: 1, circuit, fixe: true, couleur: c, plan, exercices: plan.map(q => q.id), listeHtml: html, rpe, total,
+    repos: rep, reposProp: rP, reposId, reglerRepos: v => seanceSalle(mId, sId, v),
     titre: L(S[0], S[1]) + " · " + L(nFr, nEn), titreFr: S[0] + " · " + nFr, detail: "" };
 }
 function ficheMethode(mId) {
@@ -3547,9 +3564,10 @@ const NIV_RENFO = [["debutant", "Débutant", "Beginner", 2, 30, 30, 60, "5–6",
   ["avance", "Avancé", "Advanced", 4, 45, 15, 90, "7–8", 8, "4 tours de 8 exercices, 45 s d’effort et 15 s de repos.", "4 rounds of 8 exercises, 45 s work and 15 s rest."]];
 const exHtml = l => l.map(([x, a]) => `<li class="bloc-ex">${vignette(x)}<div><b>${EXERCICES[x].nom}</b><small>${EXERCICES[x].muscles}</small></div><span class="duree">${a}</span></li>`).join("");
 const blocHtml = ([n, l, d]) => `<li class="bloc-titre"><div><b>${n}</b><small>${d}</small></div></li>` + exHtml(l);
-function seanceRenfo(grp, mat, niv) {
+function seanceRenfo(grp, mat, niv, choix) {
   const cle = SEANCE(grp) + (mat ? "Mat" : ""), R = ROUTINES[cle], F = RENFOS[grp], E = ECHS[grp], ok = l => l.filter(e => EXERCICES[e]);
-  const [, nFr, nEn, tours, eff, rep, rt, rpe, nb] = NIV_RENFO.find(n => n[0] === niv), plan = [], blocs = [];
+  const [, nFr, nEn, tours, eff, rep0, rt0, rpe, nb] = NIV_RENFO.find(n => n[0] === niv), plan = [], blocs = [];
+  const reposId = "renfo:" + cle + ":" + niv, rep = choix ?? reposLu(reposId, rep0), rt = r5(rt0 * (rep0 ? rep / rep0 : 1));
   const bloc = (n, l, t, r, rT, desc, aff) => {
     for (let i = 1; i <= t; i++) l.forEach(([x, dd], k) => plan.push({ id: x, d: dd, r: k < l.length - 1 ? r : i < t ? rT : 15, bn: n, t: i, tt: t, ft: k === l.length - 1 && i < t,
       lab: n + (t > 1 ? L(" · tour {t}/{n}", " · round {t}/{n}").replace("{t}", i).replace("{n}", t) : "") + ` · ${k + 1}/${l.length}` }));
@@ -3563,7 +3581,8 @@ function seanceRenfo(grp, mat, niv) {
   plan[plan.length - 1].r = 0;
   const total = Math.round(plan.reduce((s, q) => s + q.d + q.r, 0) / 60), titre = (R.titre.split(" · ")[0]) + " · " + L(nFr, nEn) + (mat ? " · " + L("matériel", "equipment") : "");
   const html = `<li class="etude prog-carte-jour" style="--accent:${R.couleur}"><div><small><b>${L(F[0], F[1])}</b></small><small>💡 ${L("Effort visé", "Target effort")} ${rpe}/10 : ${L("tu dois finir chaque série avec encore 1 à 3 répétitions en réserve.", "finish each set with 1 to 3 reps still in reserve.")}</small></div></li>` + blocs.map(blocHtml).join("");
-  return { type: "seance", cat: R.grp, renfoS: 1, niv, fixe: true, couleur: R.couleur, plan, exercices: plan.map(q => q.id), listeHtml: html, rpe, total, titre, titreFr: titre, detail: R.detail };
+  return { type: "seance", cat: R.grp, renfoS: 1, niv, fixe: true, couleur: R.couleur, plan, exercices: plan.map(q => q.id), listeHtml: html, rpe, total, titre, titreFr: titre, detail: R.detail,
+    repos: rep, reposProp: rep0, reposId, reglerRepos: v => seanceRenfo(grp, mat, niv, v) };
 }
 function ficheRenfo() {
   return `<details class="prog-info" style="--c:#7B5EA7"><summary>${L("Se renforcer pour son sport : le guide", "Strength for your sport: the guide")}</summary>
@@ -4435,12 +4454,15 @@ $("mCalme").onclick = vueCalme;
 $("homeBack").onclick = () => retour(() => ({ cat: vueCats, zones: vueSCats, smode: () => ["haut", "bas", "complet"].includes(grpCourant) ? vueZones() : vueSCats(), scats: vuePlan, salle: vuePlan, methode: vueSalle, libres: vueSalle, blessure: vuePlan, favoris: vuePlan, kcat: vueCalme, tabata: vuePlan, ech: () => ROUTINES[echCle].cat === "renfo" ? vueCat("renfo") : vueCats() }[vueListe] || (() => ecran("menu")))());
 
 function setRepos(r) {
-  repos = Math.min(mode === "salle" ? 180 : 120, Math.max(0, r));
-  if (!routine || !routine.fixe) try { localStorage.setItem({ tabata: "reposTabata", salle: "reposSalle" }[mode] || "repos", repos); } catch (e) {}
+  if (routine && routine.reglerRepos) { const v = Math.min(300, Math.max(0, r)); reposGarder(routine.reposId, v); ROUTINES[routineCle] = routine.reglerRepos(v); return ouvrirApercu(routineCle); }
+  repos = Math.min(mode === "salle" ? 300 : mode === "tabata" ? 120 : 180, Math.max(0, r));
+  if (mode === "tabata") try { localStorage.setItem("reposTabata", repos); } catch (e) {}
+  else if (routine && !routine.fixe) reposGarder((mode === "salle" ? "libre:" : "seance:") + routineCle, repos);
   if (routineCle) ouvrirApercu(routineCle);
 }
-$("rMoins").onclick = () => setRepos(repos - 5);
-$("rPlus").onclick = () => setRepos(repos + 5);
+const reposActuel = () => routine && routine.reglerRepos ? routine.repos : repos;   // pas de 15 s au-delà d'une minute
+$("rMoins").onclick = () => { const v = reposActuel(); setRepos(v - (v > 60 ? 15 : 5)); };
+$("rPlus").onclick = () => { const v = reposActuel(); setRepos(v + (v >= 60 ? 15 : 5)); };
 $("cycMoins").onclick = () => setCycles(cycles - 1);
 $("cycPlus").onclick = () => setCycles(cycles + 1);
 $("repMoins").onclick = () => setReps(reps - 1);
