@@ -2,7 +2,7 @@
    - Coquille (page, polices, icônes) : mise en cache à l'installation ; la page est servie « réseau d'abord » pour recevoir les mises à jour.
    - Vidéos : cache séparé « 2work-videos », rempli à la demande depuis Réglages → « Vidéos hors ligne », conservé entre les versions.
    Changer V à chaque mise en ligne d'une nouvelle version. */
-const V = "2work-v2026-10-23c", VIDEOS = "2work-videos";
+const V = "2work-v2026-10-23d", VIDEOS = "2work-videos";
 const COQUILLE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./icons/logo.png", "./icons/qr.png",
   ...["barlow-latin-400", "barlow-latin-500", "barlow-latin-600", "barlow-latin-700", "barlow-condensed-latin-600", "barlow-condensed-latin-700", "barlow-condensed-latin-800"].map(f => `./fonts/${f}-normal.woff2`)];
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(COQUILLE)).then(() => self.skipWaiting())));
