@@ -2067,7 +2067,7 @@ function setDuree(d) {
   if (routineCle) ouvrirApercu(routineCle);
 }
 
-let tPret, ecranCourant = "accueil", sensRetour = false;
+let tPret, ecranCourant = "accueil", sensRetour = false, genEcran = 0;
 const mouvementReduit = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* Change d'écran. "avant" : modifications du DOM à faire dans la même transition (ex. changer de liste).
    Pour revenir en arrière, appeler retour(() => ...) : la transition part dans l'autre sens. */
@@ -2075,7 +2075,8 @@ function ecran(nom, avant) {
   if (nom !== "pret") clearInterval(tPret);
   const change = nom !== ecranCourant || avant, sens = sensRetour ? "retour" : "avant";
   sensRetour = false;
-  const maj = () => { if (avant) avant(); afficherEcran(nom); };
+  const g = ++genEcran;   // un écran demandé entre-temps l'emporte (sinon une transition en retard couperait le chrono)
+  const maj = () => { if (avant) avant(); if (g === genEcran) afficherEcran(nom); };
   if (!change || mouvementReduit()) return maj();
   document.documentElement.dataset.sens = sens;
   if (document.startViewTransition) return document.startViewTransition(maj);
