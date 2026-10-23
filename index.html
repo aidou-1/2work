@@ -107,6 +107,7 @@ box-shadow: 0 22px 44px -10px rgba(14,26,58,.45), 0 0 0 2px color-mix(in srgb, v
 /* pas de zoom au double toucher (le pincement reste possible) : deux appuis rapides sur + ou − = deux réglages */
 html, body, button, a, input, select, label, summary, .stepper { touch-action: manipulation; }
 .stepper, .stepper output { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.sh-img { display: block; width: 62%; margin: 10px auto 6px; border-radius: 14px; -webkit-touch-callout: default; }
 .volume { display: flex; align-items: center; gap: 10px; } .volume input { width: 130px; accent-color: var(--accent); } .volume output { min-width: 3.2em; font-weight: 700; text-align: right; }
 .plus-repos { display: block; margin: -4px auto 10px; padding: 8px 18px; border-radius: 999px; font-weight: 700; background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; }
 .toggle { padding: 10px 18px; min-width: 6.5em; white-space: nowrap; font-weight: 600; background: var(--accent); color: #fff; }
@@ -892,6 +893,7 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <script>
 /* ============ LANGUE ============
    T(texte français, variables) renvoie le texte dans la langue de l'appli (réglage « langue », fr par défaut). */
+function stocker(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }   // le stockage peut être refusé (navigation privée) : jamais bloquant
 let LANGUE = "fr";
 try { LANGUE = localStorage.getItem("langue") || "fr"; } catch (e) {}
 document.documentElement.lang = LANGUE;
@@ -1955,7 +1957,7 @@ function chargerIds(cle) {
 
 function sauverIds() {
   if (routine && routine.fixe) return;
-  try { localStorage.setItem("routine_" + routineCle, JSON.stringify(ids)); } catch (e) {}
+  stocker("routine_" + routineCle, JSON.stringify(ids));
 }
 
 function fermerAjout() {
@@ -2093,7 +2095,7 @@ const CLE_DUREE = { salle: "dureeSalle", tabata: "dureeTabata", seance: "dureeSe
 const pas = () => mode === "souffle" ? 1 : 5;
 function setDuree(d) {
   dureeGlobale = mode === "souffle" ? Math.min(30, Math.max(1, d)) : Math.min(120, Math.max(5, d));
-  if (!routine || !routine.fixe) try { localStorage.setItem(mode === "souffle" ? "minutes_" + routineCle : CLE_DUREE[mode], dureeGlobale); } catch (e) {}
+  if (!routine || !routine.fixe) stocker(mode === "souffle" ? "minutes_" + routineCle : CLE_DUREE[mode], dureeGlobale);
   if (routineCle) ouvrirApercu(routineCle);
 }
 
@@ -2479,17 +2481,17 @@ function precedentTab() {
 
 function setCycles(n) {
   cycles = Math.min(mode === "salle" ? 6 : 30, Math.max(1, n));
-  try { localStorage.setItem(mode === "salle" ? "seriesSalle" : "cyclesTabata", cycles); } catch (e) {}
+  stocker(mode === "salle" ? "seriesSalle" : "cyclesTabata", cycles);
   if (routineCle) ouvrirApercu(routineCle);
 }
 function setReps(n) {
   reps = Math.min(30, Math.max(1, n));
-  try { localStorage.setItem("repsTabata", reps); } catch (e) {}
+  stocker("repsTabata", reps);
   if (routineCle) ouvrirApercu(routineCle);
 }
 function setRecup(n) {
   recup = Math.min(300, Math.max(0, n));
-  try { localStorage.setItem("recupTabata", recup); } catch (e) {}
+  stocker("recupTabata", recup);
   if (routineCle) ouvrirApercu(routineCle);
 }
 
@@ -2637,7 +2639,7 @@ function majEtoile() {
 function defiReussi() {
   const s = lireJSON("defiSerie", {}), hier = new Date(); hier.setDate(hier.getDate() - 1);
   const n = s.jour === jourCle() ? s.n : s.jour === jourCle(hier) ? s.n + 1 : 1;
-  try { localStorage.setItem("defiSerie", JSON.stringify({ jour: jourCle(), n })); } catch (e) {}
+  stocker("defiSerie", JSON.stringify({ jour: jourCle(), n }));
   return n;
 }
 $("defiBtn").onclick = () => { defiDuJour(); ouvrirRoutine("defi"); };
@@ -2651,7 +2653,7 @@ const muscleDuJour = d => duJour(MUSCLES, d);
 const majMuscleBtn = () => { try { $("muscleNouveau").classList.toggle("vu", localStorage.getItem("muscleVu") === jourCle()); } catch (e) {} };
 function ouvrirMuscle() {
   const [id, exos, fr, en] = muscleDuJour(), [nom, zone, attaches, actions, utilite, savais] = LANGUE === "en" ? en : fr;
-  try { localStorage.setItem("muscleVu", jourCle()); const lus = lireJSON("musclesLus", []); if (!lus.includes(id)) localStorage.setItem("musclesLus", JSON.stringify([...lus, id])); } catch (e) {}
+  stocker("muscleVu", jourCle()); const lus = lireJSON("musclesLus", []); if (!lus.includes(id)) localStorage.setItem("musclesLus", JSON.stringify([...lus, id]));
   $("mZone").textContent = T("Muscle du jour") + " · " + zone; $("mNom").textContent = nom;
   const bloc = (t, txt, c = "") => `<div class="fiche ${c}"><h2>${T(t)}</h2><p>${txt}</p></div>`;
   const ex = exos.filter(e => EXERCICES[e]);
@@ -2729,7 +2731,7 @@ function medaille(t, k = 0) {
 function verifierTrophees() {   // renvoie les trophées débloqués à l'instant
   const S = statsGlobales(), deja = lireJSON("trophees", {}), neufs = TROPHEES.filter(t => !deja[t[0]] && t[7](S));
   neufs.forEach(t => deja[t[0]] = jourCle());
-  try { localStorage.setItem("trophees", JSON.stringify(deja)); } catch (e) {}
+  stocker("trophees", JSON.stringify(deja));
   return neufs;
 }
 
@@ -2759,16 +2761,16 @@ function coach(e, r) {
   else if (r >= 1 && r <= 3 && !calme && e.duree >= 15) parler(String(r), 0, 1.1);
 }
 function majCoach() { $("coachBtn").textContent = T(coachActif ? "Activé" : "Coupé"); $("coachBtn").setAttribute("aria-pressed", coachActif); }
-$("coachBtn").onclick = () => { coachActif = !coachActif; try { localStorage.setItem("coach", coachActif ? "1" : "0"); } catch (e) {} majCoach(); if (coachActif && voixActive) parler(auHasard(COACH[langueVoix].mi), 0, 1); };
+$("coachBtn").onclick = () => { coachActif = !coachActif; stocker("coach", coachActif ? "1" : "0"); majCoach(); if (coachActif && voixActive) parler(auHasard(COACH[langueVoix].mi), 0, 1); };
 majCoach();
 function majRetours() { [["sonsBtn", sonsUI, "Activés", "Coupés"], ["vibBtn", vibrations, "Activées", "Coupées"]].forEach(([id, v, a, b]) => { $(id).textContent = T(v ? a : b); $(id).setAttribute("aria-pressed", v); }); }
-$("sonsBtn").onclick = () => { sonsUI = !sonsUI; try { localStorage.setItem("sonsUI", sonsUI ? "1" : "0"); } catch (e) {} majRetours(); if (sonsUI) RETOURS.oui[0](); };
-$("vibBtn").onclick = () => { vibrations = !vibrations; try { localStorage.setItem("vibrations", vibrations ? "1" : "0"); } catch (e) {} majRetours(); vibrer([30, 40, 30]); };
+$("sonsBtn").onclick = () => { sonsUI = !sonsUI; stocker("sonsUI", sonsUI ? "1" : "0"); majRetours(); if (sonsUI) RETOURS.oui[0](); };
+$("vibBtn").onclick = () => { vibrations = !vibrations; stocker("vibrations", vibrations ? "1" : "0"); majRetours(); vibrer([30, 40, 30]); };
 majRetours();
 function majReglagesSon() { $("volSons").value = Math.round(volSons * 100); $("volVal").textContent = Math.round(volSons * 100) + " %"; Object.entries(FORCES).forEach(([id, f]) => $(id).setAttribute("aria-pressed", f === forceVib)); }
 $("volSons").oninput = () => { volSons = $("volSons").value / 100; majReglagesSon(); };
-$("volSons").onchange = () => { try { localStorage.setItem("volumeSons", Math.round(volSons * 100)); } catch (e) {} RETOURS.oui[0](); };
-Object.entries(FORCES).forEach(([id, f]) => $(id).onclick = () => { forceVib = f; try { localStorage.setItem("forceVib", f); } catch (e) {} majReglagesSon(); vibrer([30, 40, 30]); });
+$("volSons").onchange = () => { stocker("volumeSons", Math.round(volSons * 100)); RETOURS.oui[0](); };
+Object.entries(FORCES).forEach(([id, f]) => $(id).onclick = () => { forceVib = f; stocker("forceVib", f); majReglagesSon(); vibrer([30, 40, 30]); });
 majReglagesSon();
 
 /* --- Célébration : confettis, médaille, bilan animé, trophées débloqués, fanfare --- */
@@ -2797,7 +2799,7 @@ function compteur(el, fin, suffixe = "") {
 function celebrer() {
   const mn = Math.max(1, Math.round(totalPrevu / 60)), n = mode === "souffle" ? (routine.blocs || []).length : mode === "tabata" ? cycles : new Set(ids).size;
   const h = lireHist(); h.push({ j: jourCle(), hr: new Date().getHours(), k: routineCle, t: routine.titre, m: mode, s: totalPrevu, n, c: routine.cat || routine.grp || "", b: routine.blessure ? 1 : 0, p: routine.prog ? 1 : 0, g: routine.gym || routine.salle ? 1 : 0, tb: routine.tbt ? 1 : 0, nv: routine.niv || "", e: mode === "tabata" || mode === "souffle" ? [] : ids.slice(0, 30) });
-  try { localStorage.setItem("historique", JSON.stringify(h.slice(-3000))); } catch (e) {}
+  stocker("historique", JSON.stringify(h.slice(-3000)));
   if (routine.prog) progTerminer(routine.prog, routine.progI);
   if (routine.reprise) repTerminer(routine.reprise, routine.repI);
   const S = statsGlobales(), neufs = verifierTrophees();
@@ -2883,7 +2885,7 @@ function majFavRow() {
   $("favForm").classList.add("hidden");
 }
 $("favBtn").onclick = () => {
-  if (routine.fav) { const fs = lireFav(), f = fs.find(x => x.id === routine.fav); if (f) { f.ids = [...ids]; try { localStorage.setItem("favoris", JSON.stringify(fs)); } catch (e) {} majFavoris(); }
+  if (routine.fav) { const fs = lireFav(), f = fs.find(x => x.id === routine.fav); if (f) { f.ids = [...ids]; stocker("favoris", JSON.stringify(fs)); majFavoris(); }
     $("favBtn").textContent = L("✓ Enregistré", "✓ Saved"); return; }
   if (!ids.length) { $("favBtn").textContent = L("Ajoute d’abord des exercices", "Add exercises first"); return; }
   $("favForm").classList.toggle("hidden"); $("favNom").value = routineCle === "perso" ? "" : routine.titre; $("favNom").placeholder = L("Nom de ta séance", "Workout name"); $("favNom").focus(); $("favNom").select();
@@ -2891,7 +2893,7 @@ $("favBtn").onclick = () => {
 $("favOk").onclick = () => {
   const nom = $("favNom").value.trim() || routine.titre, fs = lireFav(), id = Date.now().toString(36);
   fs.push({ id, nom, base: routine.base || routineCle, ids: [...ids] });
-  try { localStorage.setItem("favoris", JSON.stringify(fs)); } catch (e) {}
+  stocker("favoris", JSON.stringify(fs));
   majFavoris(); $("favForm").classList.add("hidden"); $("favBtn").textContent = L("✓ Enregistrée dans Mes séances", "✓ Saved to My workouts");
 };
 $("favNom").onkeydown = e => { if (e.key === "Enter") $("favOk").click(); };
@@ -2903,7 +2905,7 @@ function vueFavoris() {
     bouton(c, f.nom, (f.base === "perso" ? L("Séance perso", "Custom workout") : ROUTINES[f.base].titre) + " · " + T("{n} exercices", { n: r.exercices.length }), r.couleur, () => ouvrirRoutine("fav_" + f.id));
     const b = c.lastChild, x = document.createElement("span"); x.className = "suppFav"; x.setAttribute("role", "button"); x.textContent = "×"; x.setAttribute("aria-label", L("Supprimer", "Delete"));
     x.onclick = ev => { ev.stopPropagation(); if (!x.classList.contains("conf")) { x.classList.add("conf"); x.textContent = L("Supprimer ?", "Delete?"); setTimeout(() => { x.classList.remove("conf"); x.textContent = "×"; }, 3000); return; }
-      try { localStorage.setItem("favoris", JSON.stringify(lireFav().filter(y => y.id !== f.id))); localStorage.removeItem("routine_fav_" + f.id); } catch (e) {} majFavoris(); vueFavoris(); };
+      stocker("favoris", JSON.stringify(lireFav().filter(y => y.id !== f.id))); localStorage.removeItem("routine_fav_" + f.id); majFavoris(); vueFavoris(); };
     b.appendChild(x); });
   vue("choicesF", "favoris", L("Mes séances", "My workouts"), L("Tes séances créées ou enregistrées, prêtes à lancer.", "Your created or saved workouts, ready to go."));
 }
@@ -3009,7 +3011,7 @@ function progJour(P, i, choix) {   // construit la séance du jour i (0-27) : bl
     objectif: L(oFr, oEn), rpe: rpe[ww], conseil: L(...cs), semaine: w, nomProg: L(tFr, tEn), couleurProg: couleur, ty, ...regl };
 }
 const dureesProg = P => { const d = Array.from({ length: NB_PROG }, (_, i) => Math.round(progJour(P, i).plan.reduce((s, q) => s + q.d + q.r, 0) / 60)); return Math.min(...d) + "–" + Math.max(...d) + " min"; };
-function progTerminer(id, i) { if (i === progAvance(id)) try { localStorage.setItem("prog_" + id, i + 1); } catch (e) {} }
+function progTerminer(id, i) { if (i === progAvance(id)) stocker("prog_" + id, i + 1); }
 function ouvrirProgs(sens) {
   $("pgTitre").textContent = L("Programmes", "Programmes");
   $("pgSub").textContent = L("4 semaines, une séance par jour, périodisées comme un vrai plan d’entraînement. Suis le chemin !", "4 weeks, one workout a day, periodised like a real training plan. Follow the path!");
@@ -3043,7 +3045,7 @@ function ouvrirProg(id, sens) {
   if (a >= NB_PROG) h += `<p class="trophee-fin">🏆 ${L("Programme accompli", "Programme complete")}</p><button class="toggle contour" id="progReset" style="display:block;margin:0 auto">${L("Recommencer le programme", "Restart the programme")}</button>`;
   $("chemin").innerHTML = h;
   $("chemin").querySelectorAll(".etape:not([disabled])").forEach(b => b.onclick = () => { ROUTINES.prog = progJour(P, +b.dataset.i); CONSEILLES.prog = ROUTINES.prog.exercices; ouvrirRoutine("prog"); });
-  if ($("progReset")) $("progReset").onclick = () => { try { localStorage.setItem("prog_" + id, 0); } catch (e) {} ouvrirProg(id); };
+  if ($("progReset")) $("progReset").onclick = () => { stocker("prog_" + id, 0); ouvrirProg(id); };
   document.documentElement.style.setProperty("--accent", P[5]);
   const go = () => { ecran("prog"); setTimeout(() => { const c = $("chemin").querySelector(".actuel"); if (c && a > 0) c.scrollIntoView({ block: "center", behavior: "smooth" }); }, 750); };
   sens ? retour(go) : go();
@@ -3086,7 +3088,7 @@ const REPRISES = [
     ["Tourner la tête des deux côtés sans douleur.", "Turn your head both ways without pain."], ["Tenir les isométries de nuque à mi-force 10 s dans chaque direction sans douleur.", "Hold neck isometrics at half strength for 10 s in each direction without pain."]]
 ];
 const repAvance = id => { try { return Math.min(NB_REP, parseInt(localStorage.getItem("reprise_" + id), 10) || 0); } catch (e) { return 0; } };
-function repTerminer(id, i) { if (i === repAvance(id)) try { localStorage.setItem("reprise_" + id, i + 1); } catch (e) {} }
+function repTerminer(id, i) { if (i === repAvance(id)) stocker("reprise_" + id, i + 1); }
 function repJour(R, i) {
   const [id, zFr, zEn, c, ph, ech, rac, eFr, eEn] = R, f = PHASE(i), [pFr, pEn, dFr, dEn, eff, rep, tours, rpe] = PHASES[f], ok = l => l.filter(e => EXERCICES[e]);
   const ex = ok(ph[f]), w = Math.floor(i / 3), plan = [], blocs = [];
@@ -3125,11 +3127,11 @@ function ouvrirReprise(id, sens) {
   const accord = () => { try { return localStorage.getItem("repriseAccord") === "1"; } catch (e) { return false; } };
   if (!accord()) h = `<div class="carnet accord-rep" id="accordRep"><h3>🩺 ${L("Avant de commencer", "Before you start")}</h3><p>${L("Ces programmes ne sont pas des soins et ne remplacent pas une rééducation. Utilise-les seulement une fois ta blessure prise en charge, avec l’accord de ton médecin ou kiné.", "These programmes are not treatment and do not replace rehabilitation. Only use them once your injury has been looked after, with your doctor’s or physio’s agreement.")}</p><button class="primary" id="accordOk">${L("J’ai l’accord d’un professionnel de santé", "I have a health professional’s agreement")}</button></div>` + h;
   $("chemin").innerHTML = h;
-  if ($("accordOk")) $("accordOk").onclick = () => { try { localStorage.setItem("repriseAccord", "1"); } catch (e) {} $("accordRep").remove(); };
+  if ($("accordOk")) $("accordOk").onclick = () => { stocker("repriseAccord", "1"); $("accordRep").remove(); };
   $("chemin").querySelectorAll(".etape:not([disabled])").forEach(b => b.onclick = () => {
     if (!accord()) { const c = $("accordRep"); c.scrollIntoView({ block: "center", behavior: "smooth" }); c.classList.remove("secoue"); void c.offsetWidth; c.classList.add("secoue"); return; }
     ROUTINES.prog = repJour(R, +b.dataset.i); CONSEILLES.prog = ROUTINES.prog.exercices; ouvrirRoutine("prog"); });
-  if ($("progReset")) $("progReset").onclick = () => { try { localStorage.setItem("reprise_" + id, 0); } catch (e) {} ouvrirReprise(id); };
+  if ($("progReset")) $("progReset").onclick = () => { stocker("reprise_" + id, 0); ouvrirReprise(id); };
   document.documentElement.style.setProperty("--accent", c);
   const go = () => { ecran("prog"); setTimeout(() => { const el = $("chemin").querySelector(".actuel"); if (el && a > 0) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 750); };
   sens ? retour(go) : go();
@@ -3184,7 +3186,7 @@ function appliquerTheme() {
   document.querySelector('meta[name="theme-color"]').content = d ? "#070B1F" : "#E9EEFF";
   [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).setAttribute("aria-pressed", theme === t));
 }
-[["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).onclick = () => { theme = t; try { localStorage.setItem("theme", t); } catch (e) {} appliquerTheme(); });
+[["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).onclick = () => { theme = t; stocker("theme", t); appliquerTheme(); });
 sombreSys.addEventListener && sombreSys.addEventListener("change", () => theme === "auto" && appliquerTheme());
 appliquerTheme();
 
@@ -3206,7 +3208,7 @@ const RC_FONDS = ["linear-gradient(160deg,#4F46E5,#7C3AED 55%,#DB2777)", "linear
   "linear-gradient(160deg,#F59E0B,#EA580C 55%,#9F1239)", "linear-gradient(160deg,#EC4899,#9333EA 60%,#1E1B4B)", "linear-gradient(160deg,#F97316,#E11D48 60%,#4C0519)", "linear-gradient(160deg,#22D3EE,#6366F1 55%,#312E81)", "linear-gradient(160deg,#1E1B4B,#4338CA 50%,#DB2777)"];
 function ouvrirRecap(m) {
   const S = statsMois(m), mois = nomMois(m).split(" ")[0], sl = [];
-  try { localStorage.setItem("recapVu", m); } catch (e) {}
+  stocker("recapVu", m);
   sl.push(`<p class="rc-sur">2 WORK · ${L("récap", "recap")}</p><div class="rc-titre">${L("Ton mois", "Your")}<br>${L((/^[aeiouyhâ]/i.test(mois) ? "d’" : "de ") + mois.toLowerCase(), mois + " in sport")}</div><p class="rc-petit">${L("en sport · ", "")}${S.a}</p><p class="rc-txt" style="margin-top:20px">${L("Prêt à revoir tes exploits ?", "Ready to relive it?")}</p>`);
   if (!S.n) sl.push(`<div class="rc-emoji">🌱</div><div class="rc-titre">${L("Tout reste à écrire", "A blank page")}</div><p class="rc-txt">${L("Aucune séance ce mois-ci pour l’instant. La première est la plus importante !", "No workout this month yet. The first one is the most important!")}</p>`);
   else {
@@ -3693,7 +3695,7 @@ function renduRenfo(grp) {
   C.innerHTML = `<div class="etude ech-fiche" style="--accent:${R.couleur}"><b>${L("Les qualités à développer", "Qualities to build")} : ${L(F[0], F[1])}</b><p>${L(F[2], F[3])}</p></div>
     <h2 class="sec">${L("Ton niveau", "Your level")}</h2><div class="stepper niv-choix">${NIV_RENFO.map(n => `<button class="toggle" data-n="${n[0]}" aria-pressed="${n[0] === niv}">${L(n[1], n[2])}</button>`).join("")}</div>
     <p class="niv-txt">${L(...NIV_RENFO.find(n => n[0] === niv).slice(9))}</p><h2 class="sec">${L("Ta séance", "Your session")}</h2>`;
-  C.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { try { localStorage.setItem("niveauRenfo", b.dataset.n); } catch (e) {} renduRenfo(grp); });
+  C.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { stocker("niveauRenfo", b.dataset.n); renduRenfo(grp); });
   [[0, "Poids du corps", "Bodyweight", "Sans matériel, partout", "No equipment, anywhere"], [1, "Avec matériel", "With equipment", "Kettlebell, haltères, barre Z, banc, poulie, élastique…", "Kettlebell, dumbbells, EZ bar, bench, cable, band…"]].forEach(([m, fr, en, dFr, dEn]) => { const s = seanceRenfo(grp, m, niv);
     bouton(C, `${L(fr, en)} · ${s.total} min`, `${L(dFr, dEn)} · ${L("4 blocs", "4 blocks")}`, R.couleur, () => { ROUTINES.renfo = seanceRenfo(grp, m, lireNiv()); CONSEILLES.renfo = ROUTINES.renfo.exercices; ouvrirRoutine("renfo"); }); });
   C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Personnaliser", "Customise")}</h2>`);
@@ -3764,10 +3766,16 @@ function blocPartage() {
     <div class="partage-btns"><button class="toggle" id="shImg">📸 ${L("Réseaux sociaux", "Social media")}</button><button class="toggle" id="shTcx">⌚ Strava, Garmin…</button></div><div id="shAide"></div></div>`;
 }
 const zoneAide = () => ($("feuille") && $("feuille").querySelector(".sh-zone")) || $("shAide");
-function brancherPartage() { if ($("shImg")) { $("shImg").onclick = partagerCarte; $("shTcx").onclick = exporterTcx; } }
-async function envoyer(b, nom, type, texte) {   // feuille de partage du téléphone, sinon téléchargement
-  const f = new File([b], nom, { type });
-  try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: "2 WORK", text: texte }); return "partage"; } } catch (e) { if (e.name === "AbortError") return "annule"; }
+function brancherPartage() { if ($("shImg")) { $("shImg").onclick = partagerCarte; $("shTcx").onclick = exporterTcx; preparerCarte(); } }
+/* Partage : sur iPhone, la feuille ne s'ouvre que dans le geste même → image préparée à l'avance. Sinon : appui long sur mobile, téléchargement ailleurs. */
+let carte = null;
+function preparerCarte() { const a = activite; carte = null; carteSeance(a).toBlob(b => { if (activite === a) carte = b; }, "image/jpeg", .92); }
+async function envoyer(b, nom, type, texte) {
+  const f = navigator.canShare && [type, "application/xml", "text/plain"].map(t => new File([b], nom, { type: t })).find(x => navigator.canShare({ files: [x] }));
+  if (f) try { await navigator.share(type.startsWith("image/") ? { files: [f] } : { files: [f], title: texte }); return "partage"; } catch (e) { if (e.name === "AbortError") return "annule"; }
+  if (type.startsWith("image/") && /iP(hone|ad|od)|Android/.test(navigator.userAgent)) {
+    zoneAide().innerHTML = `<img class="sh-img" src="${URL.createObjectURL(b)}" alt="${L("Carte de ta séance", "Your workout card")}"><p class="sh-aide">${L("Appuie longuement sur l’image, puis « Enregistrer » ou « Partager ».", "Long-press the image, then “Save” or “Share”.")}</p>`; return "image";
+  }
   const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = nom; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   return "telecharge";
 }
@@ -3793,10 +3801,8 @@ function carteSeance(a) {
   return c;
 }
 function partagerCarte() {
-  carteSeance(activite).toBlob(async b => {
-    const r = await envoyer(b, "2work-seance.png", "image/png", L(`${activite.t} : ${Math.round(activite.s / 60)} min sur 2 WORK 💪`, `${activite.t}: ${Math.round(activite.s / 60)} min on 2 WORK 💪`));
-    if (r === "telecharge") zoneAide().innerHTML = `<p class="sh-ok">${L("Image enregistrée : publie-la depuis ta galerie sur Instagram, TikTok, Facebook ou WhatsApp.", "Image saved: post it from your gallery to Instagram, TikTok, Facebook or WhatsApp.")}</p>`;
-  });
+  const go = b => envoyer(b, "2work-seance.jpg", "image/jpeg").then(r => { if (r === "telecharge") zoneAide().innerHTML = `<p class="sh-ok">${L("Image enregistrée : publie-la depuis ta galerie sur Instagram, TikTok, Facebook ou WhatsApp.", "Image saved: post it from your gallery to Instagram, TikTok, Facebook or WhatsApp.")}</p>`; });
+  carte ? go(carte) : carteSeance(activite).toBlob(go, "image/jpeg", .92);
 }
 function tcx(a) {
   const iso = t => new Date(t).toISOString().replace(/\.\d{3}Z$/, "Z"), fin = +a.fin, deb = fin - a.s * 1000, pts = [];
@@ -3827,7 +3833,7 @@ const OBJECTIFS = [["forme", "Être en forme", "Get fit", "#16A34A"], ["perte", 
   ["perf", "Performer dans mon sport", "Perform in my sport", "#7B5EA7"], ["souplesse", "Souplesse et bien-être", "Flexibility and well-being", "#0F8A78"]];
 const lireProfil = () => lireJSON("profil", {});
 const poidsKg = () => { const p = +lireProfil().poids; return p >= 30 && p <= 250 ? p : 70; };
-function ecrireProfil(champ, v) { const p = lireProfil(); p[champ] = v; try { localStorage.setItem("profil", JSON.stringify(p)); } catch (e) {} if (champ === "niveau") try { localStorage.setItem("niveauRenfo", v); } catch (e) {} }
+function ecrireProfil(champ, v) { const p = lireProfil(); p[champ] = v; stocker("profil", JSON.stringify(p)); if (champ === "niveau") stocker("niveauRenfo", v); }
 const sportsRenfo = () => Object.keys(RENFOS).filter(k => CATS[k]);
 function zonesFc(age) {
   const fc = Math.round(208 - .7 * age);
@@ -3929,7 +3935,7 @@ function renduPlanning() {
       <div class="jours-choix">${J.map((x, i) => `<button class="toggle" data-j="${i}" aria-pressed="${P.jours.includes(i)}" aria-label="${JOURS_LONGS()[i]}">${x}</button>`).join("")}</div>
       <div class="champ-duo"><label class="champ"><span>${L("Heure du rappel", "Reminder time")}</span><input id="plHeure" type="time" value="${P.heure}"></label>
       <div class="champ"><span>${L("Objectif", "Goal")}</span><button class="toggle contour" id="plObj">${obj ? L(obj[1], obj[2]) : L("À choisir", "To choose")} ›</button></div></div></div><div id="plSemaine"></div>`;
-  const maj = () => { try { localStorage.setItem("planning", JSON.stringify(P)); } catch (e) {} listeSemaine(); };
+  const maj = () => { stocker("planning", JSON.stringify(P)); listeSemaine(); };
   C.querySelectorAll("[data-j]").forEach(b => b.onclick = () => { const j = +b.dataset.j; P.jours = P.jours.includes(j) ? P.jours.filter(x => x !== j) : [...P.jours, j].sort(); b.setAttribute("aria-pressed", P.jours.includes(j)); maj(); });
   $("plHeure").onchange = e => { P.heure = e.target.value || "18:00"; maj(); };
   $("plObj").onclick = () => ouvrirProfil("planning");
@@ -3979,7 +3985,7 @@ function blocRessenti() {
 function brancherRessenti() {
   document.querySelectorAll("[data-rs]").forEach(b => b.onclick = () => {
     const v = +b.dataset.rs, h = lireHist(), x = h[h.length - 1]; if (!x) return;
-    x.rs = v; try { localStorage.setItem("historique", JSON.stringify(h)); } catch (e) {}
+    x.rs = v; stocker("historique", JSON.stringify(h));
     document.querySelectorAll("[data-rs]").forEach(y => y.setAttribute("aria-pressed", y === b));
     $("rsRes").innerHTML = conseilProgression(h, x);
     const g = $("rsNiv"); if (g) g.onclick = () => { ecrireProfil("niveau", g.dataset.n); $("rsRes").innerHTML = `<p class="sh-ok">✓ ${L("C’est noté : tes prochaines séances de renfo seront en", "Got it: your next strength sessions will be")} ${L(...NIV_RENFO.find(n => n[0] === g.dataset.n).slice(1, 3))}.</p>`; };
@@ -4010,7 +4016,7 @@ function ouvrirFeuillePartage(x) {
   document.body.insertAdjacentHTML("beforeend", `<div class="feuille-fond" id="feuille"><div class="feuille" role="dialog" aria-label="${L("Partager", "Share")}"><h3>📣 ${x.t}</h3><p class="sh-aide">${x.j.split("-").reverse().join("/")} · ${Math.max(1, Math.round(x.s / 60))} min</p>
     <div class="partage-btns"><button class="toggle" id="fsImg">📸 ${L("Réseaux sociaux", "Social media")}</button><button class="toggle" id="fsTcx">⌚ Strava, Garmin…</button></div><div class="sh-zone"></div><button class="toggle contour" id="fsFermer">${L("Fermer", "Close")}</button></div></div>`);
   $("feuille").onclick = e => { if (e.target.id === "feuille") fermerFeuille(); };
-  $("fsFermer").onclick = fermerFeuille; $("fsImg").onclick = partagerCarte; $("fsTcx").onclick = exporterTcx;
+  $("fsFermer").onclick = fermerFeuille; $("fsImg").onclick = partagerCarte; $("fsTcx").onclick = exporterTcx; preparerCarte();
 }
 const fermerFeuille = () => $("feuille") && $("feuille").remove();
 document.addEventListener("click", e => { const b = e.target.closest(".h-part"); if (b) { const x = lireHist()[+b.dataset.i]; if (x) ouvrirFeuillePartage(x); } });
@@ -4143,7 +4149,7 @@ function donneesAppli() { const d = {}; try { for (let i = 0; i < localStorage.l
 async function sauvegarder() {
   const j = jourCle(), f = JSON.stringify({ app: "2WORK", version: 1, date: new Date().toISOString(), donnees: donneesAppli() });
   const r = await envoyer(new Blob([f], { type: "application/json" }), `2work-sauvegarde-${j}.json`, "application/json", L("Sauvegarde 2 WORK", "2 WORK backup"));
-  if (r !== "annule") { try { localStorage.setItem("sauvegardeDate", j); } catch (e) {} renduDonnees(L("✓ Sauvegarde créée. Garde ce fichier en lieu sûr (iCloud Drive, Google Drive, e-mail…).", "✓ Backup created. Keep this file somewhere safe (iCloud Drive, Google Drive, email…).")); }
+  if (r !== "annule") { stocker("sauvegardeDate", j); renduDonnees(L("✓ Sauvegarde créée. Garde ce fichier en lieu sûr (iCloud Drive, Google Drive, e-mail…).", "✓ Backup created. Keep this file somewhere safe (iCloud Drive, Google Drive, email…).")); }
 }
 function choisirRestauration() {
   const i = document.createElement("input"); i.type = "file"; i.accept = ".json,application/json";
@@ -4173,7 +4179,7 @@ const nomSante = () => window.Capacitor && Capacitor.getPlatform && Capacitor.ge
 async function activerSante(on) {
   const H = santePlugin(); if (!H) return;
   if (on) { try { await H.requestPermissions({ read: [], write: ["WORKOUT"] }); } catch (e) { return renduDonnees(L("Autorisation refusée : active-la dans les réglages du téléphone.", "Permission denied: enable it in your phone settings.")); } }
-  try { localStorage.setItem("santeSync", on ? "1" : "0"); } catch (e) {} renduDonnees();
+  stocker("santeSync", on ? "1" : "0"); renduDonnees();
 }
 async function envoyerSante(x) {
   const H = santePlugin(); if (!H || !santeActive()) return "";
@@ -4222,13 +4228,13 @@ function majBanniere() {
   if (!b) { Z.innerHTML = ""; return; }
   Z.innerHTML = `<button class="bn-corps"><span class="sc-ico">${b[1]}</span><span><strong>${b[2]}</strong><small>${b[3]}</small></span></button><button class="bn-fermer" aria-label="${L("Plus tard", "Later")}">✕</button>`;
   Z.querySelector(".bn-corps").onclick = b[4];
-  Z.querySelector(".bn-fermer").onclick = () => { try { localStorage.setItem(b[0], jourCle()); } catch (e) {} Z.innerHTML = ""; };
+  Z.querySelector(".bn-fermer").onclick = () => { stocker(b[0], jourCle()); Z.innerHTML = ""; };
 }
 
 /* ============ ACCUEIL DU PREMIER LANCEMENT ============
    3 étapes : objectif → niveau (et sport) → première séance prête. Montré une seule fois, aux nouveaux utilisateurs. */
 const besoinBienvenue = () => { try { return !localStorage.getItem("bienvenue") && !lireHist().length && !lireProfil().objectif; } catch (e) { return false; } };
-function finBienvenue() { try { localStorage.setItem("bienvenue", "1"); } catch (e) {} }
+function finBienvenue() { stocker("bienvenue", "1"); }
 function bienvenue(etape = 1) {
   const p = lireProfil(), C = $("bvCorps"), pts = `<div class="bv-points">${[1, 2, 3].map(i => `<i class="${i <= etape ? "on" : ""}"></i>`).join("")}</div>`;
   if (etape === 1) {
@@ -4431,7 +4437,7 @@ function brancherCharges() {
       const sug = rc ? r >= rc[1] ? ` <span class="sug">📈 ${L("Prochaine fois", "Next time")} : ${kg + plus} kg</span>` : r < rc[0] ? ` <span class="sug">${L(`Garde ${kg} kg jusqu’à ${rc[0]} reps`, `Keep ${kg} kg until ${rc[0]} reps`)}</span>` : "" : "";
       res.push(`<li><b>${EXERCICES[id].nom}</b> : ${kg} kg × ${r} · ${L("force max estimée", "estimated max")} ${now} kg${avant && now > avant ? ` <em>🏆 ${L("record", "record")} (+${now - avant} kg)</em>` : ""}${sug}</li>`); });
     if (!res.length) { $("ckRes").innerHTML = `<p class="vide">${L("Renseigne au moins une charge.", "Enter at least one weight.")}</p>`; return; }
-    try { localStorage.setItem("charges", JSON.stringify(h.slice(-2000))); } catch (e) {}
+    stocker("charges", JSON.stringify(h.slice(-2000)));
     $("ckOk").remove(); $("ckRes").innerHTML = `<ul class="carnet-res">${res.join("")}</ul><p class="aide">${L("Retrouve tes courbes dans « Mes progrès ».", "Find your charts in “My progress”.")}</p>`;
     bip(880, 120, .12, "sine"); bip(1175, 160, .12, "sine", .12);
   };
@@ -4533,7 +4539,7 @@ $("homeBack").onclick = () => retour(() => ({ cat: vueCats, zones: vueSCats, smo
 function setRepos(r) {
   if (routine && routine.reglerRepos) { const v = Math.min(300, Math.max(0, r)); reposGarder(routine.reposId, v); ROUTINES[routineCle] = routine.reglerRepos(v); return ouvrirApercu(routineCle); }
   repos = Math.min(mode === "salle" ? 300 : mode === "tabata" ? 120 : 180, Math.max(0, r));
-  if (mode === "tabata") try { localStorage.setItem("reposTabata", repos); } catch (e) {}
+  if (mode === "tabata") stocker("reposTabata", repos);
   else if (routine && !routine.fixe) reposGarder((mode === "salle" ? "libre:" : "seance:") + routineCle, repos);
   if (routineCle) ouvrirApercu(routineCle);
 }
@@ -4665,7 +4671,7 @@ function majVoixBtn() {
 $("rVoixBtn").onclick = () => $("voixBtn").click();
 $("voixBtn").onclick = () => {
   voixActive = !voixActive;
-  try { localStorage.setItem("voix", voixActive ? "1" : "0"); } catch (e) {}
+  stocker("voix", voixActive ? "1" : "0");
   if (!voixActive && "speechSynthesis" in window) speechSynthesis.cancel();
   majVoixBtn();
 };
@@ -4679,7 +4685,7 @@ function remplirVoix() {
   $("voixAide").textContent = liste.length ? T(langueVoix === "fr" ? "{n} voix françaises sur ce téléphone" : "{n} voix anglaises sur ce téléphone", { n: liste.length }) : T("Aucune voix de cette langue trouvée sur ce téléphone");
   ["langFr", "langEn"].forEach(id => $(id).setAttribute("aria-pressed", (id === "langFr") === (langueVoix === "fr")));
 }
-function sauverVoix() { try { localStorage.setItem("langueVoix", langueVoix); localStorage.setItem("nomVoix", nomVoix); } catch (e) {} }
+function sauverVoix() { stocker("langueVoix", langueVoix); localStorage.setItem("nomVoix", nomVoix); }
 $("langFr").onclick = () => { langueVoix = "fr"; nomVoix = ""; sauverVoix(); remplirVoix(); };
 $("langEn").onclick = () => { langueVoix = "en"; nomVoix = ""; sauverVoix(); remplirVoix(); };
 $("voixChoix").onchange = ev => { nomVoix = ev.target.value; sauverVoix(); };
@@ -4694,7 +4700,7 @@ $("reglagesBtn").onclick = () => { remplirVoix(); ecran("reglages"); };
   $(id).onclick = () => {
     const l = id === "appEn" ? "en" : "fr";
     if (l === LANGUE) return;
-    try { localStorage.setItem("langue", l); localStorage.setItem("langueVoix", l); localStorage.setItem("nomVoix", ""); localStorage.setItem("ouvrirReglages", "1"); } catch (e) {}
+    stocker("langue", l); localStorage.setItem("langueVoix", l); localStorage.setItem("nomVoix", ""); localStorage.setItem("ouvrirReglages", "1");
     location.reload();
   };
 });
@@ -4724,7 +4730,7 @@ async function garderEcran(on) {
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") garderEcran(["pret", "session"].includes(ecranCourant)); });
 function majVeille() { $("veilleBtn").textContent = T(veilleActive ? "Activé" : "Coupé"); $("veilleBtn").setAttribute("aria-pressed", veilleActive); }
-$("veilleBtn").onclick = () => { veilleActive = !veilleActive; try { localStorage.setItem("veille", veilleActive ? "1" : "0"); } catch (e) {} majVeille(); };
+$("veilleBtn").onclick = () => { veilleActive = !veilleActive; stocker("veille", veilleActive ? "1" : "0"); majVeille(); };
 majVeille();
 </script>
 </body>
