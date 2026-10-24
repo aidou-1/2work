@@ -2,8 +2,8 @@
    - Coquille (page, polices, icônes) : mise en cache à l'installation ; la page est servie « réseau d'abord » pour recevoir les mises à jour.
    - Vidéos : cache séparé « 2work-videos », rempli à la demande depuis Réglages → « Vidéos hors ligne », conservé entre les versions.
    Changer V à chaque mise en ligne d'une nouvelle version. */
-const V = "2work-v2026-10-24a", VIDEOS = "2work-videos";
-const COQUILLE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./icons/logo.png", "./icons/qr.png",
+const V = "2work-v2026-10-24b", VIDEOS = "2work-videos";
+const COQUILLE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./icons/logo.png", "./icons/qr.png", "./consignes.js",
   ...["barlow-latin-400", "barlow-latin-500", "barlow-latin-600", "barlow-latin-700", "barlow-condensed-latin-600", "barlow-condensed-latin-700", "barlow-condensed-latin-800"].map(f => `./fonts/${f}-normal.woff2`)];
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(COQUILLE)).then(() => self.skipWaiting())));
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(l => Promise.all(l.filter(n => n !== V && n !== VIDEOS).map(n => caches.delete(n)))).then(() => self.clients.claim())));
