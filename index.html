@@ -2375,9 +2375,9 @@ function fondu() { const el = $("session"); el.classList.remove("frais"); void e
 
 function afficher() {
   fondu(); $("plusRepos").classList.add("hidden");
-  const e = liste[index], kc = e.duree >= 10 && coteDe(e.id);
+  const e = liste[index], kc = e.duree >= 10 && changements(e.id);
   programmerConseils(e, conseilDejaDit === index); conseilDejaDit = -1;
-  bandeauCote(kc ? (kc === "sens" ? L("1er sens", "First direction") : L("1er côté", "First side")) : "");
+  bandeauCote(kc ? kc.seg[LANGUE === "en" ? 1 : 0][0] : "");
   reste = e.duree;
   $("count").textContent = e.lab ? e.lab : e.bn ? e.bn + (e.tt > 1 ? L(" · tour {t}/{n}", " · round {t}/{n}").replace("{t}", e.t).replace("{n}", e.tt) : "") + " · " + (index + 1) + "/" + liste.length : e.series ? T("Exercice {a} sur {b} · série {c} sur {d}", { a: Math.floor(index / e.series) + 1, b: liste.length / e.series, c: e.serie, d: e.series }) : T("Exercice {a} sur {b}", { a: index + 1, b: liste.length });
   $("name").textContent = e.nom;
@@ -2408,8 +2408,8 @@ function tic() {
   if (reste <= 3 && reste > 0) sons.alerte(); else if (reste > 3 && !enRepos) sons.tic();
   if (reste <= 0) return suivant(true);
   if (enRepos) { $("time").textContent = reste; return; }
-  const kc = liste[index].duree >= 10 && reste === Math.floor(liste[index].duree / 2) && coteDe(liste[index].id);
-  if (kc) changerCote(kc);
+  const jc = instantsCh(liste[index]).indexOf(reste);
+  if (jc >= 0) changerCote(liste[index], jc);
   else if (!direConseil(reste)) coach(liste[index], reste);
   majTemps();
 }
@@ -2756,10 +2756,12 @@ try { coachActif = localStorage.getItem("coach") !== "0"; } catch (e) {}
 const COACH = {
   fr: { mi: ["Mi-parcours, continue comme ça !", "La moitié est faite, garde le rythme !", "Tu es à mi-chemin, ne lâche rien !", "Super, encore la moitié !"],
         fin: ["Plus que 10 secondes, tiens bon !", "Dix secondes, tout donner !", "Allez, c'est la fin, encore 10 secondes !", "Dernier effort, 10 secondes !"],
-        calmeMi: ["Respire profondément, relâche les épaules.", "Laisse le muscle s'allonger doucement."], calmeFin: ["Encore quelques secondes, respire calmement."] },
+        calmeMi: ["Respire profondément, relâche les épaules.", "Laisse le muscle s'allonger doucement."], calmeFin: ["Encore quelques secondes, respire calmement."],
+        douxMi: ["C’est bien, continue à ton rythme.", "La moitié, le corps se réchauffe."], douxFin: ["Encore 10 secondes, tranquillement.", "Plus que 10 secondes, sans forcer."] },
   en: { mi: ["Halfway there, keep it up!", "Half done, keep the pace!", "You're halfway, don't give up!", "Great, half to go!"],
         fin: ["Ten seconds left, hold on!", "Ten seconds, give it everything!", "Come on, almost done, ten more seconds!", "Last push, ten seconds!"],
-        calmeMi: ["Breathe deeply, relax your shoulders.", "Let the muscle lengthen gently."], calmeFin: ["A few more seconds, breathe calmly."] }
+        calmeMi: ["Breathe deeply, relax your shoulders.", "Let the muscle lengthen gently."], calmeFin: ["A few more seconds, breathe calmly."],
+        douxMi: ["Good, keep your own pace.", "Halfway, your body is warming up."], douxFin: ["Ten more seconds, easy does it.", "Ten seconds left, no need to push."] }
 };
 const auHasard = t => t[Math.floor(Math.random() * t.length)];
 COACH.fr.go = ["À fond !", "Allez, tout donner !", "Intensité maximale !", "C’est parti, ne lâche rien !"];
@@ -2781,17 +2783,19 @@ function programmerConseils(e, dejaDit) {   // une consigne toutes les 8 à 14 s
   while (idx.length > 1 && (h - bas) / (idx.length - 1) < 8) idx.splice(idx.includes(1) ? idx.indexOf(1) : idx.length - 1, 1);
   const pas = idx.length > 1 ? Math.min(14, (h - bas) / (idx.length - 1)) : 0;
   let der = 1e9;   // pas juste avant ni juste après le changement de côté, et 7 s d'écart au moins entre deux consignes
-  idx.forEach((k, j) => { let r = h - Math.round(j * pas); if (coteDe(e.id) && r - mi > -3 && r - mi < 7) r = mi - 3; if (r >= bas && der - r >= 7) planConseils[der = r] = c[k]; });
+  idx.forEach((k, j) => { let r = h - Math.round(j * pas); const ic = j ? instantsCh(e).find(x => r - x > -3 && r - x < 7) : undefined; if (ic !== undefined) r = ic - 3; if (r >= bas && der - r >= 7) planConseils[der = r] = c[k]; });
 }
 function direConseil(r) {
   const t = conseilsActifs && planConseils[r]; if (!t) return false;
   $("conseil").textContent = t; parler(t, 0, 1); return voixActive;
 }
+const tonPhase = e => mode === "calme" || /calme|cool|récup|recovery|étirement|stretch|respir|breath|relax/i.test(e.bn || "") ? "calme"
+  : mode === "echauffement" || /échauff|warm|mobilis|mobility|élever|raise|activer|activate|approche|préparer|prepare/i.test(e.bn || "") ? "doux" : "fort";
 function coach(e, r) {
   if (!coachActif || !voixActive || e.duree < 20) return;
-  const P = COACH[langueVoix], calme = mode === "calme";
-  if (r === Math.floor(e.duree / 2) && (e.duree >= 30 || calme) && !coteDe(e.id) && !(conseilsActifs && Object.keys(planConseils).length)) parler(auHasard(calme ? P.calmeMi : P.mi), 0, 1);
-  else if (r === 10 && e.duree >= 25) parler(auHasard(calme ? P.calmeFin : P.fin), 0, 1);
+  const P = COACH[langueVoix], ton = tonPhase(e), calme = ton === "calme", ph = k => P[ton === "fort" ? k : ton + k[0].toUpperCase() + k.slice(1)];
+  if (r === Math.floor(e.duree / 2) && (e.duree >= 30 || calme) && !coteDe(e.id) && !(conseilsActifs && Object.keys(planConseils).length)) parler(auHasard(ph("mi")), 0, 1);
+  else if (r === 10 && e.duree >= 25) parler(auHasard(ph("fin")), 0, 1);
   else if (r >= 1 && r <= 3 && !calme && e.duree >= 15) parler(String(r), 0, 1.1);
 }
 function majCoach() { $("coachBtn").textContent = T(coachActif ? "Activé" : "Coupé"); $("coachBtn").setAttribute("aria-pressed", coachActif); }
@@ -3486,15 +3490,35 @@ const RECUPS = [
   ["repos", "Jour de repos (récupération active)", "Rest day (active recovery)", "Mobilité douce et étirements longs", "Gentle mobility and long stretches", "#0D9488", ["catcow", "armcircles", "ankles", "twist", "hip9090"], ["cascade", "chien", "fenteBasse", "figure4", "enfantStat"], 120, ["Bouger doucement un jour de repos aide à se sentir moins raide le lendemain.", "Moving gently on a rest day helps you feel less stiff the next day."]]
 ];
 const unilat = id => /mi-temps|halfway|chaque côté|each side/i.test(EXERCICES[id].description);
-/* Exercices joués d'un côté puis de l'autre : à mi-temps, la voix, un son, une vibration et un bandeau annoncent le changement */
-const COTES = { legfwd: "jambe", legside: "jambe", ankles: "pied", surfsquat: "pied", armcircles: "sens" };
-const coteDe = id => EXERCICES[id] && (COTES[id] || (unilat(id) ? "cote" : ""));
-const COTE_TXT = { jambe: ["Change de jambe !", "Switch legs!"], pied: ["Change de pied !", "Switch feet!"], sens: ["Change de sens !", "Switch direction!"], cote: ["Change de côté !", "Switch sides!"] };
+/* Changements en cours d'exercice (côté, jambe, bras, main, pied, sens) : lus dans la description (« Change de jambe à mi-temps »…),
+   ou plusieurs temps pour les cas particuliers. Chaque changement : bandeau, voix, son, vibration ; entre-temps, « 1re jambe / 2e jambe »… */
+const CH_TXT = { jambe: ["Change de jambe !", "Switch legs!", "1re jambe", "2e jambe", "First leg", "Second leg"], pied: ["Change de pied !", "Switch feet!", "1er pied", "2e pied", "First foot", "Second foot"],
+  bras: ["Change de bras !", "Switch arms!", "1er bras", "2e bras", "First arm", "Second arm"], main: ["Change de main !", "Switch hands!", "1re main", "2e main", "First hand", "Second hand"],
+  cote: ["Change de côté !", "Switch sides!", "1er côté", "2e côté", "First side", "Second side"], sens: ["Change de sens !", "Switch direction!", "1er sens", "2e sens", "First direction", "Second direction"] };
+const CH_SPEC = {   // [fraction du temps, annonce FR, annonce EN] + libellés des étapes
+  cercleJambe: { t: [[.25, "Change de sens !", "Switch direction!"], [.5, "Change de jambe !", "Switch legs!"], [.75, "Change de sens !", "Switch direction!"]],
+    seg: [["1re jambe · 1er sens", "1re jambe · 2e sens", "2e jambe · 1er sens", "2e jambe · 2e sens"], ["Leg 1 · direction 1", "Leg 1 · direction 2", "Leg 2 · direction 1", "Leg 2 · direction 2"]] },
+  nuqueIso: { t: [[.25, "Main derrière la tête !", "Hand behind your head!"], [.5, "Main sur le côté droit !", "Hand on the right side!"], [.75, "Main sur le côté gauche !", "Hand on the left side!"]],
+    seg: [["Front", "Arrière de la tête", "Côté droit", "Côté gauche"], ["Forehead", "Back of the head", "Right side", "Left side"]] },
+  armcircles: "sens", legfwd: "jambe", legside: "jambe", ankles: "pied", surfsquat: "pied" };
+const CACHE_CH = {};
+function changements(id) {   // { t: [[fraction, fr, en]…], seg: [[fr…], [en…]], double: joué des deux côtés (durée doublée en échauffement) }
+  if (id in CACHE_CH) return CACHE_CH[id];
+  const e = EXERCICES[id]; let r = null;
+  if (e) {
+    const sp = CH_SPEC[id], m = /change de (jambe|pied|bras|main|côté)/i.exec(e.description), k = typeof sp === "string" ? sp : m ? { "côté": "cote" }[m[1].toLowerCase()] || m[1].toLowerCase() : unilat(id) ? "cote" : null;
+    if (sp && typeof sp === "object") r = { ...sp, double: true };
+    else if (k) { const c = CH_TXT[k]; r = { t: [[.5, c[0], c[1]]], seg: [[c[2], c[3]], [c[4], c[5]]], double: k !== "sens" }; }
+  }
+  return CACHE_CH[id] = r;
+}
+const instantsCh = e => { const c = e.duree >= 10 && changements(e.id); return c ? c.t.map(([f]) => Math.round(e.duree * (1 - f))) : []; };   // valeurs de « reste »
+const coteDe = id => !!changements(id);
 function bandeauCote(t, flash) { const b = $("cote"); b.textContent = t; b.classList.toggle("hidden", !t); b.classList.toggle("flash", !!flash); }
-function changerCote(k) {
-  const [fr, en] = COTE_TXT[k]; bandeauCote("↔ " + L(fr, en), 1); parler(langueVoix === "fr" ? fr : en, 0, 1);
+function changerCote(e, j) {   // j-ième changement de l'exercice e
+  const c = changements(e.id), [, fr, en] = c.t[j]; bandeauCote("↔ " + L(fr, en), 1); parler(langueVoix === "fr" ? fr : en, 0, 1);
   bip(660, 120, .15); bip(880, 160, .15, "sine", .14); vibrer([40, 60, 40]);
-  setTimeout(() => { if (!$("cote").classList.contains("hidden")) bandeauCote(k === "sens" ? L("2e sens", "Second direction") : L("2e côté", "Second side")); }, 2500);
+  setTimeout(() => { if (!$("cote").classList.contains("hidden") && liste[index] === e) bandeauCote(c.seg[LANGUE === "en" ? 1 : 0][j + 1]); }, 2500);
 }
 function seanceRecup(id) {
   const [, tFr, tEn, mFr, mEn, c, mob, etir, souffle, cs] = RECUPS.find(r => r[0] === id), ok = l => l.filter(e => EXERCICES[e]);
@@ -3614,7 +3638,7 @@ function seanceEch(cle, fmt) {
   const plan = [], blocs = [];
   PHASES_ECH.forEach(([nFr, nEn, dFr, dEn], p) => {
     const l = [...new Set(ok([...E[p], ...ECH_PLUS[p]]))].filter(x => !plan.some(q => q.id === x)).slice(0, nb[p]), n = L(nFr, nEn), pc = p === 3 ? INTENS[l.length] || [] : [];
-    const items = l.map((x, k) => { const u = coteDe(x) && COTES[x] !== "sens", cote = Math.min(30, Math.round(dur[p] * .75 / 5) * 5), d = u ? cote * 2 : dur[p];
+    const items = l.map((x, k) => { const u = !!(changements(x) || {}).double, cote = Math.min(30, Math.round(dur[p] * .75 / 5) * 5), d = u ? cote * 2 : dur[p];
       plan.push({ id: x, d, r: p === 3 ? 10 : 0, bn: n, lab: `${n} · ${k + 1}/${l.length}${pc[k] ? " · " + pc[k] + " %" : ""}` });
       return [x, (u ? "2 × " + cote : d) + " s" + (pc[k] ? " · " + pc[k] + " %" : "")]; });
     blocs.push([`${p + 1}. ${n}`, items, L(dFr, dEn)]);
