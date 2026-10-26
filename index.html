@@ -2150,10 +2150,10 @@ function afficherEcran(nom) {
 /* ============ SON (bip généré, aucun fichier) ============ */
 function bip(freq = 880, ms = 150, vol = 0.15, forme = "sine", decalage = 0, attaque = 0.015) {
   try {
-    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-    if (audio.state === "suspended") audio.resume();
-    const o = audio.createOscillator(), g = audio.createGain();
     if (!volSons) return;
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state !== "running") audio.resume();   // « suspended », ou « interrupted » sur iPhone après la voix
+    const o = audio.createOscillator(), g = audio.createGain();
     vol *= volSons; o.type = forme; o.frequency.value = freq;
     o.connect(g); g.connect(audio.destination);
     const t = audio.currentTime + decalage, fin = t + ms / 1000;
@@ -2164,15 +2164,22 @@ function bip(freq = 880, ms = 150, vol = 0.15, forme = "sine", decalage = 0, att
   } catch (e) { /* le son est facultatif */ }
 }
 
-/* Les 3 sons de la séance */
+/* iPhone : sans cela, les sons générés sont coupés par le bouton silencieux (la voix, elle, passe) et ne démarrent
+   qu'après un geste. On demande donc une session audio « lecture » et on (ré)active le son à chaque toucher. */
+try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+document.addEventListener("pointerdown", () => { try {
+  if (!audio) { audio = new (window.AudioContext || window.webkitAudioContext)(); const b = audio.createBufferSource(); b.buffer = audio.createBuffer(1, 1, 22050); b.connect(audio.destination); b.start(0); }
+  if (audio.state !== "running") audio.resume();
+} catch (e) {} }, true);
+/* Les 3 sons de la séance, assez aigus et présents pour s'entendre sur un haut-parleur de téléphone */
 const sons = {
-  // chaque seconde : tic grave, court et discret
-  tic: () => bip(450, 40, 0.08, "sine"),
-  // 3 dernières secondes : bip doux et rond, qui s’estompe
-  alerte: () => { bip(784, 260, 0.25, "sine"); vibrer(35); },
+  // chaque seconde : « toc » sec de bois
+  tic: () => { bip(1150, 45, .22, "triangle", 0, .002); bip(2300, 25, .06, "sine", 0, .002); },
+  // 3 dernières secondes : bip plus aigu, plus long et plus fort, impossible à confondre
+  alerte: () => { bip(1320, 220, .4, "triangle", 0, .004); bip(2640, 160, .12, "sine", 0, .004); vibrer(35); },
   // changement d’exercice : cloche de boxe anglaise (frappes rapides, résonance métallique)
   change: () => {
-    [[1, 1], [2, 0.6], [2.76, 0.45], [5.4, 0.25]].forEach(([r, a]) => bip(700 * r, 1700 / Math.pow(r, 0.7), 0.2 * a, "sine", 0, 0.003));
+    [[1, 1], [2, 0.6], [2.76, 0.45], [5.4, 0.25]].forEach(([r, a]) => bip(700 * r, 1700 / Math.pow(r, 0.7), 0.32 * a, "sine", 0, 0.003));
     vibrer([70, 50, 70]);
   }
 };
@@ -2408,7 +2415,7 @@ function majTemps() {
 function tic() {
   if (enPause) return;
   reste--;
-  if (reste <= 3 && reste > 0) sons.alerte(); else if (reste > 3 && !enRepos) sons.tic();
+  if (reste <= 3 && reste > 0) sons.alerte(); else if (reste > 3 && (!enRepos || routine.tbt)) sons.tic();
   if (reste <= 0) return suivant(true);
   if (enRepos) { $("time").textContent = reste; return; }
   const jc = instantsCh(liste[index]).indexOf(reste);
