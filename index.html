@@ -279,6 +279,10 @@ background: color-mix(in srgb, var(--surface) 78%, transparent); border: 1px sol
 @keyframes braise { to { background-position: -200% 0; } }
 .avatar-edit { display: grid; gap: 12px; margin-bottom: 12px; text-align: center; } .avatar-choix { display: grid; gap: 8px; text-align: left; } .pastilles-choix { display: flex; gap: 10px; flex-wrap: wrap; }
 .pastille { width: 38px; height: 38px; border-radius: 50%; background: var(--c); border: 2px solid var(--ligne); } .pastille[aria-pressed="true"] { outline: 3px solid var(--accent); outline-offset: 2px; }
+#mediaBox { position: relative; } .guide { position: absolute; right: 10px; bottom: 24px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(15,23,42,.42); pointer-events: none; }
+.guide svg { width: 20px; height: 20px; } .g-v svg { animation: gV 1.3s ease-in-out infinite alternate; } .g-h svg { animation: gH 1.3s ease-in-out infinite alternate; } .g-r svg { animation: tourne 2.6s linear infinite; } .g-s svg { animation: gS 1s ease-out infinite; }
+@keyframes gV { from { transform: translateY(-3px); } to { transform: translateY(3px); } } @keyframes gH { from { transform: translateX(-3px); } to { transform: translateX(3px); } } @keyframes gS { from { transform: translateY(4px); opacity: .3; } to { transform: translateY(-4px); opacity: 1; } }
+.fc { display: inline-block; margin: 0 0 4px; padding: 5px 12px; border-radius: 999px; font-weight: 700; font-variant-numeric: tabular-nums; border: 2px solid var(--c, #E11D48); background: color-mix(in srgb, var(--c, #E11D48) 16%, transparent); }
 .chrono { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .anneau-t { flex: 0 1 96px; min-width: 60px; aspect-ratio: 1; transform: rotate(-90deg); overflow: visible; } .anneau-t circle { fill: none; stroke-width: 9; stroke-linecap: round; }
 .anneau-t .piste { stroke: var(--soft); } #anneau { stroke: var(--accent-txt); stroke-dasharray: 276.5; transition: stroke-dashoffset 1s linear; }
@@ -601,6 +605,10 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <button id="favBtn" class="toggle contour">☆ Enregistrer</button>
 <div class="favForm hidden" id="favForm"><input id="favNom" class="choixVoix" maxlength="40" autocomplete="off"><button id="favOk" class="toggle">OK</button></div>
 </div>
+<div class="reglage hidden" id="cardioRow">
+<label for="cardioBtn"><span data-en="Heart-rate strap">Ceinture cardio</span><small id="cardioInfo"></small></label>
+<button id="cardioBtn" class="toggle contour"></button>
+</div>
 <div class="reglage" id="amiRow">
 <label for="amiBtn"><span data-en="Challenge a friend">Défier un ami</span><small data-en="Send this workout as a link: it opens ready to go in their app">Envoie cette séance par lien : elle s’ouvre toute prête dans son appli</small></label>
 <button id="amiBtn" class="toggle contour" data-en="📨 Send">📨 Envoyer</button>
@@ -665,6 +673,7 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <section id="session" class="hidden" aria-live="polite">
 <div class="bars" id="bars"></div>
 <p class="count" id="count"></p>
+<p class="fc hidden" id="fcPastille"></p>
 <div class="chrono"><div class="time" id="time">20</div><svg class="anneau-t" id="anneauBox" viewBox="0 0 100 100" aria-hidden="true"><circle class="piste" cx="50" cy="50" r="44"/><circle id="anneau" cx="50" cy="50" r="44"/></svg></div>
 <button id="plusRepos" class="plus-repos hidden">+15 s</button>
 <h2 class="name" id="name"></h2>
@@ -2397,10 +2406,19 @@ function etapesEx(e) {
   const c = typeof CONSIGNES !== "undefined" && CONSIGNES[e.id] ? CONSIGNES[e.id][LANGUE === "en" ? 1 : 0].split("|") : [], T3 = L("Position|Mouvement|Attention", "Set-up|Movement|Watch out").split("|");
   return (e.presc ? `<b class="presc">${e.presc}</b>` : "") + (c.length === 3 ? c.map((t, i) => `<span class="pas"><i>${T3[i]}</i>${t}</span>`).join("") : e.description);
 }
+/* Repère de mouvement : petite pastille animée dans le coin de la vidéo (haut-bas, côté à côté, rotation ou saut), déduite du texte
+   de l'exercice. Rien pour les postures tenues : la vidéo s'y arrête déjà sur la position. */
+function repereMvt(e) {
+  if (posture(e.id)) return "";
+  const t = e.nom + " " + e.description, k = /saut|jump|burpee|skip/i.test(t) ? "s" : /rotation|tourne|twist|pivot|cercle|circle|rotate|torsion/i.test(t) ? "r" : /latéral|lateral|côté|side|chassé|écarte|sideways/i.test(t) ? "h" : "v";
+  const d = { v: "M6 9l6-6 6 6M6 15l6 6 6-6", h: "M9 6l-6 6 6 6M15 6l6 6-6 6", r: "M20 12a8 8 0 1 1-3-6.2M17 2v4h-4", s: "M6 14l6-6 6 6M6 20l6-6 6 6" }[k];
+  return `<span class="guide g-${k}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg></span>`;
+}
 function media(e) {
   const box = $("mediaBox"), fige = ARRET[e.id];
   if (!e.video) return box.innerHTML = dessiner(e);
   box.innerHTML = `<video class="media${e.autreCote ? " miroir" : ""}" src="${e.video}" autoplay ${fige ? "" : "loop "}muted playsinline preload="auto" aria-label="${e.nom} en vidéo"></video>`;
+  box.insertAdjacentHTML("beforeend", repereMvt(e));
   const v = box.querySelector("video"); v.onerror = () => { if (v.isConnected) box.innerHTML = dessiner(e); };   // une vidéo déjà remplacée ne doit pas écraser la suivante
   if (fige) v.ontimeupdate = () => { if (v.currentTime >= fige) { v.pause(); if (v.currentTime - fige > .3) v.currentTime = fige; v.ontimeupdate = null; } };
 }
@@ -2876,7 +2894,7 @@ function compteur(el, fin, suffixe = "") {
 }
 function celebrer() {
   const mn = Math.max(1, Math.round(totalPrevu / 60)), n = mode === "souffle" ? (routine.blocs || []).length : mode === "tabata" ? cycles : new Set(ids).size;
-  const h = lireHist(); h.push({ j: jourCle(), hr: new Date().getHours(), k: routineCle, t: routine.titre, m: mode, s: totalPrevu, n, c: routine.cat || routine.grp || "", b: routine.blessure ? 1 : 0, p: routine.prog ? 1 : 0, g: routine.gym || routine.salle ? 1 : 0, tb: routine.tbt ? 1 : 0, nv: routine.niv || "", e: mode === "tabata" || mode === "souffle" ? [] : ids.slice(0, 30) });
+  const h = lireHist(); h.push({ j: jourCle(), hr: new Date().getHours(), k: routineCle, t: routine.titre, m: mode, s: totalPrevu, n, c: routine.cat || routine.grp || "", b: routine.blessure ? 1 : 0, p: routine.prog ? 1 : 0, g: routine.gym || routine.salle ? 1 : 0, tb: routine.tbt ? 1 : 0, nv: routine.niv || "", e: mode === "tabata" || mode === "souffle" ? [] : ids.slice(0, 30), ...(fc.n && { fc: Math.round(fc.somme / fc.n), fcMax: fc.max }) });
   stocker("historique", JSON.stringify(h.slice(-3000)));
   if (routine.prog) progTerminer(routine.prog, routine.progI);
   if (routine.reprise) repTerminer(routine.reprise, routine.repI);
@@ -2885,6 +2903,7 @@ function celebrer() {
     .map(([v, t], k) => `<div style="--k:${k}"><b data-v="${v}">0</b><span>${t}</span></div>`).join("");
   setTimeout(() => $("fBilan").querySelectorAll("b").forEach(b => compteur(b, +b.dataset.v)), 800);
   $("fTrophees").innerHTML = neufs.map((t, k) => `<div class="nouveau-trophee" style="--k:${k}">${medaille(t, "n")}<div><small>${L("Nouveau trophée", "New trophy")}</small><b>${L(t[1], t[2])}</b><span>${L(t[3], t[4])}</span></div></div>`).join("");
+  if (fc.n) $("fSub").textContent += " ❤️ " + L(`${Math.round(fc.somme / fc.n)} bpm en moyenne, ${fc.max} au maximum.`, `${Math.round(fc.somme / fc.n)} bpm on average, ${fc.max} max.`);
   $("fRessenti").innerHTML = blocRessenti(); brancherRessenti();
   $("fCharges").innerHTML = formCharges(); brancherCharges();
   $("fPartage").innerHTML = blocPartage(); brancherPartage();
@@ -4531,7 +4550,7 @@ const MOTEUR = { tabata: [demarrerTab, suivantTab, precedentTab], souffle: [dema
 const moteur = i => (MOTEUR[mode] || [demarrer, suivant, precedent])[i];
 /* Compte à rebours de PREP secondes avant chaque activité : le temps de poser le téléphone */
 const PREP = 4;
-function lancer() { clearInterval(tPret); prefixeVoix = PH("go") + " "; aReprendre ? rejouer() : moteur(0)(); }
+function lancer() { clearInterval(tPret); fc.somme = fc.n = fc.max = 0; prefixeVoix = PH("go") + " "; aReprendre ? rejouer() : moteur(0)(); }
 function preparer(s) {   // s : séance à reprendre (sinon départ normal ; un clic passe son événement, ignoré)
   aReprendre = s && s.cle ? s : null;
   let n = PREP;
@@ -5108,6 +5127,30 @@ setInterval(verifierRappel, 60000); document.addEventListener("visibilitychange"
 
 bouton($("choicesP"), "Quick start", L("15 min, sans matériel, focus cuisses, très intense… coche et c’est parti", "15 min, no equipment, leg focus, very intense… tick and go"), "#0EA5E9", () => ouvrirExpress());
 $("choicesP").insertBefore($("choicesP").lastChild, $("choicesP").children[1]);
+
+/* ============ CEINTURE CARDIO BLUETOOTH ============
+   Web Bluetooth (Chrome et Edge sur Android et ordinateur ; absent de Safari, donc de l'iPhone) : service standard « heart_rate »
+   des ceintures et brassards. Fréquence en direct pendant la séance, avec la zone si l'âge est dans le profil ; moyenne et maximum
+   gardés avec la séance. Rien ne quitte le téléphone. */
+let fc = { app: null, bpm: 0, somme: 0, n: 0, max: 0 };
+function majCardio(msg) {
+  const P = $("fcPastille"), on = !!fc.app, age = lireProfil().age, Z = age && fc.bpm ? zonesFc(age)[1] : null, i = Z ? Math.max(0, Z.findIndex(z => fc.bpm <= z[1])) : -1, zi = Z && fc.bpm > Z[4][1] ? 4 : i;
+  P.classList.toggle("hidden", !on || !fc.bpm); P.textContent = "❤️ " + fc.bpm + " bpm" + (Z ? " · Z" + (zi + 1) + " " + Z[zi][2] : ""); P.style.setProperty("--c", Z ? Z[zi][3] : "#E11D48");
+  $("cardioRow").classList.toggle("hidden", !navigator.bluetooth);
+  $("cardioBtn").textContent = on ? L("✓ Connectée", "✓ Connected") : L("Connecter", "Connect"); $("cardioBtn").setAttribute("aria-pressed", on);
+  $("cardioInfo").textContent = msg || (on ? (fc.app.name || "Bluetooth") + (fc.bpm ? " · " + fc.bpm + " bpm" : "") : L("Bluetooth : ta fréquence cardiaque en direct pendant la séance", "Bluetooth: your live heart rate during the workout"));
+}
+$("cardioBtn").onclick = async () => {
+  if (fc.app) { fc.app.gatt.disconnect(); return; }
+  try {
+    const d = await navigator.bluetooth.requestDevice({ filters: [{ services: ["heart_rate"] }] }), c = await (await (await d.gatt.connect()).getPrimaryService("heart_rate")).getCharacteristic("heart_rate_measurement");
+    c.addEventListener("characteristicvaluechanged", e => { const v = e.target.value; fc.bpm = v.getUint8(0) & 1 ? v.getUint16(1, true) : v.getUint8(1);   // 1er octet : format 8 ou 16 bits
+      if (ecranCourant === "session" && !enPause && fc.bpm) { fc.somme += fc.bpm; fc.n++; fc.max = Math.max(fc.max, fc.bpm); } majCardio(); });
+    d.addEventListener("gattserverdisconnected", () => { fc.app = null; fc.bpm = 0; majCardio(); });
+    await c.startNotifications(); fc.app = d; majCardio();
+  } catch (e) { if (e.name !== "NotFoundError") majCardio(L("Connexion impossible : porte la ceinture (électrodes humides) et active le Bluetooth.", "Could not connect: wear the strap (moistened electrodes) and turn Bluetooth on.")); }
+};
+majCardio();
 
 /* ============ BARRE DE NAVIGATION ============ */
 $("nMenu").onclick = () => ecranCourant !== "menu" && retour(() => ecran("menu"));
