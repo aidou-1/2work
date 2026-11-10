@@ -2165,7 +2165,7 @@ let anneauTotal = 1, anneauPrec = 0;
 new MutationObserver(() => {
   const v = parseInt($("time").textContent, 10) || 0, A = $("anneau"), C = 276.5, neuf = v > anneauPrec;
   if (neuf) { anneauTotal = Math.max(1, v); A.style.transition = "none"; A.style.strokeDashoffset = 0; void A.getBoundingClientRect(); A.style.transition = ""; }
-  anneauPrec = v; A.style.strokeDashoffset = C * (1 - Math.max(0, v - 1) / anneauTotal);
+  anneauPrec = v; A.style.strokeDashoffset = -C * (1 - Math.max(0, v - 1) / anneauTotal);   // décalage négatif : l'anneau se vide dans le sens des aiguilles d'une montre
   $("anneauBox").classList.toggle("fin", v <= 3 && v > 0);
 }).observe($("time"), { childList: true, characterData: true, subtree: true });
 
