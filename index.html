@@ -328,25 +328,22 @@ background: color-mix(in srgb, var(--surface) 78%, transparent); border: 1px sol
 .schema-muscle { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; }
 .schema-muscle text { font-size: 10px; fill: var(--muted); font-weight: 600; }
 .schema-carte p { font-size: .82rem; color: var(--muted); margin-top: 4px; }
-/* écorché en volume : chaque muscle porte son propre dégradé (lumière en haut à gauche), le muscle du jour est incandescent */
-.sm-sil { fill: #C9CED8; stroke: #9AA2B2; stroke-width: 1.4; paint-order: stroke; }
-.sm-m { fill: url(#smG); stroke: #7F8798; stroke-width: .45; stroke-linejoin: round; }
-.sm-g0 { stop-color: #FFFFFF; } .sm-g1 { stop-color: #D3D8E2; } .sm-g2 { stop-color: #9DA6B8; }
-.sm-trait { fill: none; stroke: #6F7889; stroke-width: 1.1; stroke-linecap: round; } .sm-oeil { fill: #F8FAFF; } .sm-iris { fill: #2B303B; }
-.sm-hl { fill: url(#smH); stroke: #FFF1DD; stroke-width: .6; filter: drop-shadow(0 0 3.5px rgba(249,115,22,.95)); animation: smPulse 1.8s ease-in-out infinite; }
-.sm-prof { fill: rgba(249,115,22,.38); stroke: #F97316; stroke-width: .9; stroke-dasharray: 2 1.5; animation: smPulse 1.8s ease-in-out infinite; }
-.sm-peau { fill: rgba(251,146,60,.55); stroke: #F97316; filter: drop-shadow(0 0 4px #F97316); animation: smPulse 1.8s ease-in-out infinite; }
-.sm-f { stroke: none; } .sm-fl { stroke: rgba(40,45,60,.22); stroke-width: .4; } .sm-hl .sm-fl { stroke: rgba(120,40,0,.4); }
-.sm-t { fill: #F4F1EA; stroke: #A9AFBC; stroke-width: .4; } .sm-apo { fill: #FFFFFF; opacity: .35; } .sm-div { fill: none; stroke: #7B8394; stroke-width: .55; stroke-linecap: round; opacity: .85; }
-.sm-ombre { fill: rgba(0,0,0,.22); }
-@keyframes smPulse { 50% { opacity: .72; } }
+/* écorché réaliste : fascia clair, muscles rouges à fibres, tendons ivoire, ombrage de volume sur tout le corps ; le muscle du jour est doré et lumineux.
+   Mêmes teintes en clair et en sombre : c'est une planche d'anatomie, pas un élément d'interface. */
+.sm-sil { fill: #E4D2BF; stroke: #8E6F5A; stroke-width: 1.3; paint-order: stroke; filter: drop-shadow(0 3px 4px rgba(0,0,0,.4)); }
+.sm-m { fill: url(#smG); stroke: #4E1714; stroke-width: .45; stroke-linejoin: round; }
+.sm-g0 { stop-color: #F2B5A3; } .sm-g1 { stop-color: #BF4F43; } .sm-g2 { stop-color: #74231F; }
+.sm-trait { fill: none; stroke: #5A2A22; stroke-width: 1.1; stroke-linecap: round; } .sm-oeil { fill: #FBF7F0; } .sm-iris { fill: #3A2418; }
+.sm-hl { fill: url(#smH); stroke: #FFFBEA; stroke-width: .7; filter: drop-shadow(0 0 4px rgba(253,224,71,.95)); animation: smPulse 1.8s ease-in-out infinite; }
+.sm-prof { fill: rgba(253,224,71,.4); stroke: #FDE047; stroke-width: .9; stroke-dasharray: 2 1.5; animation: smPulse 1.8s ease-in-out infinite; }
+.sm-peau { fill: rgba(253,224,71,.42); stroke: #FDE047; filter: drop-shadow(0 0 4px #FDE047); animation: smPulse 1.8s ease-in-out infinite; }
+.sm-f { stroke: none; } .sm-fl { stroke: rgba(70,12,10,.34); stroke-width: .4; } .sm-hl .sm-fl { stroke: rgba(146,64,14,.45); }
+.sm-t { fill: #F7EFDF; stroke: #B9A688; stroke-width: .4; } .sm-apo { fill: #FFF8EA; opacity: .5; } .sm-div { fill: none; stroke: #4E1714; stroke-width: .6; stroke-linecap: round; opacity: .8; }
+.sm-ombre { fill: rgba(0,0,0,.3); } .sm-vol { pointer-events: none; }
+@keyframes smPulse { 50% { opacity: .74; } }
 .sm-loupe { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 8px 0 4px; } .sm-loupe span { max-width: 15ch; text-align: left; font-size: .82rem; color: var(--muted); }
-.sm-zoom { flex: none; width: 136px; height: 136px; border-radius: 50%; background: var(--bg); border: 2px solid #F97316; box-shadow: 0 0 0 5px rgba(249,115,22,.16); }
+.sm-zoom { flex: none; width: 136px; height: 136px; border-radius: 50%; background: var(--bg); border: 2px solid #FACC15; box-shadow: 0 0 0 5px rgba(250,204,21,.18); }
 .schema-carte.plein .sm-loupe { display: none; }
-html[data-theme="dark"] .sm-sil { fill: #2A2522; stroke: #6A5E55; } html[data-theme="dark"] .sm-m { stroke: #14100E; }
-html[data-theme="dark"] .sm-g0 { stop-color: #A39890; } html[data-theme="dark"] .sm-g1 { stop-color: #655B54; } html[data-theme="dark"] .sm-g2 { stop-color: #3A322D; }
-html[data-theme="dark"] .sm-trait { stroke: #B9ADA3; } html[data-theme="dark"] .sm-oeil { fill: #EDE7E0; } html[data-theme="dark"] .sm-iris { fill: #14100E; }
-html[data-theme="dark"] .sm-fl { stroke: rgba(0,0,0,.3); } html[data-theme="dark"] .sm-t { fill: #D8CDBD; stroke: #14100E; } html[data-theme="dark"] .sm-apo { fill: #D8CDBD; opacity: .3; } html[data-theme="dark"] .sm-div { stroke: #14100E; }
 
 /* ----- Mes progrès ----- */
 .hero-serie { position: relative; overflow: hidden; text-align: center; padding: 22px 16px 18px; border-radius: 24px; color: #fff; margin-bottom: 12px; background: linear-gradient(150deg, #FB923C, #F43F5E 60%, #BE123C); box-shadow: 0 16px 30px -18px #E11D48; }
@@ -543,8 +540,9 @@ h1 { font-size: clamp(2.1rem, 9.4vw, 2.6rem); }
 .ic { width: 1.2em; height: 1.2em; flex: none; vertical-align: -.22em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .sc-ico .ic { display: block; width: 28px; height: 28px; color: var(--accent-txt); } .sc-go .ic { display: block; margin: 0 auto; width: 24px; height: 24px; } h3 .ic { color: var(--accent-txt); }
 /* bouton retour : une pastille ronde avec un chevron, identique sur tous les écrans (le texte reste lu par les lecteurs d'écran) */
-.back { width: 44px; height: 44px; padding: 0; font-size: 0; display: grid; place-items: center; border-radius: 50%; }
-.back::before { content: ""; width: 11px; height: 11px; margin-left: 4px; border: solid var(--ink); border-width: 0 0 2.5px 2.5px; border-radius: 1px; transform: rotate(45deg); }
+.back { position: relative; width: 44px; height: 44px; padding: 0; font-size: 0; border-radius: 50%; }
+.back::before { content: ""; position: absolute; inset: 0; background: var(--ink); -webkit-mask: var(--chevron) center / 22px no-repeat; mask: var(--chevron) center / 22px no-repeat; }   /* chevron dessiné, centré par le masque */
+:root { --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.5 5l-7 7 7 7'/%3E%3C/svg%3E"); }
 
 /* ----- Sombre néon : contours et halos à la couleur d'accent ----- */
 html[data-theme="dark"] :is(.choice, .list, .reglage, .tuile, .kpi, .carte, .fiche, .carnet, .prog-info, .schema-carte, .ech-fiche, .sc-corps, .bilan div, .illus) { border-color: color-mix(in srgb, var(--accent) 34%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent), 0 0 26px -10px var(--accent), inset 0 1px 0 rgba(255,255,255,.04); }
