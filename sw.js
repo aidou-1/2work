@@ -3,7 +3,7 @@
    - Vidéos : cache séparé « 2work-videos », rempli à la demande depuis Réglages → « Vidéos hors ligne », conservé entre les versions.
    - Vignettes des listes (vignettes/*.webp) : cache « 2work-vignettes », rempli au fil de l'affichage, conservé entre les versions.
    Changer V à chaque mise en ligne d'une nouvelle version. */
-const V = "2work-v2026-11-10e", VIDEOS = "2work-videos", VIGNETTES = "2work-vignettes", ETAT = "2work-etat";
+const V = "2work-v2026-11-10f", VIDEOS = "2work-videos", VIGNETTES = "2work-vignettes", ETAT = "2work-etat";
 const COQUILLE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./icons/logo.png", "./icons/qr.png", "./consignes.js", "./fonds/chaud.webp", "./fonds/vert.webp", "./fonds/bleu.webp",
   ...["barlow-latin-400", "barlow-latin-500", "barlow-latin-600", "barlow-latin-700", "barlow-condensed-latin-600", "barlow-condensed-latin-700", "barlow-condensed-latin-800"].map(f => `./fonts/${f}-normal.woff2`)];
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(COQUILLE)).then(() => self.skipWaiting())));
@@ -34,9 +34,12 @@ async function rappel() {
   if (!R.actif || R.fait === j) return;
   const opt = (body, cle, data) => ({ body, icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "2work-" + cle + "-" + j, data });
   if (t && R.envoye !== j && hm >= R.heure) { await self.registration.showNotification(R.titre, opt(t, "rappelEnvoye", "./?go=semaine")); R.envoye = j; }
-  else if (R.serie > 0 && R.envoyeSerie !== j && hm >= "20:00") { await self.registration.showNotification(R.msgSerie[0], opt(R.msgSerie[1], "rappelSerie", "./")); R.envoyeSerie = j; }   // la série se termine ce soir
+  else if (R.envoyeSoir !== j && hm >= "19:00") {   // le soir, sans séance : vitalité de l'avatar (même calcul que dans l'appli), 5 minutes pour la recharger
+    const auj = new Date(j), v = Math.min(100, Math.round((R.hist || []).reduce((t, [jj, sec]) => { const n = Math.round((auj - new Date(jj)) / 864e5); return n >= 0 && n < 14 ? t + 26 * Math.min(1, sec / 300) * Math.pow(.78, n) : t; }, 0)));
+    if (v >= 70) return;
+    await self.registration.showNotification(R.soir[0].replace("{v}", v), opt(R.soir[1], "rappelSoir", "./?go=express5")); R.envoyeSoir = j; }
   else return;
   await c.put(url, new Response(JSON.stringify(R)));
 }
 self.addEventListener("notificationclick", e => { e.notification.close();
-  e.waitUntil(self.clients.matchAll({ type: "window" }).then(l => l.length ? l[0].focus() : self.clients.openWindow(e.notification.data || "./"))); });
+  e.waitUntil(self.clients.matchAll({ type: "window" }).then(l => l.length ? l[0].navigate(e.notification.data || "./").then(c => c && c.focus()) : self.clients.openWindow(e.notification.data || "./"))); });
