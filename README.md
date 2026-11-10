@@ -20,3 +20,5 @@ Données : tout reste dans le stockage local du téléphone (aucun compte, aucun
 - Fond : `fonds/chaud.webp` (partout) et `fonds/vert.webp` (Outils), animés en CSS. Écrans de lancement iPhone dans `icons/lancement/`.
 - Notifications dans l'appli (bandeaux personnalisés) et notifications système (rappel du jour, série en danger à 20 h).
 - Quick start, avatar et vitalité (profil), anneau du chrono, repères de mouvement sur les vidéos, ceinture cardio Bluetooth (Web Bluetooth : Chrome et Edge, pas Safari).
+
+- `js/` : le code de l'appli en huit fichiers lus dans l'ordre (donnees, seance, progres, catalogue, profil, anatomie, evenements, outils).
