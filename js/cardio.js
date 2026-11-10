@@ -6,6 +6,7 @@
    Les mouvements de cardio ne sont pas énumérables dans EXERCICES : ils restent hors de la bibliothèque et du Quick start. */
 const SUPPORTS = [   // [clé, nom FR, EN, [facile, soutenu, à fond] FR, EN, conseil FR, EN, réservé boxe]
   ["course", "Course dehors", "Outdoor run", ["Trot très facile", "Course soutenue", "Sprint"], ["Easy jog", "Hard run", "Sprint"], "Choisis une ligne droite dégagée ou une côte douce. Pousse fort sur les bras.", "Pick a clear straight or a gentle hill. Drive your arms hard."],
+  ["cote", "Course en côte", "Hill run", ["Descente en marchant", "Montée soutenue", "Sprint en côte"], ["Walk back down", "Hard climb", "Hill sprint"], "Choisis une pente régulière. Penche-toi légèrement, pousse loin derrière toi et redescends toujours en marchant.", "Pick an even slope. Lean slightly, push far behind you and always walk back down."],
   ["tapis", "Tapis de course", "Treadmill", ["Marche rapide ou trot", "Course soutenue", "Sprint sur tapis"], ["Brisk walk or jog", "Hard run", "Treadmill sprint"], "Règle la vitesse avant l’effort. Pose les pieds sur les bords pendant le repos.", "Set the speed before the effort. Step onto the side rails during the rest."],
   ["velo", "Vélo", "Bike", ["Pédalage souple", "Pédalage soutenu", "Sprint à vélo"], ["Easy spin", "Hard ride", "Bike sprint"], "Mets assez de résistance pour pousser fort sans mouliner dans le vide.", "Use enough resistance to push hard without spinning out."],
   ["corde", "Corde à sauter", "Jump rope", ["Corde tranquille", "Corde rythmée", "Corde à fond"], ["Easy skipping", "Steady fast skipping", "All-out skipping"], "Petits sauts sur l’avant du pied, coudes près du corps, poignets qui tournent.", "Small hops on the balls of your feet, elbows in, wrists turning."],
@@ -66,13 +67,27 @@ function seanceCardio(grp, cle, niv = lireNiv(), moins = 0) {
   return { type: "seance", cat: grp, cardioS: cle, fixe: true, couleur: C[3], plan, exercices: plan.map(q => q.id), listeHtml: html, rpe: C[4], total, titre, titreFr: C[1] + " · " + S[1], detail: "" };
 }
 
+/* Effort ressenti (0 à 10) noté en fin de séance cardio, gardé avec la séance dans l'historique (« ef ») et comparé à l'effort visé. */
+const blocEffort = () => `<div class="carnet ressenti"><h3>💬 ${L("Ton effort ressenti sur 10", "Your perceived effort out of 10")}</h3><p class="sh-aide">${L("0 aucun effort · 5 modéré · 8 très dur · 10 maximum. Effort visé : ", "0 no effort · 5 moderate · 8 very hard · 10 maximum. Target effort: ")}${routine.rpe}</p>
+  <div class="ef-choix">${Array.from({ length: 11 }, (_, v) => `<button class="toggle" data-ef="${v}">${v}</button>`).join("")}</div><div id="efRes"></div></div>`;
+function brancherEffort() {
+  document.querySelectorAll("[data-ef]").forEach(b => b.onclick = () => {
+    const v = +b.dataset.ef, h = lireHist(), x = h[h.length - 1], cible = parseInt(routine.rpe); if (!x) return;
+    x.ef = v; stocker("historique", JSON.stringify(h));
+    document.querySelectorAll("[data-ef]").forEach(y => y.setAttribute("aria-pressed", y === b));
+    $("efRes").innerHTML = `<p class="sh-ok">✓ ${cible < 5 ? (v > 4 ? L("Trop soutenu pour une récupération : la prochaine fois, ralentis jusqu’à pouvoir parler.", "Too hard for a recovery session: next time, slow down until you can talk.") : L("Parfait : une vraie séance facile, c’est ce qui te fait récupérer.", "Perfect: a truly easy session is what helps you recover."))
+      : v < cible - 1 ? L("Tu avais de la marge : pars plus fort sur chaque effort, ou passe au niveau supérieur.", "You had more in the tank: go harder on each effort, or move up a level.")
+      : v > cible + (cible < 9) ? L("Très dur aujourd’hui : garde ce niveau, et soigne ton sommeil avant la prochaine séance dure.", "Very hard today: stay at this level, and look after your sleep before the next hard session.")
+      : L("Pile dans la cible. Laisse 48 h avant ta prochaine séance dure.", "Right on target. Leave 48 h before your next hard session.")}</p>`;
+  });
+}
 function ouvrirCardio(grp = grpCourant || "boxe") {
-  const boxe = grp === "boxe", P = cardioPref(), S = supportDe(grp), zr = zoneRouge();
+  const boxe = grp === "boxe", P = cardioPref(), S = supportDe(grp), zr = zoneRouge(), notes = lireHist().filter(x => x.ef !== undefined).slice(-5).reverse();
   outil(boxe ? L("Cardio boxe", "Boxing cardio") : L("Cardio par intervalles", "Interval cardio"), L("Des efforts courts et très intenses, une vraie récupération entre chaque : la façon la plus efficace de gagner du souffle pour ton sport.", "Short, very intense efforts with real recovery in between: the most effective way to build fitness for your sport."),
     `<div class="carnet"><span class="champ-titre">${L("Où t’entraînes-tu aujourd’hui ?", "Where are you training today?")}</span>${chips("cs", SUPPORTS.filter(x => boxe || !x[7]).map(x => [x[0], x[1], x[2]]), S[0])}
       <span class="champ-titre">${L("Ton niveau", "Your level")}</span>${chips("cn", NIV_RENFO.map(n => [n[0], n[1], n[2]]), lireNiv())}
       <p class="sh-aide">${L("Trois règles : échauffe-toi toujours, donne tout sur chaque effort, et ne raccourcis jamais le repos. ", "Three rules: always warm up, give everything on each effort, and never cut the rest short. ")}${zr ? L(`Ta zone rouge commence à ${zr} bpm.`, `Your red zone starts at ${zr} bpm.`) : ""}</p></div>
-     <h2 class="sec">${L("Choisis ta séance", "Choose your session")}</h2><div id="cListe"></div>
+     <h2 class="sec">${L("Choisis ta séance", "Choose your session")}</h2><div id="cListe"></div>${notes.length ? `<h2 class="sec">${L("Tes derniers efforts ressentis", "Your latest perceived efforts")}</h2><ul class="carnet ef-liste">${notes.map(x => `<li><span>${x.j.slice(8)}/${x.j.slice(5, 7)} · ${propre(x.t)}</span><b>${x.ef}/10</b></li>`).join("")}</ul>` : ""}
      <p class="prog-avert">${L("Efforts très intenses : demande l’avis d’un médecin en cas de problème de santé, et arrête-toi en cas de douleur dans la poitrine, de vertige ou de malaise. Garde 48 h entre deux séances dures.", "Very intense efforts: ask a doctor if you have a health condition, and stop if you feel chest pain, dizziness or unwell. Leave 48 h between two hard sessions.")}</p>`, () => vueMode(grp));
   const liste = () => { $("cListe").innerHTML = ""; CARDIOS.filter(c => boxe || !c[8]).forEach(c => { const s = seanceCardio(grp, c[0]);
     bouton($("cListe"), `${L(c[1], c[2])} · ${s.total} min`, L(c[5], c[6]), c[3], () => { ROUTINES.cardioS = { ...seanceCardio(grp, c[0]), retour: () => ouvrirCardio(grp) }; CONSEILLES.cardioS = []; ouvrirRoutine("cardioS"); }); }); };

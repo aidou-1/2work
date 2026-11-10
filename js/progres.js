@@ -163,7 +163,7 @@ function celebrer() {
   setTimeout(() => $("fBilan").querySelectorAll("b").forEach(b => compteur(b, +b.dataset.v)), 800);
   $("fTrophees").innerHTML = neufs.map((t, k) => `<div class="nouveau-trophee" style="--k:${k}">${medaille(t, "n")}<div><small>${L("Nouveau trophée", "New trophy")}</small><b>${L(t[1], t[2])}</b><span>${L(t[3], t[4])}</span></div></div>`).join("");
   if (fc.n) $("fSub").textContent += " ❤️ " + L(`${Math.round(fc.somme / fc.n)} bpm en moyenne, ${fc.max} au maximum.`, `${Math.round(fc.somme / fc.n)} bpm on average, ${fc.max} max.`);
-  $("fRessenti").innerHTML = blocRessenti(); brancherRessenti();
+  $("fRessenti").innerHTML = blocRessenti(); brancherRessenti(); brancherEffort();
   $("fCharges").innerHTML = formCharges(); brancherCharges();
   $("fPartage").innerHTML = blocPartage(); brancherPartage();
   envoyerSante(lireHist().slice(-1)[0]).then(r => r && $("fPartage").insertAdjacentHTML("afterbegin", r));

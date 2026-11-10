@@ -226,6 +226,7 @@ function majSemaine() {   // carte « Aujourd'hui » du menu et salutation
    Renfo : 2 séances « faciles » de suite, ou 3 séances réussies de suite au même niveau → proposer le niveau supérieur ;
    2 séances « trop dures » de suite → proposer le niveau inférieur. */
 function blocRessenti() {
+  if (routine.cardioS) return blocEffort();
   if (!["seance", "salle", "tabata", "echauffement"].includes(mode) || routine.prog || routine.reprise) return "";
   return `<div class="carnet ressenti"><h3>💬 ${L("Comment c’était ?", "How was it?")}</h3><div class="stepper rs-choix">${[[1, "😌", "Facile", "Easy"], [2, "💪", "Juste bien", "Just right"], [3, "🥵", "Trop dur", "Too hard"]]
     .map(([v, e, f, en]) => `<button class="toggle" data-rs="${v}">${e} ${L(f, en)}</button>`).join("")}</div><div id="rsRes"></div></div>`;

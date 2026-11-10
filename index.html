@@ -219,6 +219,8 @@ box-shadow: 0 14px 28px -16px var(--c); }
 .champ-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .champ .toggle { width: 100%; padding: 12px; }
 .choix-grille { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; } .choix-grille .toggle { min-width: 0; padding: 11px 6px; font-size: .88rem; white-space: normal; line-height: 1.15; } .choix-grille .toggle:last-child { grid-column: 1 / -1; }
 .pf-ok { font-size: .85rem; color: var(--ok); min-height: 1.2em; margin-top: 6px; } .profil-form .niv-choix { margin-bottom: 4px; }
+.ef-choix { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; } .ef-choix .toggle { padding: 11px 0; min-width: 0; }
+.ef-liste { list-style: none; margin: 0; } .ef-liste li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; font-size: .92rem; } .ef-liste li + li { border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); }
 .niv-choix, .rs-choix { display: flex; gap: 6px; } .niv-choix .toggle, .rs-choix .toggle { flex: 1; min-width: 0; padding: 11px 4px; font-size: .88rem; }
 .niv-txt { font-size: .85rem; color: var(--muted); margin: 8px 2px 4px; } .sug { display: block; color: var(--ok); font-weight: 600; font-size: .85rem; }
 .jours-choix { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; margin-bottom: 14px; } .jours-choix .toggle { min-width: 0; padding: 12px 0; font-weight: 700; }

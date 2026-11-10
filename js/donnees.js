@@ -200,11 +200,11 @@ Object.assign(ROUTINES, {
   renfoCourse: { type: "seance", titre: "Renfo course à pied", detail: "Jambes, fessiers, mollets, gainage", couleur: "#0E7C86",
     exercices: ["squat","fentesalt","rdl","pontuni","mollet1","planche","planchelat","deadbug"] },
   renfoBoxe: { type: "seance", titre: "Renfo boxe", detail: "Pectoraux, épaules, triceps, abdos, jambes explosives", couleur: "#C8283C",
-    exercices: ["squatsaute","pompes","russian","planchetouch","pompesserrees","climbers","superman","burpees"] }
+    exercices: ["squatsaute","pompes","russian","planchetouch","chasseGarde","genouxMur","burpeeSprawl","climbers"] }
 });
 Object.assign(CONSEILLES, {
   renfoCourse: ["squat","fentesalt","rdl","pontuni","mollet1","planche","planchelat","deadbug","chaise","squatsaute","climbers","bird","lateral","skater","calfraise","pont","fente"],
-  renfoBoxe: ["squatsaute","pompes","russian","planchetouch","pompesserrees","climbers","superman","burpees","planche","planchelat","squat","deadbug","fentesalt","tspin","scap","twist"]
+  renfoBoxe: ["squatsaute","pompes","russian","planchetouch","chasseGarde","genouxMur","burpeeSprawl","pompesserrees","climbers","superman","burpees","planche","planchelat","squat","deadbug","fentesalt","tspin","scap","twist"]
 });
 
 /* Tabata : minuteur pur, sans exercices (effort + repos répétés, cycles séparés par une récupération) */
@@ -743,7 +743,7 @@ Object.assign(POSES, POSES_MAT);
 const MATOS = Object.keys(EXERCICES).filter(id => EXERCICES[id].mat || id === "pike" || id === "hollow");
 Object.assign(ROUTINES, Object.fromEntries([
   ["renfoCourseMat", "course", "renfoCourse", "Renfo course à pied · matériel", "Jambes à l’unilatéral, fessiers, gainage", ["bulgare","stepUp","dbRDL","hipThrust","bandWalk","kbSwing","hollow","relevesJambes"]],
-  ["renfoBoxeMat", "boxe", "renfoBoxe", "Renfo boxe · matériel", "Explosivité, pecs, dos, rotation du tronc", ["kbSwing","dbPress","dbRow","poulieBucheron","discRussian","tractions","roue","pike"]],
+  ["renfoBoxeMat", "boxe", "renfoBoxe", "Renfo boxe · matériel", "Explosivité, pecs, dos, rotation du tronc", ["kbSwing","dbPress","rafaleSac","poulieBucheron","dbRow","traineau","discRussian","tractions","roue","pike"]],
   ["renfoSurfMat", "surf", "renfoSurf", "Renfo surf · matériel", "Dos, épaules, gainage, jambes", ["tractions","poulieTirage","dbRow","pike","bandPullApart","goblet","hollow","discWood"]],
   ["renfoSkiMat", "ski", "renfoSki", "Renfo ski · matériel", "Cuisses, fessiers, gainage, équilibre", ["goblet","bulgare","kbSwing","dbRDL","bandWalk","roue","discRussian","stepUp"]],
   ["renfoHautMat", "haut", "renfoHaut", "Renfo haut du corps · matériel", "Pectoraux, dos, épaules, bras, abdos", ["dbPress","tractions","dbShoulder","ezRow","ezCurl","poulieTriceps","dips","relevesJambes"]],
@@ -793,6 +793,28 @@ Object.assign(CATS, {
 });
 
 const VOIX_SALLE = {};
+/* ============ BOXE : mouvements de cardio spécifique ============
+   [id, durée, matériel FR, EN, nom FR, EN, muscles FR, EN, description FR, EN, pose empruntée, consigne dite FR, EN] */
+{
+  const EN = LANGUE === "en";
+  [["burpeeSprawl", 40, "", "", "Burpee esquive au sol", "Sprawl burpee", "Jambes, hanches, épaules, cardio", "Legs, hips, shoulders, cardio", "En garde, pose les mains au sol et lance les jambes loin en arrière en laissant descendre les hanches près du sol, puis ramène les pieds et reviens tout de suite en garde.", "From your guard, put your hands down and shoot your legs far back, letting your hips drop close to the floor, then bring your feet in and get straight back into your guard.", "burpees",
+     "En garde, pieds écartés comme les épaules.|Mains au sol, lance les jambes en arrière et descends les hanches. Ramène les pieds et reviens en garde.|Garde les bras solides et le regard devant toi. Remonte les mains au menton à chaque fois.", "In your guard, feet shoulder-width apart.|Hands down, shoot your legs back and drop your hips. Bring your feet in and return to your guard.|Keep your arms strong and your eyes forward. Bring your hands back to your chin every time."],
+   ["genouxMur", 30, "", "", "Montées de genoux au mur", "Wall knee drives", "Fléchisseurs de hanche, mollets, gainage, cardio", "Hip flexors, calves, core, cardio", "Mains à plat contre un mur, bras tendus, corps incliné et gainé : monte les genoux l’un après l’autre le plus vite possible, sur l’avant du pied.", "Hands flat on a wall, arms straight, body leaning and braced: drive your knees up one after the other as fast as you can, on the balls of your feet.", "climbers",
+     "Mains au mur, bras tendus, corps incliné en une seule ligne.|Monte les genoux l’un après l’autre, le plus vite possible.|Reste sur l’avant du pied. Les hanches ne reculent pas et le dos reste droit.", "Hands on the wall, arms straight, body leaning in one line.|Drive your knees up one after the other, as fast as you can.|Stay on the balls of your feet. Hips do not drift back and your back stays straight."],
+   ["chasseGarde", 30, "", "", "Pas chassés et direct", "Shuffle and jab", "Mollets, fessiers, épaules, coordination", "Calves, glutes, shoulders, coordination", "En garde, fais trois pas chassés rapides d’un côté, arrête-toi net sur des appuis solides et lance un direct, puis repars de l’autre côté.", "In your guard, take three quick shuffle steps to one side, stop dead on solid feet and throw a jab, then go back the other way.", "pasChasse",
+     "En garde, genoux souples, poids sur l’avant des pieds.|Trois pas chassés rapides, un arrêt net, puis un direct. Repars de l’autre côté.|Ne croise jamais les pieds. Les mains restent hautes pendant le déplacement.", "In your guard, knees soft, weight on the balls of your feet.|Three quick shuffle steps, a dead stop, then a jab. Go back the other way.|Never cross your feet. Hands stay up while you move."],
+   ["rafaleSac", 30, "sac de frappe", "heavy bag", "Rafale basse-haute au sac", "Body-head bag flurry", "Épaules, tronc, jambes, cardio", "Shoulders, trunk, legs, cardio", "Face au sac, enchaîne sans pause deux coups au corps en fléchissant les jambes, puis deux coups à la tête en te redressant.", "Facing the bag, throw two body shots with your knees bent, then two head shots as you rise, without a pause.", "shadow",
+     "En garde face au sac, à distance de bras.|Deux coups au corps en pliant les jambes, puis deux coups à la tête. Enchaîne sans pause.|Descends avec les jambes, pas avec le dos. Ramène la main au menton après chaque frappe.", "In your guard facing the bag, at arm’s length.|Two body shots with your knees bent, then two head shots. Keep going without a pause.|Go down with your legs, not your back. Bring your hand back to your chin after every punch."],
+   ["traineau", 30, "traîneau", "sled", "Poussée de traîneau", "Sled push", "Quadriceps, fessiers, mollets, gainage", "Quads, glutes, calves, core", "Mains sur les montants, bras tendus, dos plat et corps incliné : pousse le traîneau par petits pas puissants, sans t’arrêter.", "Hands on the posts, arms straight, back flat and body leaning: push the sled with short powerful steps, without stopping.", "",
+     "Mains sur les montants, bras tendus, dos plat, corps incliné.|Pousse le traîneau par petits pas puissants, sans t’arrêter.|Garde les hanches basses et le regard vers le sol devant toi. Ne laisse pas le dos s’arrondir.", "Hands on the posts, arms straight, back flat, body leaning.|Push the sled with short powerful steps, without stopping.|Keep your hips low and your eyes on the floor ahead. Do not let your back round."]
+  ].forEach(([id, duree, matFr, matEn, nomFr, nomEn, musFr, musEn, descFr, descEn, pose, vFr, vEn]) => {
+    const mat = EN ? matEn : matFr;
+    EXERCICES[id] = { nom: EN ? nomEn : nomFr, nomFr, duree, video: null, description: EN ? descEn : descFr, muscles: (EN ? musEn : musFr) + (mat ? " · " + mat : ""), mat: !!mat };
+    VOIX_SALLE[id] = nomEn; if (POSES[pose]) POSES[id] = POSES[pose];
+    if (typeof CONSIGNES !== "undefined") CONSIGNES[id] = [vFr, vEn];
+  });
+}
+
 /* ============ SALLE DE MUSCULATION ============
    Exercices sur machines et poids libres des salles grand public. Séances jouées en séries (mode "salle"). */
 Object.assign(EXERCICES, Object.fromEntries([
