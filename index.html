@@ -59,8 +59,8 @@ body { font-family: var(--texte); font-size: 16px; line-height: 1.45; color: var
    voile de la couleur du thème par-dessus pour garder les textes lisibles ; seuls « transform » et « opacity » sont animés */
 .fond { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: var(--fond-o); transition: opacity .6s; }
 .fond i { position: absolute; inset: -9%; background: center / cover no-repeat; opacity: 0; transition: opacity .8s; will-change: transform; animation: derive 26s ease-in-out infinite alternate; }
-.fond .chaud { background-image: url(fonds/chaud.webp); opacity: 1; } .fond .vert { background-image: url(fonds/vert.webp); animation-delay: -9s; }
-body:has(#outils:not(.hidden), #outil:not(.hidden)) .fond .chaud { opacity: 0; } body:has(#outils:not(.hidden), #outil:not(.hidden)) .fond .vert { opacity: 1; }
+.fond .chaud { background-image: url(fonds/chaud.webp); opacity: 1; } .fond .vert { background-image: url(fonds/vert.webp); animation-delay: -9s; } .fond .bleu { background-image: url(fonds/bleu.webp); animation-delay: -17s; }
+body:has(:is(#outils, #outil, #progs, #prog):not(.hidden)) .fond .chaud { opacity: 0; } body:has(:is(#outils, #outil):not(.hidden)) .fond .vert, body:has(:is(#progs, #prog):not(.hidden)) .fond .bleu { opacity: 1; }
 .fond b { position: absolute; inset: -60%; background: linear-gradient(118deg, transparent 47%, rgba(255,255,255,.10) 50%, transparent 53%); will-change: transform; animation: reflet 12s ease-in-out infinite; }
 .fond::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(var(--voile),.66), rgba(var(--voile),.42) 45%, rgba(var(--voile),.2)); transition: opacity .6s; }
 @keyframes derive { from { transform: scale(1.02); } to { transform: scale(1.16) translate3d(-3%, 2.5%, 0); } }
@@ -109,14 +109,6 @@ background: color-mix(in srgb, var(--surface) 80%, transparent); border: 1px sol
 body:has(.nav:not(.hidden)) main { padding-bottom: 120px; }
 :is(#progres, #progs, #reglages) > .back { display: none; }   /* la barre remplace « ← Retour » sur ces écrans */
 .voix-secours { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; right: 110px; z-index: 20; padding: 10px 14px; border-radius: 16px; font-weight: 600; font-size: .92rem; background: var(--ink); color: var(--bg); box-shadow: 0 12px 26px -10px rgba(0,0,0,.5); animation: frais .3s ease-out; }
-/* notifications dans l'appli : bandeau qui descend du haut, un à la fois */
-.notif { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 50%; z-index: 25; width: min(calc(100% - 24px), 536px); display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border-radius: 20px;
-background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--ligne); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); box-shadow: 0 18px 36px -14px rgba(0,0,0,.55); transform: translateX(-50%); animation: notifEntre .38s var(--doux); }
-.notif.sort { animation: notifSort .26s ease-in forwards; } .notif:active:not(:disabled) { transform: translateX(-50%) scale(.98); }
-.notif .n-ico { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; font-size: 1.25rem; background: color-mix(in srgb, var(--accent) 18%, transparent); }
-.notif > span:nth-child(2) { flex: 1; min-width: 0; } .notif b { display: block; font-size: .95rem; line-height: 1.2; } .notif small { display: block; color: var(--muted); font-size: .82rem; line-height: 1.3; margin-top: 2px; } .notif i { font-style: normal; font-size: 1.3rem; color: var(--muted); }
-body:has(#session:not(.hidden)) .notif { left: 12px; width: calc(100% - 124px); transform: none; animation-name: frais; }   /* en séance : à côté du bouton Menu */
-@keyframes notifEntre { from { opacity: 0; transform: translateX(-50%) translateY(-120%); } } @keyframes notifSort { to { opacity: 0; transform: translateX(-50%) translateY(-120%); } }
 .avis-etoiles { display: flex; justify-content: center; gap: 4px; } .avis-etoiles button { background: none; padding: 0 4px; font-size: 2.3rem; line-height: 1; color: var(--soft); } .avis-etoiles button.on { color: #F5B301; }
 textarea.choixVoix { width: 100%; resize: vertical; }
 /* outils : filtres en pastilles défilantes, courbes, grand affichage des minuteurs */
@@ -274,6 +266,10 @@ p.zones { margin-top: 10px; color: var(--muted); font-size: .9rem; }
 background: color-mix(in srgb, var(--surface) 78%, transparent); border: 1px solid var(--ligne); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); box-shadow: var(--ombre); }
 .controls button { min-height: 54px; padding: 12px; border-radius: 18px; background: var(--soft); font-weight: 600; }
 .controls .main { background: var(--accent); color: #fff; font-family: var(--titre); font-weight: 700; font-size: 1.35rem; }
+.chrono { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.anneau-t { flex: 0 1 96px; min-width: 60px; aspect-ratio: 1; transform: rotate(-90deg); overflow: visible; } .anneau-t circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+.anneau-t .piste { stroke: var(--soft); } #anneau { stroke: var(--accent-txt); stroke-dasharray: 276.5; transition: stroke-dashoffset 1s linear; }
+.anneau-t.fin { animation: battement .5s ease-in-out infinite alternate; } @keyframes battement { to { transform: rotate(-90deg) scale(1.08); } }
 #session.frais :is(.name, #mediaBox, .desc, .zones) { animation: frais .45s ease-out both; }
 @keyframes frais { from { opacity: 0; transform: translateY(8px); } }
 
@@ -496,6 +492,10 @@ div.zones b { display: block; font-family: var(--titre); font-size: 1.1rem; } di
 /* ----- Transitions entre écrans : glissement court, vers la gauche en avançant, vers la droite au retour ----- */
 ::view-transition { pointer-events: none; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; animation-timing-function: var(--doux); animation-fill-mode: both; }
+html[data-sens="splash"]::view-transition-old(root) { animation: vt-splash-sort .75s cubic-bezier(.6, 0, .3, 1) both; z-index: 2; }
+html[data-sens="splash"]::view-transition-new(root) { animation: vt-splash-entre .75s cubic-bezier(.6, 0, .3, 1) both; }
+@keyframes vt-splash-sort { to { clip-path: circle(0% at 50% 42%); transform: scale(1.5); filter: brightness(2); } from { clip-path: circle(150% at 50% 42%); } }
+@keyframes vt-splash-entre { from { transform: scale(.86); filter: blur(6px); } }
 html[data-sens="avant"]::view-transition-old(root) { animation-name: vt-sort-avant; }
 html[data-sens="avant"]::view-transition-new(root), main > section.entre-avant { animation-name: vt-entre-avant; }
 html[data-sens="retour"]::view-transition-old(root) { animation-name: vt-sort-retour; }
@@ -505,6 +505,17 @@ main > section:is(.entre-avant, .entre-retour) { animation-duration: .28s; anima
 @keyframes vt-entre-avant { from { opacity: 0; transform: translateX(32px); } }
 @keyframes vt-sort-retour { to { opacity: 0; transform: translateX(24px); } }
 @keyframes vt-entre-retour { from { opacity: 0; transform: translateX(-32px); } }
+
+/* ----- Sombre néon : contours et halos à la couleur d'accent ----- */
+html[data-theme="dark"] :is(.choice, .list, .reglage, .tuile, .kpi, .carte, .fiche, .carnet, .prog-info, .schema-carte, .ech-fiche, .sc-corps, .bilan div, .illus) { border-color: color-mix(in srgb, var(--accent) 34%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent), 0 0 26px -10px var(--accent), inset 0 1px 0 rgba(255,255,255,.04); }
+html[data-theme="dark"] :is(.choice, .sc-corps)::before { box-shadow: 0 0 12px 1px var(--c); }
+html[data-theme="dark"] :is(.primary, .controls .main, .toggle:not([aria-pressed="false"]):not(.contour), .ajouter) { box-shadow: 0 0 22px -4px var(--accent), inset 0 1px 0 rgba(255,255,255,.25); }
+html[data-theme="dark"] :is(.time, .end h2) { text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 46px color-mix(in srgb, var(--accent) 45%, transparent); }
+html[data-theme="dark"] h1 { text-shadow: 0 0 22px color-mix(in srgb, var(--accent) 55%, transparent); }
+html[data-theme="dark"] #anneau { filter: drop-shadow(0 0 5px var(--accent)); } html[data-theme="dark"] .bars i b { box-shadow: 0 0 8px var(--accent); }
+html[data-theme="dark"] .nav { border-color: color-mix(in srgb, var(--accent) 40%, transparent); box-shadow: 0 0 28px -8px var(--accent), 0 14px 30px -12px #000; } html[data-theme="dark"] .nav button[aria-current="page"] svg { filter: drop-shadow(0 0 6px var(--accent)); }
+html[data-theme="dark"] #menu .choice, html[data-theme="dark"] .prog-carte { box-shadow: 0 0 30px -8px var(--c), inset 0 1px 0 rgba(255,255,255,.25); border: 1px solid color-mix(in srgb, var(--c) 60%, #fff); }
+html[data-theme="dark"] .media { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 30px -8px var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
 *:not(.souffle > i, .rc-barres b), *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -516,8 +527,7 @@ button:active:not(:disabled) { transform: none; }
 try { const t = localStorage.getItem("theme") || "sombre"; document.documentElement.dataset.theme = t === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : t === "sombre" ? "dark" : "light"; } catch (e) {}</script>
 </head>
 <body>
-<div class="fond" aria-hidden="true"><i class="chaud"></i><i class="vert"></i><b></b></div>
-<button id="notif" class="notif hidden" aria-live="polite"></button>
+<div class="fond" aria-hidden="true"><i class="chaud"></i><i class="vert"></i><i class="bleu"></i><b></b></div>
 <p id="voixSecours" class="voix-secours hidden" role="status"></p>
 <button id="quitBtn" class="quit hidden" aria-label="Quitter et retourner au menu d’accueil">✕ Menu</button>
 <main>
@@ -642,7 +652,7 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <section id="session" class="hidden" aria-live="polite">
 <div class="bars" id="bars"></div>
 <p class="count" id="count"></p>
-<div class="time" id="time">20</div>
+<div class="chrono"><div class="time" id="time">20</div><svg class="anneau-t" id="anneauBox" viewBox="0 0 100 100" aria-hidden="true"><circle class="piste" cx="50" cy="50" r="44"/><circle id="anneau" cx="50" cy="50" r="44"/></svg></div>
 <button id="plusRepos" class="plus-repos hidden">+15 s</button>
 <h2 class="name" id="name"></h2>
 <p class="type-ex" id="typeEx"></p>
@@ -704,10 +714,6 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <div class="reglage">
 <label for="sonsBtn">Sons de l’interface<small>Petits sons quand tu touches les menus, les boutons et les options</small></label>
 <button id="sonsBtn" class="toggle" aria-pressed="true">Activés</button>
-</div>
-<div class="reglage">
-<label for="notifsBtn"><span data-en="In-app notifications">Notifications dans l’appli</span><small data-en="Greetings, streak alerts, milestones and tips, shown as banners">Salutations, alertes de série, paliers et conseils, en bandeaux</small></label>
-<button id="notifsBtn" class="toggle" aria-pressed="true">Activées</button>
 </div>
 <div class="reglage">
 <label for="vibBtn">Vibrations<small>Au toucher, à chaque changement d’exercice, au repos et pendant les 3 dernières secondes</small></label>
@@ -1974,8 +1980,8 @@ const dire = e => langueVoix === "fr" ? e.nomFr || e.nom : (VOIX[e.id] || e.nom)
 let langueVoix = "en", nomVoix = "";
 try { langueVoix = localStorage.getItem("langueVoix") || LANGUE; nomVoix = localStorage.getItem("nomVoix") || ""; } catch (e) {}
 const PHRASES = {
-  en: { pret: "Get ready", repos: "Rest. Next: ", serie: ", set ", recup: "Recovery", tour: "Round ", test: "Hello, I will guide your workout. Let's go!" },
-  fr: { pret: "Prépare-toi", repos: "Repos. Ensuite : ", serie: ", série ", recup: "Récupération", tour: "Tour ", test: "Bonjour, je vais te guider pendant ta séance. C'est parti !" }
+  en: { pret: "Get ready", repos: "Rest. Next: ", serie: ", set ", recup: "Recovery", tour: "Round ", go: "Let’s go!", test: "Hello, I will guide your workout. Let's go!" },
+  fr: { pret: "Prépare-toi", repos: "Repos. Ensuite : ", serie: ", série ", recup: "Récupération", tour: "Tour ", go: "C’est parti !", test: "Bonjour, je vais te guider pendant ta séance. C'est parti !" }
 };
 const PH = k => PHRASES[langueVoix][k];
 const voixDispo = () => ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(v => v.lang.toLowerCase().startsWith(langueVoix));
@@ -1989,10 +1995,11 @@ function choisirVoix() {
 
 /* Voix de secours : si la synthèse vocale manque ou reste muette (Android sans moteur vocal, voix non installée, lecture bloquée),
    un second essai part avec la voix par défaut du téléphone, puis l'annonce s'affiche en bandeau à l'écran. */
-let tSecours = null, tBandeau = null;
+let tSecours = null, tBandeau = null, prefixeVoix = "";   // prefixeVoix : dit juste avant la prochaine annonce (« C'est parti ! » au lancement)
 function bandeauVoix(texte) { const b = $("voixSecours"); b.textContent = "🔊 " + texte; b.classList.remove("hidden"); clearTimeout(tBandeau); tBandeau = setTimeout(() => b.classList.add("hidden"), 4500); }
 function parler(texte, delai = 700, vitesse = 0.95) {
   if (!voixActive || !texte) return;
+  texte = prefixeVoix + texte; prefixeVoix = "";
   clearTimeout(tVoix); clearTimeout(tSecours);
   if (!("speechSynthesis" in window)) return bandeauVoix(texte);
   speechSynthesis.cancel();
@@ -2029,7 +2036,7 @@ function ecran(nom, avant) {
   const g = ++genEcran;   // un écran demandé entre-temps l'emporte (sinon une transition en retard couperait le chrono)
   const maj = () => { if (avant) avant(); if (g === genEcran) afficherEcran(nom); };
   if (!change || mouvementReduit()) return maj();
-  document.documentElement.dataset.sens = sens;
+  document.documentElement.dataset.sens = ecranCourant === "accueil" ? "splash" : sens;   // sortie de l'écran de démarrage : le menu s'ouvre en cercle depuis le logo
   if (document.startViewTransition) return document.startViewTransition(maj).ready.catch(() => {});   // une transition interrompue par la suivante n'est pas une erreur
   maj();
   const el = $(nom); el.classList.remove("entre-avant", "entre-retour"); void el.offsetWidth; el.classList.add("entre-" + sens);
@@ -2056,7 +2063,7 @@ function afficherEcran(nom) {
   if (nom !== "outil") clearInterval(tMin);   // un minuteur libre ne tourne que sur son écran
   const onglet = { menu: "nMenu", progres: "nProgres", progs: "nProgs", outils: "nOutils", reglages: "reglagesBtn" }[nom];   // barre de navigation : écrans principaux seulement
   $("nav").classList.toggle("hidden", !onglet); [...$("nav").children].forEach(b => b.setAttribute("aria-current", b.id === onglet ? "page" : "false"));
-  if (nom === "menu") { majReprise(); setTimeout(notifsMenu, 1100); }
+  if (nom === "menu") majReprise();
   if (!["pret", "session"].includes(nom)) { clearTimeout(tSecours); $("voixSecours").classList.add("hidden"); }   // pas d'annonce de secours hors séance
   majVerrou();
 }
@@ -2128,6 +2135,17 @@ function majVerrou() {
 if ("mediaSession" in navigator) [["play", () => enPause && pause()], ["pause", () => !enPause && pause()], ["nexttrack", () => moteur(1)(false)], ["previoustrack", () => moteur(2)()]]
   .forEach(([a, f]) => { try { navigator.mediaSession.setActionHandler(a, () => { if (ecranCourant === "session") f(); }); } catch (e) {} });
 new MutationObserver(majVerrou).observe($("name"), { childList: true, characterData: true, subtree: true });   // le titre affiché suit l'exercice en cours
+
+/* ============ ANNEAU DU CHRONO ============
+   Il se vide au rythme des secondes, quel que soit le moteur (exercice, repos, Tabata, respiration) : il suit simplement le nombre affiché.
+   Un nombre qui remonte = nouvelle phase, l'anneau se remplit d'un coup ; il vise toujours la seconde suivante pour arriver à zéro pile à la fin. */
+let anneauTotal = 1, anneauPrec = 0;
+new MutationObserver(() => {
+  const v = parseInt($("time").textContent, 10) || 0, A = $("anneau"), C = 276.5, neuf = v > anneauPrec;
+  if (neuf) { anneauTotal = Math.max(1, v); A.style.transition = "none"; A.style.strokeDashoffset = 0; void A.getBoundingClientRect(); A.style.transition = ""; }
+  anneauPrec = v; A.style.strokeDashoffset = C * (1 - Math.max(0, v - 1) / anneauTotal);
+  $("anneauBox").classList.toggle("fin", v <= 3 && v > 0);
+}).observe($("time"), { childList: true, characterData: true, subtree: true });
 
 /* ============ REPRISE D'UNE SÉANCE INTERROMPUE ============
    À chaque changement d'exercice, l'état de la séance est noté sur le téléphone. Si l'appli est fermée ou rechargée en pleine séance,
@@ -2307,7 +2325,7 @@ function ouvrirApercu(cle) {
     ? routine.blocs.map((b, j) => `<li><div><b>${j + 1}. ${b.titre} · ${Math.round(plan.filter(q => q.j === j).reduce((t, q) => t + q.sec, 0) / 6) / 10} min</b><small>${b.resume}</small></div></li>`).join("")
       + `<li><div><small>${routine.etude} ${T("Séance de bien-être, pas un avis médical : arrête-toi en cas de vertige.")}</small></div></li>`
     : ids.length
-    ? ids.map((id, i) => `<li data-i="${i}">${vignette(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div>${routine.fixe ? "" : `<button class="suppr" data-i="${i}" aria-label="${T("Retirer {n}", { n: EXERCICES[id].nom })}">×</button>`}</li>`).join("")
+    ? (routine.ami ? `<li class="etude defi"><div><small><b>🤝 ${L(`Ton ami ${routine.ami} te défie de réussir ${routine.amiDj ? "le défi du jour" : "cette séance"}. Relève le défi !`, `Your friend ${routine.ami} challenges you to complete ${routine.amiDj ? "the daily challenge" : "this workout"}. Take it on!`)}</b></small></div></li>` : "") + ids.map((id, i) => `<li data-i="${i}">${vignette(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div>${routine.fixe ? "" : `<button class="suppr" data-i="${i}" aria-label="${T("Retirer {n}", { n: EXERCICES[id].nom })}">×</button>`}</li>`).join("")
       + (routine.defi ? `<li class="etude defi"><div><small><b>${T("Le défi change chaque jour à minuit. Termine-le pour allonger ta série !")}</b></small></div></li>` : "")
       + (routine.blessure ? `<li class="etude"><div><small>${routine.etude}</small><small><b>${T("Pas un avis médical : reprends seulement après accord de ton médecin ou kiné. Aucun exercice ne doit faire mal : en cas de douleur, arrête.")}</b></small></div></li>` : "")
     : `<li><small>${T("Aucun exercice. Ajoutes-en au moins un pour commencer.")}</small></li>`;
@@ -2373,8 +2391,6 @@ function fondu() { const el = $("session"); el.classList.remove("frais"); void e
 
 function afficher() {
   noterSeance(); fondu();
-  if (index && index === Math.floor(liste.length / 2)) notifier("", "💪", L("Mi-séance !", "Halfway!"), L(`Plus que ${liste.length - index} étapes, tiens bon.`, `${liste.length - index} steps to go, hang in there.`), null, true);
-  else if (index > 2 && index === liste.length - 1) notifier("", "🏁", L("Dernier exercice", "Last exercise"), L("Donne tout, c’est presque fini.", "Give it everything, almost done."), null, true); $("plusRepos").classList.add("hidden");
   const e = liste[index], kc = e.duree >= 10 && changements(e.id);
   programmerConseils(e, conseilDejaDit === index); conseilDejaDit = -1;
   bandeauCote(kc ? kc.seg[LANGUE === "en" ? 1 : 0][0] : "");
@@ -2854,7 +2870,7 @@ function celebrer() {
   $("fCharges").innerHTML = formCharges(); brancherCharges();
   $("fPartage").innerHTML = blocPartage(); brancherPartage();
   envoyerSante(lireHist().slice(-1)[0]).then(r => r && $("fPartage").insertAdjacentHTML("afterbegin", r));
-  confettis(); majRappelSW(); setTimeout(notifsFin, 2800);
+  confettis(); majRappelSW();
   [523, 659, 784, 1047].forEach((f, i) => bip(f, i === 3 ? 600 : 160, .18, "triangle", .35 + i * .13)); vibrer([90, 60, 90, 60, 260]);
   if (neufs.length) { [1319, 1568, 2093].forEach((f, i) => bip(f, 220, .12, "sine", 1.5 + i * .1)); setTimeout(() => vibrer([40, 50, 40, 50, 40]), 1500); }
 }
@@ -3064,7 +3080,7 @@ function ouvrirProgs(sens) {
     + REPRISES.map(R => { const a = repAvance(R[0]); return `<button class="prog-carte petite" style="--c:${R[3]}" data-r="${R[0]}"><svg class="rond" viewBox="0 0 62 62"><circle cx="31" cy="31" r="26" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="7"/><circle cx="31" cy="31" r="26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="${163.4 * a / NB_REP} 200" transform="rotate(-90 31 31)"/><text x="31" y="38" text-anchor="middle">${a}/${NB_REP}</text></svg><div><strong>${L(R[1], R[2])}</strong><span class="prog-meta">${L("12 séances · 3 phases", "12 sessions · 3 phases")}</span></div></button>`; }).join(""));
   $("pgListe").querySelectorAll("[data-p]").forEach(b => b.onclick = () => ouvrirProg(b.dataset.p));
   $("pgListe").querySelectorAll("[data-r]").forEach(b => b.onclick = () => ouvrirReprise(b.dataset.r));
-  document.documentElement.style.setProperty("--accent", "var(--brand)");
+  document.documentElement.style.setProperty("--accent", "#2563EB");
   sens ? retour(() => ecran("progs")) : ecran("progs");
 }
 function ouvrirProg(id, sens) {
@@ -4172,7 +4188,7 @@ async function telechargerVideos(maj) {
 /* ============ SAUVEGARDE ET RESTAURATION ============
    Fichier JSON avec toutes les données de l'appli (et seulement elles). Avant une restauration, les données actuelles sont copiées
    dans « sauvegardeAvantRestauration » : rien n'est jamais perdu. */
-const CLE_APPLI = /^(tests|corps|rappelNotif|notifsAppli|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
+const CLE_APPLI = /^(tests|corps|rappelNotif|avatar|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
 function donneesAppli() { const d = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (CLE_APPLI.test(k)) d[k] = localStorage.getItem(k); } } catch (e) {} return d; }
 async function sauvegarder() {
   const j = jourCle(), f = JSON.stringify({ app: "2WORK", version: 1, date: new Date().toISOString(), donnees: donneesAppli() });
@@ -4496,7 +4512,7 @@ const MOTEUR = { tabata: [demarrerTab, suivantTab, precedentTab], souffle: [dema
 const moteur = i => (MOTEUR[mode] || [demarrer, suivant, precedent])[i];
 /* Compte à rebours de PREP secondes avant chaque activité : le temps de poser le téléphone */
 const PREP = 4;
-function lancer() { clearInterval(tPret); aReprendre ? rejouer() : moteur(0)(); }
+function lancer() { clearInterval(tPret); prefixeVoix = PH("go") + " "; aReprendre ? rejouer() : moteur(0)(); }
 function preparer(s) {   // s : séance à reprendre (sinon départ normal ; un clic passe son événement, ignoré)
   aReprendre = s && s.cle ? s : null;
   let n = PREP;
@@ -4967,18 +4983,20 @@ function ouvrirCalculs() {
 
 /* ============ DÉFIER UN AMI : une séance envoyée par lien (?defi=…), ouverte telle quelle dans son appli ============ */
 function lienDefi() {
-  const d = { t: routine.titre, i: ids, d: dureeGlobale, r: mode === "seance" || mode === "salle" ? repos : 0, de: lireProfil().nom || "" };
+  const d = { t: routine.defi ? routine.titre.split(" · ").pop() : routine.titre, i: ids, d: dureeGlobale, r: mode === "seance" || mode === "salle" ? repos : 0, de: lireProfil().nom || "", dj: routine.defi ? 1 : 0 };
   return location.origin + location.pathname + "?defi=" + btoa(unescape(encodeURIComponent(JSON.stringify(d)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 $("amiBtn").onclick = async () => {
-  const url = lienDefi(), texte = L(`${lireProfil().nom || "Un ami"} te défie sur 2 WORK : « ${routine.titre} », ${ids.length} exercices. Relève le défi !`, `${lireProfil().nom || "A friend"} challenges you on 2 WORK: “${routine.titre}”, ${ids.length} exercises. Take the challenge!`);
+  const url = lienDefi(), n = lireProfil().nom, t = routine.titre, texte = routine.defi
+    ? L(`${n || "Ton ami"} te défie de réussir le défi du jour sur 2 WORK : « ${t.split(" · ").pop()} ». À toi de jouer !`, `${n || "Your friend"} challenges you to complete today’s daily challenge on 2 WORK: “${t.split(" · ").pop()}”. Your turn!`)
+    : L(`${n || "Ton ami"} te défie de réussir sa séance sur 2 WORK : « ${t} », ${ids.length} exercices. Relève le défi !`, `${n || "Your friend"} challenges you to complete their workout on 2 WORK: “${t}”, ${ids.length} exercises. Take the challenge!`);
   try { if (navigator.share) await navigator.share({ title: "2 WORK", text: texte, url }); else { await navigator.clipboard.writeText(texte + " " + url); $("amiBtn").textContent = L("✓ Lien copié", "✓ Link copied"); } } catch (e) {}
 };
 function ouvrirDefiAmi(code) {   // renvoie vrai si le lien est valide
   try {
     const d = JSON.parse(decodeURIComponent(escape(atob(code.replace(/-/g, "+").replace(/_/g, "/"))))), de = propre(d.de || "").slice(0, 20);
     if (!Array.isArray(d.i) || !d.i.length || d.i.length > 80 || !d.i.every(id => EXERCICES[id]) || !(d.d >= 5 && d.d <= 120) || !(d.r >= 0 && d.r <= 300)) return false;
-    ROUTINES.ami = { type: "seance", fixe: true, retour: () => ecran("menu"), ami: de || L("un ami", "a friend"), titre: (de ? L("Défi de ", "Challenge from ") + de + " · " : L("Défi · ", "Challenge · ")) + propre(d.t || "").slice(0, 60), detail: "", couleur: "#DB2777", duree: d.d, repos: d.r, exercices: d.i };
+    ROUTINES.ami = { type: "seance", fixe: true, amiDj: !!d.dj, retour: () => ecran("menu"), ami: de, titre: (de ? L("Défi de ", "Challenge from ") + de + " · " : L("Défi · ", "Challenge · ")) + propre(d.t || "").slice(0, 60), detail: "", couleur: "#DB2777", duree: d.d, repos: d.r, exercices: d.i };
     CONSEILLES.ami = d.i; history.replaceState(null, "", location.pathname); finBienvenue(); afficherEcran("menu"); ouvrirRoutine("ami"); return true;
   } catch (e) { return false; }
 }
@@ -5024,64 +5042,6 @@ setInterval(verifierRappel, 60000); document.addEventListener("visibilitychange"
 
 bouton($("choicesP"), "Séance express", L("Ton temps, ta zone, ton matériel : la séance est prête", "Your time, area and equipment: the workout is ready"), "#0EA5E9", () => ouvrirExpress());
 $("choicesP").insertBefore($("choicesP").lastChild, $("choicesP").children[1]);
-
-/* ============ NOTIFICATIONS DANS L'APPLI ============
-   Bandeaux personnalisés (prénom, série, planning, paliers) en haut de l'écran : un à la fois, 6 s, touche pour agir ou fermer.
-   Chaque sujet au plus une fois par jour (clé « notifsVues »), deux bandeaux au plus par passage sur le menu. Réglage « notifsAppli ». */
-let fileNotifs = [], tNotif = null, notifsActives = lire("notifsAppli") !== "0";
-function notifier(id, ico, titre, texte, action, enSeance) {   // id vide = pas de limite par jour
-  if (!notifsActives) return false;
-  if (id) { const vues = lireJSON("notifsVues", {}); if (vues[id] === jourCle()) return false; vues[id] = jourCle(); stocker("notifsVues", JSON.stringify(vues)); }
-  fileNotifs.push({ ico, titre, texte, action, enSeance }); montrerNotif(); return true;
-}
-function montrerNotif() {
-  const Z = $("notif"); if (!Z.classList.contains("hidden") || !fileNotifs.length) return;
-  const n = fileNotifs.shift();
-  if (["session", "pret"].includes(ecranCourant) !== !!n.enSeance || ["accueil", "recap", "bienvenue"].includes(ecranCourant)) return montrerNotif();   // plus dans son contexte : abandonnée
-  Z.innerHTML = `<span class="n-ico">${n.ico}</span><span><b></b><small></small></span>${n.action ? "<i>›</i>" : ""}`; Z.querySelector("b").textContent = n.titre; Z.querySelector("small").textContent = n.texte;
-  Z.classList.remove("hidden", "sort"); if (sonsUI && !n.enSeance) { bip(1568, 90, .07); bip(2093, 130, .05, "sine", .09); }
-  const fermer = () => { clearTimeout(tNotif); Z.classList.add("sort"); setTimeout(() => { Z.classList.add("hidden"); montrerNotif(); }, 260); };
-  Z.onclick = () => { fermer(); if (n.action) n.action(); };
-  tNotif = setTimeout(fermer, n.enSeance ? 3500 : 6000);
-}
-const PALIERS = [1, 5, 10, 25, 50, 75, 100, 150, 200, 300, 500];
-function notifsMenu() {   // à l'arrivée sur le menu : salutation puis, par priorité, ce qui mérite l'attention aujourd'hui
-  if (ecranCourant !== "menu" || !notifsActives) return;
-  const h = lireHist(), nom = lireProfil().nom, virg = nom ? ", " + nom : "", S = series(h), fait = h.some(x => x.j === jourCle()), hr = new Date().getHours();
-  const x = semaine().find(s => s.j === jourSemaine()), absent = h.length ? joursDepuis(h[h.length - 1].j) : null, T0 = lireTests(), C0 = lireCorps();
-  let nb = 0; const N = (...a) => { if (nb < 2 && notifier(...a)) nb++; };
-  const sal = hr < 5 ? ["🌙", "Encore debout", "Still up"] : hr < 12 ? ["☀️", "Bonjour", "Good morning"] : hr < 18 ? ["👋", "Bon après-midi", "Good afternoon"] : ["🌆", "Bonsoir", "Good evening"];
-  N("bonjour", sal[0], L(sal[1], sal[2]) + virg + (hr < 5 ? " ?" : " !"),
-    fait ? L("Séance du jour faite : bien joué. Pense à t’hydrater et à bien dormir.", "Today’s workout is done: well played. Remember to drink and sleep well.")
-    : x ? L(`Au programme aujourd’hui : ${x.s.t}.`, `On today’s plan: ${x.s.t}.`)
-    : S.cur > 1 ? L(`Ta série est à ${S.cur} jours. On la prolonge ?`, `Your streak is at ${S.cur} days. Shall we extend it?`)
-    : h.length ? L("Dix minutes suffisent pour une bonne séance express.", "Ten minutes is enough for a good quick workout.") : L("Prêt pour ta toute première séance ?", "Ready for your very first workout?"),
-    fait ? null : x ? x.s.go : () => ouvrirExpress());
-  if (!fait && absent >= 4) N("absence", "🤗", L(`Content de te revoir${virg} !`, `Good to see you again${virg}!`), L(`${absent} jours sans séance : reprends en douceur, 10 minutes suffisent.`, `${absent} days without a workout: ease back in, 10 minutes is enough.`), () => ouvrirExpress());
-  if (!fait && S.cur > 0 && hr >= 18) N("serieDanger", "🔥", L(`Ta série de ${S.cur} jour${S.cur > 1 ? "s" : ""} s’arrête à minuit`, `Your ${S.cur}-day streak ends at midnight`), L("Le défi du jour suffit à la sauver.", "The daily challenge is enough to save it."), () => $("defiBtn").click());
-  if (!fait && S.cur >= 6) N("repos", "🧘", L(`${S.cur} jours d’affilée${virg} !`, `${S.cur} days in a row${virg}!`), L("Ton corps progresse au repos : choisis une récupération aujourd’hui.", "Your body improves at rest: pick a recovery session today."), vueCalme);
-  const pal = PALIERS.find(p => p === h.length + 1 && p > 1);
-  if (!fait && pal) N("palier", "🎯", L(`Plus qu’une séance pour atteindre ${pal}`, `One more workout to reach ${pal}`), L("Le prochain palier est à portée de main.", "The next milestone is within reach."));
-  const prog = PROGRAMMES.find(([id]) => progAvance(id) > 0 && progAvance(id) < NB_PROG);
-  if (!fait && prog) N("prog", "🗓️", L(prog[1], prog[2]), L(`Le jour ${progAvance(prog[0]) + 1} sur ${NB_PROG} t’attend.`, `Day ${progAvance(prog[0]) + 1} of ${NB_PROG} is waiting.`), () => ouvrirProg(prog[0]));
-  if (T0.length && joursDepuis(T0[T0.length - 1].j) >= 28) N("tests", "📈", L("Un mois depuis tes tests de forme", "A month since your fitness tests"), L("Refais-les pour voir tes progrès.", "Repeat them to see your progress."), ouvrirTests);
-  if (C0.length && joursDepuis(C0[C0.length - 1].j) >= 7) N("pesee", "⚖️", L("Mesure de la semaine ?", "Weekly check-in?"), L("Ta dernière mesure a plus de 7 jours.", "Your last entry is more than 7 days old."), ouvrirCorps);
-  if (lire("muscleVu") !== jourCle()) { const m = muscleDuJour(); N("muscle", "💡", L("Muscle du jour : ", "Muscle of the day: ") + (LANGUE === "en" ? m[3] : m[2])[0], L("Une minute pour savoir à quoi il sert.", "One minute to learn what it does."), ouvrirMuscle); }
-  if (!fait && lireJSON("defiSerie", {}).jour !== jourCle()) { const d = duJour(DEFIS); N("defi", "⭐", L("Défi du jour : ", "Daily challenge: ") + L(d[0], d[1]), L("Court, différent chaque jour.", "Short, different every day."), () => $("defiBtn").click()); }
-}
-function notifsFin() {   // sur l'écran de fin : paliers franchis avec cette séance
-  const h = lireHist(), nom = lireProfil().nom, S = series(h), n = h.length, mn = minutes(h), av = mn - Math.round(h[n - 1].s / 60), H = [1, 5, 10, 25, 50, 100].find(k => av < k * 60 && mn >= k * 60);
-  const sem = d => { const l = new Date(d); l.setDate(l.getDate() - jourSemaine(l)); return jourCle(l); }, parSem = {};
-  h.forEach(x => { const [a, m, j] = x.j.split("-"), k = sem(new Date(a, m - 1, j)); (parSem[k] = parSem[k] || new Set()).add(x.j); });
-  const cette = parSem[sem(new Date())] || new Set(), prevus = (lirePlanning() || { jours: [] }).jours.length;
-  if (PALIERS.includes(n)) notifier("fin" + n, "🏅", n === 1 ? L(`Première séance${nom ? ", " + nom : ""} !`, `First workout${nom ? ", " + nom : ""}!`) : L(`${n}e séance${nom ? ", " + nom : ""} !`, `Workout number ${n}${nom ? ", " + nom : ""}!`), n === 1 ? L("Le plus dur est fait : commencer.", "The hardest part is done: starting.") : L("La régularité, c’est ça le vrai secret.", "Consistency is the real secret."), ouvrirProgres);
-  if ([3, 7, 14, 21, 30, 50, 100].includes(S.cur)) notifier("serie" + S.cur, "🔥", L(`${S.cur} jours d’affilée !`, `${S.cur} days in a row!`), L("Ta série grandit : reviens demain pour la prolonger.", "Your streak is growing: come back tomorrow to extend it."), ouvrirProgres);
-  if (H) notifier("heures" + H, "⏱️", L(`${H} heure${H > 1 ? "s" : ""} d’entraînement au total`, `${H} hour${H > 1 ? "s" : ""} of training in total`), L("Chaque minute compte, et tu les as toutes faites.", "Every minute counts, and you did them all."), ouvrirProgres);
-  if (prevus && cette.size === prevus) notifier("semaineOk", "✅", L("Objectif de la semaine atteint", "Weekly goal reached"), L(`Tes ${prevus} jours prévus sont faits. Profite de ta récupération.`, `Your ${prevus} planned days are done. Enjoy your recovery.`), () => ouvrirPlanning("menu"));
-}
-function majNotifsBtn() { $("notifsBtn").textContent = notifsActives ? L("Activées", "On") : L("Coupées", "Off"); $("notifsBtn").setAttribute("aria-pressed", notifsActives); }
-$("notifsBtn").onclick = () => { notifsActives = !notifsActives; stocker("notifsAppli", notifsActives ? "1" : "0"); majNotifsBtn(); };
-majNotifsBtn();
 
 /* ============ BARRE DE NAVIGATION ============ */
 $("nMenu").onclick = () => ecranCourant !== "menu" && retour(() => ecran("menu"));
