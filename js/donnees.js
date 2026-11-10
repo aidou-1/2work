@@ -498,7 +498,7 @@ function matos(p, fin, dep) {
 
 function mini(id) {
   const p = POSES[id];
-  if (!p) return "";
+  if (!p) return EXERCICES[id].mini || "";
   const dessus = (p.u || "").includes("dessus");
   const dep = p.f[1] ? figure(p.f[1], DA.depart, p.v) : null, fin = figure(p.f[0], { ...DA.arrivee, tete: "#FFFFFF" }, p.v), mt = matos(p, fin, dep);
   const g = (dep ? dep.svg : "") + fin.svg + mt.sur;
@@ -508,7 +508,7 @@ function mini(id) {
 
 function dessiner(e) {
   const p = POSES[e.id];
-  if (!p) return "";
+  if (!p) return e.visuel || "";
   const vue = T(p.u || (p.v === "f" ? "Vue de face" : "Vue de profil"));
   const fin = figure(p.f[0], DA.arrivee, p.v);
   const deb = p.f[1] ? figure(p.f[1], DA.depart, p.v) : null, mt = matos(p, fin, deb);

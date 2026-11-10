@@ -281,6 +281,7 @@ const PTYPES = {   // couleur, nom, objectif, RPE par semaine
   gainage: ["#8B5CF6", "Gainage & posture", "Core & posture", "Renforcer la sangle abdominale et le dos pour protéger la colonne et mieux transmettre la force.", "Strengthen your abs and back to protect the spine and transfer force better.", [6, 7, 8, 5]],
   mobilite: ["#10B981", "Mobilité", "Mobility", "Gagner en amplitude dans les hanches, le dos et les épaules : bouge lentement, respire, sans jamais forcer.", "Gain range in hips, back and shoulders: move slowly, breathe, never force.", [3, 3, 3, 3]],
   recup: ["#14B8A6", "Récupération active", "Active recovery", "Faire circuler le sang et relâcher les tensions pour récupérer de la semaine. Le repos fait partie de l’entraînement.", "Get the blood flowing and release tension to recover from the week. Rest is part of training.", [2, 2, 2, 2]],
+  fract: ["#DC2626", "Cardio boxe", "Boxing cardio", "Des efforts à très haute intensité avec une vraie récupération : tu construis le souffle qui te fait tenir tous les rounds.", "Very high-intensity efforts with real recovery: you build the fitness that carries you through every round.", [9, 9, 9, 8]],
   test: ["#F59E0B", "Bilan", "Final test", "Refais la séance du jour 1 avec l’intensité de la semaine 3 : compare tes sensations, tu vas voir le chemin parcouru !", "Redo the day 1 workout at week 3 intensity: compare how it feels, you will see how far you’ve come!", [8, 8, 8, 8]]
 };
 const SEMAINES = [["Adaptation", "Adaptation", "On installe les bons gestes et l’habitude : qualité avant quantité."],
@@ -289,6 +290,7 @@ const SEMAINES = [["Adaptation", "Adaptation", "On installe les bons gestes et l
   ["Récupération & bilan", "Recovery & test", "On allège pour laisser le corps assimiler, puis on mesure tes progrès le jour 28."]];
 const SEMAINES_EN = ["We set good technique and the habit: quality before quantity.", "One more round: volume goes up to make the body progress.", "Longer efforts, shorter rests: the most demanding week.", "We ease off so the body can absorb the work, then measure your progress on day 28."];
 const CONSEILS = {
+  fract: [["Ne raccourcis jamais le repos : c’est lui qui te permet de repartir aussi fort.", "Never cut the rest short: it is what lets you go just as hard again."], ["Si tu finis un effort en pouvant encore parler, tu n’es pas allé assez fort.", "If you can still talk at the end of an effort, you did not go hard enough."], ["Bois, mange et dors bien : c’est entre les séances que le cœur progresse.", "Drink, eat and sleep well: your heart improves between sessions."], ["Note ton effort ressenti après chaque séance pour voir ta progression.", "Note your perceived effort after each session to see your progress."]],
   force: [["Garde le dos neutre et le ventre légèrement serré sur chaque répétition.", "Keep a neutral back and a lightly braced core on every rep."], ["Expire pendant l’effort, inspire pendant le retour.", "Breathe out on the effort, in on the way back."], ["Si la technique se dégrade, ralentis plutôt que d’accélérer.", "If your form slips, slow down rather than speed up."], ["Les genoux suivent l’axe des pieds, jamais vers l’intérieur.", "Knees track over your toes, never caving in."]],
   cardio: [["Trouve un rythme que tu peux tenir jusqu’au bout plutôt que de partir trop vite.", "Find a pace you can hold to the end rather than starting too fast."], ["Atterris en douceur sur l’avant du pied pour protéger les articulations.", "Land softly on the balls of your feet to protect your joints."], ["Bouge les bras : ils donnent du rythme et augmentent la dépense.", "Use your arms: they set the rhythm and burn more energy."], ["Bois quelques gorgées d’eau entre les tours.", "Sip some water between rounds."]],
   hiit: [["Donne vraiment tout pendant l’effort, puis récupère vraiment pendant le repos.", "Truly go all out during the effort, then truly recover during the rest."], ["Mieux vaut un mouvement propre et rapide qu’un mouvement bâclé.", "A clean, fast rep beats a sloppy one."], ["Si tu es essoufflé au point de ne plus parler, c’est normal sur le fractionné.", "Being too breathless to talk is normal in interval training."], ["Garde 24 h de récupération avant un autre effort intense : c’est prévu dans le planning.", "Allow 24 h before another intense effort: it is built into the plan."]],
@@ -302,6 +304,15 @@ const RAC = { bas: ["quadDebout", "ischioCouche", "figure4", "molletMur", "enfan
 // [id, titre FR, titre EN, description FR, description EN, couleur, niveau FR/EN, durée, objectifs FR, objectifs EN,
 //  semaine type : [type, focus FR, focus EN, exercices, retour au calme], réglages : [effort s, repos s, tours par semaine, échauffement]]
 const PROGRAMMES = [
+  ["cardioBoxe", "Exceller en cardio · boxe", "Excel at cardio · boxing", "4 semaines pour tenir tous tes rounds : vitesse, tolérance à l’effort, rounds de combat, puis affûtage. Support et niveau se règlent dans Boxe → Cardio boxe.", "4 weeks to last every round: speed, effort tolerance, fight rounds, then a taper. Set your equipment and level in Boxing → Boxing cardio.", "#BE123C", ["Tous niveaux", "All levels"], "15–45 min",
+    ["Tenir le rythme jusqu’au dernier round", "Récupérer plus vite entre deux rafales", "Arriver frais le jour du combat ou du sparring"], ["Keep the pace until the last round", "Recover faster between two flurries", "Arrive fresh on fight or sparring day"],
+    [["fract", "Séance dure 1", "Hard session 1", ["sprints", "tolerance", "rounds", "sprints-", "rounds"], null],
+     ["mobilite", "Mobilité du corps entier", "Full-body mobility", ["catcow", "wgs", "hip9090", "openbook", "thread", "cossack"], "complet"],
+     ["fract", "Séance dure 2", "Hard session 2", ["groupes", "groupes", "tolerance", "rounds-"], null],
+     ["recup", "Étirements et respiration", "Stretching and breathing", ["catcow", "cascade", "genouxPoitrine", "torsionAllongee", "figure4", "enfantStat"], null],
+     ["fract", "Séance dure 3", "Hard session 3", ["pyramide", "tolerance", "rounds", "groupes-"], null],
+     ["fract", "Cardio facile", "Easy cardio", ["facile", "facile", "facile", "facile"], null],
+     ["recup", "Récupération des jambes", "Leg recovery", ["quadDebout", "ischioCouche", "molletMur", "figure4", "papillon", "enfantStat"], null]], [40, 20, [2, 3, 3, 2], "dyn"]],
   ["debutant", "Remise en forme", "Get fit", "Pour (re)commencer à bouger : tout le corps, sans matériel, progressivement.", "To (re)start moving: full body, no equipment, step by step.", "#2F5BFF", ["Débutant", "Beginner"], "20–30 min",
     ["Retrouver de l’énergie au quotidien", "Tonifier jambes, fessiers, bras et ventre", "Prendre l’habitude de bouger chaque jour"], ["Get more energy every day", "Tone legs, glutes, arms and core", "Build a daily movement habit"],
     [["force", "Bas du corps", "Lower body", ["squat", "pont", "fente", "donkeyKick", "chaise"], "bas"],
@@ -348,6 +359,11 @@ function progJour(P, i, choix) {   // construit la séance du jour i (0-27) : bl
   const [id, tFr, tEn, , , couleur, , , , , sem, [eff, rep, tours, ech]] = P, w = Math.floor(i / 7), test = i === NB_PROG - 1;
   const [type, fFr, fEn, ex, rac] = test ? sem[0] : sem[i % 7], ty = test ? "test" : type, ww = test ? 2 : w;
   const ok = l => l.filter(e => EXERCICES[e]), blocs = []; let regl = {};
+  if (type === "fract") {   // cardio par intervalles : séance de la semaine (suffixe « - » = volume allégé), au support et au niveau choisis
+    const k = ex[test ? 4 : w], S = seanceCardio("boxe", k.replace("-", ""), lireNiv(), k.endsWith("-")), cs = CONSEILS.fract[i % 4];
+    return { ...S, prog: id, progI: i, titre: L("J", "D") + (i + 1) + " · " + S.titre, titreFr: tFr + " J" + (i + 1), semaine: w, nomProg: L(tFr, tEn), couleurProg: couleur, ty: test ? "test" : type, objectif: L(PTYPES.fract[3], PTYPES.fract[4]), conseil: L(...cs),
+      listeHtml: `<li class="etude prog-carte-jour"><div><small><b>${L("Semaine", "Week")} ${w + 1} · ${L(...[["Vitesse", "Speed"], ["Tolérance à l’effort", "Effort tolerance"], ["Rounds de combat", "Fight rounds"], ["Affûtage et bilan", "Taper and test"]][w])}</b></small><small>💡 ${L(...cs)}</small></div></li>` + S.listeHtml };
+  }
   if (type === "mobilite" || type === "recup") {
     if (type === "mobilite") blocs.push({ n: L("Réveil articulaire", "Joint warm-up"), t: 1, ex: ok(ECH.mob).map(e => [e, 30]), r: 5 });
     blocs.push({ n: L(type === "recup" ? "Séance de récupération" : "Circuit de mobilité", type === "recup" ? "Recovery session" : "Mobility circuit"), t: ww < 3 ? 2 : 1, ex: ok(ex).map(e => [e, type === "recup" ? 50 : 40 + Math.min(ww, 2) * 5]), r: 10, rt: 30 });

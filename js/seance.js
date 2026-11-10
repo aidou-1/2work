@@ -566,7 +566,7 @@ const posture = id => id in ARRET || id === "nuqueIso";
 function typeEx(e) {
   const b = $("typeEx"); if (!e) return b.textContent = "";
   b.className = "type-ex " + (posture(e.id) ? "tenue" : "mvt");
-  b.textContent = posture(e.id) ? L("⏸ Posture · tiens la position de fin de la vidéo", "⏸ Hold · keep the end position of the video") : L("🔁 Mouvement · répète le geste de la vidéo", "🔁 Movement · repeat the motion in the video");
+  b.textContent = e.allure !== undefined ? L(...[["🟢 Allure facile · respire", "🟢 Easy pace · breathe"], ["🟠 Allure dure · reste régulier", "🟠 Hard pace · stay even"], ["🔴 À fond · donne tout", "🔴 All out · give everything"]][e.allure]) : posture(e.id) ? L("⏸ Posture · tiens la position de fin de la vidéo", "⏸ Hold · keep the end position of the video") : L("🔁 Mouvement · répète le geste de la vidéo", "🔁 Movement · repeat the motion in the video");
 }
 /* Texte de l'exercice : trois étapes courtes (placement, mouvement, point d'attention) tirées des consignes, dans la langue de l'appli ;
    à défaut, la description d'origine. La prescription de la séance (séries, charge) reste en tête. */

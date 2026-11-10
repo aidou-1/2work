@@ -444,6 +444,9 @@ function renduRenfo(grp) {
   C.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { stocker("niveauRenfo", b.dataset.n); renduRenfo(grp); });
   [[0, "Poids du corps", "Bodyweight", "Sans matériel, partout", "No equipment, anywhere"], [1, "Avec matériel", "With equipment", "Kettlebell, haltères, barre Z, banc, poulie, élastique…", "Kettlebell, dumbbells, EZ bar, bench, cable, band…"]].forEach(([m, fr, en, dFr, dEn]) => { const s = seanceRenfo(grp, m, niv);
     bouton(C, `${L(fr, en)} · ${s.total} min`, `${L(dFr, dEn)} · ${L("4 blocs", "4 blocks")}`, R.couleur, () => { ROUTINES.renfo = seanceRenfo(grp, m, lireNiv()); CONSEILLES.renfo = ROUTINES.renfo.exercices; ouvrirRoutine("renfo"); }); });
+  C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Ton cardio", "Your cardio")}</h2>`);
+  bouton(C, grp === "boxe" ? L("Cardio boxe", "Boxing cardio") : L("Cardio par intervalles", "Interval cardio"), L("Sprints, intervalles, pyramide" + (grp === "boxe" ? ", rounds de combat" : "") + " : dehors, sur tapis, à vélo, à la corde…", "Sprints, intervals, pyramid" + (grp === "boxe" ? ", fight rounds" : "") + ": outdoors, treadmill, bike, rope…"), "#DC2626", () => ouvrirCardio(grp));
+  if (grp === "boxe") bouton(C, L("Programme : exceller en cardio", "Programme: excel at cardio"), L("4 semaines, 3 séances dures et 1 facile par semaine", "4 weeks, 3 hard sessions and 1 easy one per week"), "#BE123C", () => ouvrirProg("cardioBoxe"));
   C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Personnaliser", "Customise")}</h2>`);
   [["", "Poids du corps"], ["Mat", "Avec matériel"]].forEach(([s, t]) => { const k = SEANCE(grp) + s;
     bouton(C, `${L("Version libre", "Free version")} · ${T(t).toLowerCase()}`, L(`${ROUTINES[k].exercices.length} exercices à modifier, durées et repos réglables, à enregistrer`, `${ROUTINES[k].exercices.length} exercises to edit, adjustable work and rest, to save`), R.couleur, () => ouvrirRoutine(k)); });

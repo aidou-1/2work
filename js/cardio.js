@@ -1,0 +1,80 @@
+/* ============ CARDIO PAR INTERVALLES (boxe et tous les sports) ============
+   Séances à la carte : on choisit son support du jour (dehors, tapis, vélo, corde, sac, shadow, sur place) et son niveau, l'appli
+   construit la séance : échauffement cardio de 4 min, efforts courts à très haute intensité, récupération complète entre les
+   efforts, retour au calme. L'intensité se règle à l'effort ressenti (sur 10) et, avec une ceinture, à la fréquence cardiaque
+   (« zone rouge » : 90 % et plus du maximum estimé). Préférence gardée : clé « cardioSupport ».
+   Les mouvements de cardio ne sont pas énumérables dans EXERCICES : ils restent hors de la bibliothèque et du Quick start. */
+const SUPPORTS = [   // [clé, nom FR, EN, [facile, soutenu, à fond] FR, EN, conseil FR, EN, réservé boxe]
+  ["course", "Course dehors", "Outdoor run", ["Trot très facile", "Course soutenue", "Sprint"], ["Easy jog", "Hard run", "Sprint"], "Choisis une ligne droite dégagée ou une côte douce. Pousse fort sur les bras.", "Pick a clear straight or a gentle hill. Drive your arms hard."],
+  ["tapis", "Tapis de course", "Treadmill", ["Marche rapide ou trot", "Course soutenue", "Sprint sur tapis"], ["Brisk walk or jog", "Hard run", "Treadmill sprint"], "Règle la vitesse avant l’effort. Pose les pieds sur les bords pendant le repos.", "Set the speed before the effort. Step onto the side rails during the rest."],
+  ["velo", "Vélo", "Bike", ["Pédalage souple", "Pédalage soutenu", "Sprint à vélo"], ["Easy spin", "Hard ride", "Bike sprint"], "Mets assez de résistance pour pousser fort sans mouliner dans le vide.", "Use enough resistance to push hard without spinning out."],
+  ["corde", "Corde à sauter", "Jump rope", ["Corde tranquille", "Corde rythmée", "Corde à fond"], ["Easy skipping", "Steady fast skipping", "All-out skipping"], "Petits sauts sur l’avant du pied, coudes près du corps, poignets qui tournent.", "Small hops on the balls of your feet, elbows in, wrists turning."],
+  ["sac", "Sac de frappe", "Heavy bag", ["Jeu de jambes autour du sac", "Enchaînements appuyés", "Rafale au sac"], ["Footwork around the bag", "Hard combinations", "Bag flurry"], "Garde les mains hautes entre les frappes et reste mobile sur tes appuis.", "Keep your hands up between punches and stay light on your feet.", 1],
+  ["shadow", "Shadow boxing", "Shadow boxing", ["Shadow relâché", "Shadow soutenu", "Rafale en shadow"], ["Loose shadow boxing", "Hard shadow boxing", "Shadow flurry"], "Frappe en vitesse sans verrouiller les coudes, et bouge après chaque série.", "Punch fast without locking your elbows, and move after every combination.", 1],
+  ["place", "Sur place, sans matériel", "On the spot, no equipment", ["Marche active sur place", "Montées de genoux rythmées", "Montées de genoux à fond"], ["Marching on the spot", "Steady high knees", "All-out high knees"], "Reste sur l’avant du pied, buste droit, et pompe fort avec les bras.", "Stay on the balls of your feet, chest tall, and pump your arms hard."]];
+const ALLURES = [   // facile, soutenu, à fond : [durée type, effort /10, description FR, EN, consigne dite FR, EN]
+  [60, "3", "Allure très facile : tu respires calmement et tu peux parler. Effort ressenti 3 sur 10.", "Very easy pace: calm breathing, you can talk. Perceived effort 3 out of 10.", "Relâche les épaules et la mâchoire.|Avance à une allure très facile. Tu dois pouvoir parler sans effort.", "Relax your shoulders and jaw.|Move at a very easy pace. You should be able to talk easily."],
+  [120, "8", "Allure dure mais tenable : la même du début à la fin de l’intervalle. Effort ressenti 8 sur 10.", "Hard but sustainable pace: the same from start to finish. Perceived effort 8 out of 10.", "Installe ton rythme dès le départ.|Tiens une allure dure, mais régulière jusqu’au bout. Ne pars pas trop vite.", "Settle into your pace right away.|Hold a hard but even pace to the end. Do not start too fast."],
+  [30, "9–10", "Tout ce que tu as, dès la première seconde. Effort ressenti 9 à 10 sur 10.", "Everything you have, from the very first second. Perceived effort 9 to 10 out of 10.", "Prêt à partir à fond.|Donne tout dès la première seconde, et ne garde rien pour la suite.", "Ready to go all out.|Give everything from the first second and hold nothing back."]];
+// Pas de vidéo pour ces efforts : une jauge d'intensité (10 barres) tient lieu d'illustration, en grand pendant la séance et en vignette dans les listes
+const jauge = (a, petit) => { const n = [3, 8, 10][a], c = ["#10B981", "#F59E0B", "#DC2626"][a], b = Array.from({ length: 10 }, (_, i) => `<rect x="${12 + i * 22}" y="${96 - i * 7}" width="15" height="${24 + i * 7}" rx="4" fill="${i < n ? c : "#CBD5E1"}" opacity="${i < n ? 1 : .45}"/>`).join("");
+  return petit ? `<svg class="mini" viewBox="0 0 240 130" aria-hidden="true">${b}</svg>`
+    : `<div class="media allure" style="--c:${c}"><svg viewBox="0 0 240 130" aria-hidden="true">${b}</svg><b>${L("Effort", "Effort")} ${ALLURES[a][1]} / 10</b><span>${L(...[["Facile : tu peux parler", "Easy: you can talk"], ["Dur mais régulier : quelques mots", "Hard but even: a few words"], ["À fond : impossible de parler", "All out: talking is impossible"]][a])}</span></div>`; };
+SUPPORTS.forEach(([k, , , fr, en, cFr, cEn]) => ALLURES.forEach(([d, , dFr, dEn, vFr, vEn], a) => {
+  const id = "c_" + k + a, EN = LANGUE === "en";
+  Object.defineProperty(EXERCICES, id, { value: { nom: (EN ? en : fr)[a], nomFr: fr[a], duree: d, video: null, allure: a, mini: jauge(a, 1), visuel: jauge(a), description: (EN ? dEn : dFr) + " " + (EN ? cEn : cFr), muscles: L("Cœur, souffle, jambes", "Heart, lungs, legs"), mat: false } });
+  if (typeof VOIX !== "undefined") VOIX[id] = en[a];
+  if (typeof CONSIGNES !== "undefined") CONSIGNES[id] = [vFr + "|" + cFr, vEn + "|" + cEn];
+}));
+
+/* Les séances : [clé, nom FR, EN, couleur, effort visé, résumé FR, EN, blocs(v)] où v = 0 débutant, 1 intermédiaire, 2 avancé.
+   Un bloc renvoie des pas [allure 0-2, durée s, repos s]. « moins » (semaine d'affûtage d'un programme) retire environ un tiers du volume. */
+const fois = (n, f) => Array.from({ length: n }, (_, i) => f(i)).flat();
+const CARDIOS = [
+  ["sprints", "Sprints 30 secondes", "30-second sprints", "#DC2626", "9–10", "Des sprints à fond, séparés par une vraie récupération : c’est la qualité de chaque sprint qui compte.", "All-out sprints with full recovery in between: the quality of each sprint is what counts.",
+    (v, m) => fois([4, 6, 8][v] - m * 2, () => [[2, 30, 150]])],
+  ["groupes", "Sprints groupés", "Grouped sprints", "#EA580C", "9–10", "Trois sprints très courts qui s’enchaînent, puis deux minutes pour récupérer : comme les rafales d’un round.", "Three very short sprints back to back, then two minutes to recover: like the flurries of a round.",
+    (v, m) => fois([4, 6, 8][v] - m * 2, () => [[2, 10, 10], [2, 10, 10], [2, 10, 120]])],
+  ["tolerance", "Intervalles 2 minutes", "2-minute intervals", "#7C3AED", "8", "Deux minutes dures à allure régulière, deux minutes de repos : tu apprends à tenir quand ça brûle.", "Two hard minutes at an even pace, two minutes of rest: you learn to hold on when it burns.",
+    (v, m) => fois([3, 4, 6][v] - m, () => [[1, 120, 120]])],
+  ["pyramide", "Pyramide", "Pyramid", "#2563EB", "8–9", "Les efforts s’allongent puis raccourcissent, avec un repos égal à l’effort : idéal pour apprendre à doser.", "Efforts get longer then shorter, with rest equal to the effort: ideal for learning to pace yourself.",
+    (v, m) => [[30, 60, 90, 60, 30], [30, 60, 90, 120, 90, 60, 30], [30, 60, 90, 120, 120, 90, 60, 30]][Math.max(0, v - m)].map(d => [d > 30 ? 1 : 2, d, d])],
+  ["rounds", "Rounds de combat", "Fight rounds", "#BE123C", "9", "Des rounds où tu alternes rafale à fond et déplacement léger, avec une minute de repos : le rythme d’un combat.", "Rounds alternating all-out flurries and light movement, with one minute of rest: the rhythm of a fight.",
+    (v, m) => fois([3, 4, 6][v] - m, () => fois(v ? 6 : 4, k => [[2, v ? 20 : 15, 0, 1], [0, v ? 10 : 15, k === (v ? 5 : 3) ? 60 : 0]])), 1],
+  ["facile", "Récupération active", "Active recovery", "#14B8A6", "3", "Un effort continu très facile pour faire circuler le sang et mieux récupérer entre deux séances dures.", "A very easy continuous effort to get the blood flowing and recover better between two hard sessions.",
+    (v, m) => fois([3, 4, 6][v] - m, () => [[0, 300, 0]])]];
+const cardioPref = () => ({ s: "course", ...lireJSON("cardioSupport", {}) });
+const supportDe = (grp, s = cardioPref().s) => SUPPORTS.find(x => x[0] === s && (grp === "boxe" || !x[7])) || SUPPORTS[0];
+const duTxt = s => s < 60 ? s + " s" : Math.floor(s / 60) + " min" + (s % 60 ? " " + s % 60 : "");
+const zoneRouge = () => { const a = lireProfil().age; return a ? Math.round(zonesFc(a)[0] * .9) : 0; };
+
+function seanceCardio(grp, cle, niv = lireNiv(), moins = 0) {
+  const C = CARDIOS.find(c => c[0] === cle), S = supportDe(grp), v = Math.max(0, NIV_RENFO.findIndex(n => n[0] === niv)), id = a => "c_" + S[0] + a, plan = [], blocs = [];
+  const bloc = (n, pas, desc) => { const nb = pas.filter(p => p[0]).length, parR = v ? 6 : 4; let k = 0;   // pas marqué (4e valeur) : rafale d'un round
+    pas.forEach(([a, d, r, raf]) => { if (a || !nb) k++; plan.push({ id: id(a), d, r, bn: n, lab: raf ? `Round ${Math.ceil(k / parR)}/${nb / parR} · ${L("rafale", "flurry")} ${(k - 1) % parR + 1}/${parR}` : n + " · " + (nb && !a ? L("facile", "easy") : k + "/" + (nb || pas.length)) }); });
+    blocs.push([n, Object.entries(pas.reduce((o, [a, d]) => ({ ...o, [a + ":" + d]: (o[a + ":" + d] || 0) + 1 }), {})).map(([q, x]) => [id(+q[0]), (x > 1 ? x + " × " : "") + duTxt(+q.slice(2))]), desc]); };
+  bloc(L("Échauffement", "Warm-up"), [[0, 120, 0], [1, 60, 0], [0, 20, 0], [2, 10, 0], [0, 20, 0], [2, 10, 60]], L("4 minutes progressives, avec deux accélérations pour préparer le cœur et les jambes.", "4 progressive minutes with two accelerations to prepare your heart and legs."));
+  const corps = C[7](v, moins ? 1 : 0), rep = [...new Set(corps.map(p => p[2]).filter(Boolean))].map(duTxt).join(" / ");
+  bloc(L(C[1], C[2]), corps, cle === "facile" ? L("Sans t’arrêter, à une allure où tu peux parler.", "Without stopping, at a pace where you can talk.") : L(`Récupération ${rep} : marche lentement ou arrête-toi, jusqu’à te sentir prêt à repartir aussi fort.`, `Recovery ${rep}: walk slowly or stop, until you feel ready to go just as hard again.`));
+  plan[plan.length - 1].r = cle === "facile" ? 0 : 60;
+  if (cle !== "facile") bloc(L("Retour au calme", "Cool-down"), [[0, 180, 0]], L("Trois minutes très faciles pour faire redescendre le cœur.", "Three very easy minutes to bring your heart rate down."));
+  plan[plan.length - 1].r = 0;
+  const total = Math.round(plan.reduce((s, q) => s + q.d + q.r, 0) / 60), zr = zoneRouge(), nv = NIV_RENFO[v], titre = L(C[1], C[2]) + " · " + L(S[1], S[2]);
+  const html = `<li class="etude prog-carte-jour" style="--accent:${C[3]}"><div><small><b>${L(S[1], S[2])} · ${L(nv[1], nv[2])}</b></small><small>🎯 ${L(C[5], C[6])}</small>
+    <small>❤️ ${cle === "facile" ? L("Reste en zone facile : si tu ne peux plus parler, ralentis.", "Stay in the easy zone: if you can no longer talk, slow down.") : zr ? L(`Zone rouge : ${zr} bpm et plus sur les efforts durs (90 % de ton maximum estimé). Repars quand le cœur est bien redescendu.`, `Red zone: ${zr} bpm and above on hard efforts (90% of your estimated maximum). Go again once your heart rate has come back down.`) : L("Sans ceinture cardio, fie-toi à l’effort ressenti. Avec ton âge dans le profil, l’appli calcule ta zone rouge.", "Without a heart-rate strap, go by perceived effort. With your age in the profile, the app works out your red zone.")}</small>
+    <small>💡 ${L(S[5], S[6])}</small></div></li>` + blocs.map(blocHtml).join("");
+  return { type: "seance", cat: grp, cardioS: cle, fixe: true, couleur: C[3], plan, exercices: plan.map(q => q.id), listeHtml: html, rpe: C[4], total, titre, titreFr: C[1] + " · " + S[1], detail: "" };
+}
+
+function ouvrirCardio(grp = grpCourant || "boxe") {
+  const boxe = grp === "boxe", P = cardioPref(), S = supportDe(grp), zr = zoneRouge();
+  outil(boxe ? L("Cardio boxe", "Boxing cardio") : L("Cardio par intervalles", "Interval cardio"), L("Des efforts courts et très intenses, une vraie récupération entre chaque : la façon la plus efficace de gagner du souffle pour ton sport.", "Short, very intense efforts with real recovery in between: the most effective way to build fitness for your sport."),
+    `<div class="carnet"><span class="champ-titre">${L("Où t’entraînes-tu aujourd’hui ?", "Where are you training today?")}</span>${chips("cs", SUPPORTS.filter(x => boxe || !x[7]).map(x => [x[0], x[1], x[2]]), S[0])}
+      <span class="champ-titre">${L("Ton niveau", "Your level")}</span>${chips("cn", NIV_RENFO.map(n => [n[0], n[1], n[2]]), lireNiv())}
+      <p class="sh-aide">${L("Trois règles : échauffe-toi toujours, donne tout sur chaque effort, et ne raccourcis jamais le repos. ", "Three rules: always warm up, give everything on each effort, and never cut the rest short. ")}${zr ? L(`Ta zone rouge commence à ${zr} bpm.`, `Your red zone starts at ${zr} bpm.`) : ""}</p></div>
+     <h2 class="sec">${L("Choisis ta séance", "Choose your session")}</h2><div id="cListe"></div>
+     <p class="prog-avert">${L("Efforts très intenses : demande l’avis d’un médecin en cas de problème de santé, et arrête-toi en cas de douleur dans la poitrine, de vertige ou de malaise. Garde 48 h entre deux séances dures.", "Very intense efforts: ask a doctor if you have a health condition, and stop if you feel chest pain, dizziness or unwell. Leave 48 h between two hard sessions.")}</p>`, () => vueMode(grp));
+  const liste = () => { $("cListe").innerHTML = ""; CARDIOS.filter(c => boxe || !c[8]).forEach(c => { const s = seanceCardio(grp, c[0]);
+    bouton($("cListe"), `${L(c[1], c[2])} · ${s.total} min`, L(c[5], c[6]), c[3], () => { ROUTINES.cardioS = { ...seanceCardio(grp, c[0]), retour: () => ouvrirCardio(grp) }; CONSEILLES.cardioS = []; ouvrirRoutine("cardioS"); }); }); };
+  brancherChips("cs", s => { stocker("cardioSupport", JSON.stringify({ ...P, s })); liste(); }); brancherChips("cn", n => { stocker("niveauRenfo", n); liste(); }); liste();
+}
