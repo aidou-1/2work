@@ -2,7 +2,7 @@
    Planche anatomique de face et de dos (ou visage pour les muscles de la tête).
    Chaque forme = liste [dx, y, …] relative à l'axe du corps, lissée en courbe (Catmull-Rom) et dessinée des deux côtés.
    REG[clé] = [vue F/B/H, options ("p" profond = pointillés, caché sur la planche ; "u" = un seul côté), formes…] ; l'ordre = ordre de dessin. */
-const SIL = [[0, 8, 10, 10, 17, 18, 19, 32, 18, 44, 14, 54, 8, 60, 0, 62], [18, 33, 22, 34, 22, 44, 18, 46],
+const SIL = [[0, 7, 7, 8, 13, 12, 17, 19, 18.5, 28, 18.3, 37, 16.6, 46, 13.5, 54, 8.5, 60, 0, 63], [18, 33, 22, 34, 22, 44, 18, 46],
   [0, 56, 8, 58, 10, 66, 16, 73, 30, 77, 42, 79, 50, 84, 55, 94, 55, 108, 50, 116, 42, 114, 40, 128, 37, 146, 34, 160, 36, 174, 39, 192, 38, 212, 24, 216, 8, 214, 0, 216],
   [42, 106, 52, 96, 58, 112, 61, 132, 62, 150, 57, 158, 50, 156, 46, 138, 42, 122], [50, 150, 61, 145, 66, 160, 69, 180, 68, 204, 61, 206, 57, 190, 52, 170],
   [59, 202, 68, 201, 74, 212, 76, 226, 73, 242, 67, 249, 62, 245, 59, 232, 57, 216], [70, 207, 75, 212, 79, 222, 77, 227, 73, 224],
@@ -60,16 +60,17 @@ const REG = {
   extDoigts: ["B", "", [55, 158, 62, 158, 65, 194, 62, 203, 58, 188]], extPoig: ["B", "", [60, 148, 65, 148, 68, 166, 69, 194, 66, 201, 64, 180, 61, 162]],
   supin: ["B", "p", [56, 154, 61, 154, 62, 164, 58, 164]], mainDos: ["B", "", [60, 212, 70, 212, 71, 228, 62, 230]],
   // ——— visage ———
-  frontal: ["H", "@90", [2, 22, 20, 20, 38, 28, 44, 44, 40, 60, 30, 64, 18, 64, 6, 62, 2, 60]], temporal: ["H", "", [42, 34, 50, 46, 52, 62, 49, 76, 44, 80, 42, 66, 40, 50]],
-  platysma: ["H", "", [20, 138, 38, 124, 44, 150, 66, 200, 44, 204, 24, 168]], couAvH: ["H", "", [0, 174, 7, 175, 8, 198, 0, 200]],
-  scmH: ["H", "", [42, 100, 48, 104, 32, 150, 18, 196, 8, 198, 10, 190, 26, 146]],
-  digas: ["H", "", [6, 140, 12, 139, 22, 146, 18, 150, 8, 148], [22, 145, 40, 118, 44, 121, 26, 150]], larynx: ["H", "", [0, 150, 7, 152, 8, 164, 5, 174, 0, 176]],
-  masseter: ["H", "@80", [34, 94, 43, 96, 45, 112, 40, 126, 33, 124, 31, 108]], zygo: ["H", "", [35, 86, 39, 89, 22, 118, 18, 116]],
-  yeux: ["H", "", [20, 66, 32, 70, 36, 78, 32, 87, 20, 90, 8, 87, 4, 78, 8, 70]], bouche: ["H", "", [0, 110, 10, 111, 17, 116, 17, 124, 10, 129, 0, 130]],
-  bucc: ["H", "p", [18, 108, 32, 104, 34, 118, 22, 124, 16, 118]], ptery: ["H", "p", [30, 96, 38, 98, 38, 110, 30, 108]], langue: ["H", "p", [0, 118, 8, 119, 8, 123, 0, 124]],
-  oculo: ["H", "p", [20, 72, 28, 74, 29, 78, 28, 82, 20, 84, 12, 82, 11, 78, 12, 74]], cil: ["H", "p", [20, 76, 22, 78, 20, 80, 18, 78]], oreille: ["H", "p", [52, 82, 55, 84, 52, 87, 50, 84]]
+  frontal: ["H", "@90", [3, 24, 16, 19, 30, 23, 38, 35, 39, 52, 34, 60, 22, 62, 10, 61, 3, 58]], temporal: ["H", "", [40, 33, 45, 44, 46, 58, 45, 70, 41, 77, 39, 62, 39, 46]],
+  platysma: ["H", "", [14, 147, 33, 129, 38, 150, 62, 196, 42, 204, 22, 172]], couAvH: ["H", "", [0, 181, 7, 182, 9, 202, 0, 204]],
+  scmH: ["H", "", [41, 104, 46, 108, 31, 152, 15, 200, 6, 202, 9, 192, 25, 148]],
+  digas: ["H", "", [5, 147, 11, 146, 20, 152, 16, 156, 7, 154], [20, 151, 37, 125, 41, 128, 24, 156]], larynx: ["H", "", [0, 157, 6, 159, 7, 169, 5, 179, 0, 181]],
+  masseter: ["H", "@80", [35, 96, 42, 98, 43, 112, 39, 128, 32, 127, 31, 110]], zygo: ["H", "", [34, 90, 38, 93, 21, 119, 17, 116], [27, 89, 30, 91, 16, 112, 13, 110]],
+  yeux: ["H", "", [21, 68, 31, 71, 36, 79, 33, 88, 21, 92, 10, 89, 6, 80, 10, 71]], bouche: ["H", "", [0, 110, 9, 110.5, 17, 115, 19, 120, 16, 126, 8, 130, 0, 131]],
+  bucc: ["H", "p", [17, 106, 31, 103, 33, 117, 22, 124, 17, 119]], ptery: ["H", "p", [31, 97, 38, 99, 38, 110, 31, 108]], langue: ["H", "p", [0, 117, 7, 118, 7, 123, 0, 124]],
+  oculo: ["H", "p", [21, 74, 28, 76, 29, 80, 28, 84, 21, 86, 13, 84, 12, 80, 13, 76]], cil: ["H", "p", [21, 78, 23, 80, 21, 82, 19, 80]], oreille: ["H", "p", [50, 80, 53, 82, 50, 86, 48, 83]],
+  nasal: ["H", "", [2, 84, 6, 86, 9, 100, 6, 105, 2, 103]], menton: ["H", "", [2, 133, 12, 132, 16, 139, 10, 146, 2, 147]], depAng: ["H", "", [15, 127, 20, 125, 24, 139, 16, 143]], releveur: ["H", "", [9, 92, 14, 90, 15, 110, 10, 112]], procerus: ["H", "", [0, 62, 3, 62, 4, 76, 0, 78]]
 };
-const TETE = [[0, 10, 22, 13, 40, 24, 48, 44, 50, 70, 48, 92, 42, 116, 28, 134, 12, 142, 0, 144], [48, 70, 55, 68, 58, 80, 55, 96, 49, 100], [0, 130, 28, 128, 34, 170, 70, 196, 74, 210, 0, 210]];
+const TETE = [[0, 6, 16, 7, 30, 13, 40, 25, 45, 42, 46, 60, 45, 76, 43, 92, 39, 108, 33, 124, 24, 137, 13, 145, 0, 148], [45, 70, 51, 66, 54, 74, 53, 88, 49, 97, 45, 94], [0, 138, 27, 134, 30, 160, 40, 176, 72, 194, 80, 210, 0, 210]];
 const LOC = { grandFessier: "fess", moyenFessier: "moyFess", quadriceps: "droitFem vasteLat vasteMed", ischios: "bFem semiT semiM", tricepsSural: "gastroM gastroL soleaire gastroAv solAv",
   tibialAnt: "tibAnt", adducteurs: "addL pectine gracile gAdd", psoas: "psoas", grandDroit: "abdos", transverse: "transv", obliques: "obl oblB", erecteurs: "erect", grandDorsal: "dorsal",
   trapeze: "trap trapAv", rhomboides: "rhomb", dentele: "dentele", pectoral: "pec", deltoide: "delt deltB", coiffe: "supra infra pRond subscap", biceps: "biceps", brachial: "brachial",
@@ -116,7 +117,9 @@ const APO = { B: [[8, 166, 20, 174, 18, 186, 8, 196, 3, 194, 3, 174]], F: [[0, 1
 const DIV = { F: [[38, 81, 44, 100, 48, 123], [3, 92, 16, 90, 30, 92, 38, 98], [51, 113, 53, 130, 55, 149], [28, 130, 30, 138], [32, 139, 34, 147], [35, 150, 36, 158], [24, 206, 24, 250, 22, 272],
     [61, 235, 61.5, 247], [64.5, 237, 65, 249], [68, 236, 68.5, 246], [13, 391, 13, 397], [16, 391, 16, 398], [19, 391, 19, 398], [22, 390, 22, 396]],
   B: [[40, 83, 46, 100, 49, 122], [4, 100, 22, 97], [6, 126, 16, 112], [62, 235, 62.5, 247], [65.5, 237, 66, 249], [69, 236, 69.5, 246], [11.5, 296, 11.5, 344]] };
-const VISAGE = [[4, 26.5, 8, 25.5, 12, 26.5], [5, 31, 8, 30.2, 11, 31], [1.2, 34, 2.2, 40, 0.6, 41.5], [0.5, 48, 4, 47.4, 5.5, 46.6], [19, 36, 20.5, 39, 19.5, 43]];
+const VISAGE = [[5, 35.2, 8.7, 34.2, 12.3, 35.4], [5.4, 37.4, 8.7, 38, 12, 37.2], [1.2, 36, 2.4, 45, 0.8, 46.4], [0.5, 52, 4, 51.4, 5.6, 50.6], [19, 36, 20.5, 39, 19.5, 43]];
+// petite tête de la planche du corps (vue de face) : les muscles du visage de la vue « H », réduits à son échelle
+["frontal", "temporal", "yeux", "zygo", "masseter", "bouche", "nasal", "menton", "depAng", "releveur", "procerus"].forEach(k => { REG["tF_" + k] = ["F", REG[k][1], ...REG[k].slice(2).map(p => p.map((v, i) => +(i % 2 ? 7 + (v - 6) * .385 : v * .405).toFixed(1)))]; });
 const SM_DEFS = `<defs><radialGradient id="smG" cx=".36" cy=".26" r=".9"><stop offset="0" class="sm-g0"/><stop offset=".45" class="sm-g1"/><stop offset="1" class="sm-g2"/></radialGradient><radialGradient id="smH" cx=".36" cy=".26" r=".9"><stop offset="0" stop-color="#FFFDF0"/><stop offset=".45" stop-color="#FDE047"/><stop offset="1" stop-color="#F59E0B"/></radialGradient><linearGradient id="smOmbre"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".24" stop-color="#000" stop-opacity=".1"/><stop offset=".4" stop-color="#fff" stop-opacity=".14"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset=".84" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient>${Array.from({ length: 12 }, (_, k) => `<pattern id="smF${k}" width="2.2" height="2.2" patternUnits="userSpaceOnUse" patternTransform="rotate(${k * 15})"><path class="sm-fl" d="M0 1.1H2.2"/></pattern>`).join("")}</defs>`;
 function schemaMuscle(id) {
   const cles = (LOC[id] || "").split(" ").filter(k => REG[k]), peau = LOC[id] === "peau", tete = cles.some(k => REG[k][0] === "H");
@@ -135,8 +138,8 @@ function schemaMuscle(id) {
   if (tete) {
     const cx = 120;
     svg = `<svg viewBox="0 0 240 212" class="schema-muscle sm-tete" role="img">${SM_DEFS}${peauG(TETE, cx)}<g class="sm-m">${planche("H", cx)}</g>
-      <g class="sm-trait"><path d="M${cx - 30} 66q10-5 20 0M${cx + 10} 66q10-5 20 0M${cx} 84q-2 12-6 20q6 4 12 0q-4-8-6-20M${cx - 12} 120q12 4 24 0"/></g>
-      <g class="sm-oeil"><ellipse cx="${cx - 20}" cy="78" rx="8" ry="4.5"/><ellipse cx="${cx + 20}" cy="78" rx="8" ry="4.5"/></g><g class="sm-iris"><circle cx="${cx - 20}" cy="78" r="2.6"/><circle cx="${cx + 20}" cy="78" r="2.6"/></g>
+      <g class="sm-oeil"><path d="M${cx - 29} 80q8-6 16 0q-8 5-16 0zM${cx + 13} 80q8-6 16 0q-8 5-16 0z"/></g><g class="sm-iris"><circle cx="${cx - 21}" cy="79.6" r="2.7"/><circle cx="${cx + 21}" cy="79.6" r="2.7"/></g>
+      <g class="sm-trait"><path d="M${cx - 30} 79.500q9-7 18 0M${cx + 12} 79.500q9-7 18 0M${cx - 3} 86q-1 10-6 17q-2 4 3 4M${cx + 3} 86q1 10 6 17q2 4-3 4M${cx - 4} 107.500q4 2 8 0M${cx - 13} 120q6-2.500 13 0q7-2.500 13 0M${cx - 13} 120q13 4 26 0M${cx - 7} 125.500q7 2.500 14 0"/></g>
       <clipPath id="smCH">${smFormes(TETE, cx)}</clipPath><rect class="sm-vol" x="0" y="0" width="240" height="212" fill="url(#smOmbre)" clip-path="url(#smCH)"/>${cible("H", cx)}</svg>`;
   } else svg = `<svg viewBox="0 0 340 412" class="schema-muscle" role="img">${SM_DEFS}
     ${[["F", 85], ["B", 255]].map(([v, cx]) => `<g id="smV${v}"><ellipse class="sm-ombre" cx="${cx}" cy="399" rx="40" ry="4.5"/>` + peauG(SIL, cx) + `<g class="sm-m">${planche(v, cx)}</g><g class="sm-apo">${smFormes(APO[v], cx)}</g><g class="sm-t">${smFormes(TEND[v], cx)}</g><path class="sm-div" d="${smLignes(DIV[v], cx) + (v === "F" ? smLignes(VISAGE, cx) : "")}"/><clipPath id="smC${v}">${smFormes(SIL, cx)}</clipPath><rect class="sm-vol" x="${cx - 84}" y="0" width="168" height="404" fill="url(#smOmbre)" clip-path="url(#smC${v})"/>` + cible(v, cx) + (peau ? `<g class="sm-peau">${smFormes(SIL, cx)}</g>` : "") + "</g>").join("")}
