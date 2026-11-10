@@ -3,8 +3,8 @@
    - Vidéos : cache séparé « 2work-videos », rempli à la demande depuis Réglages → « Vidéos hors ligne », conservé entre les versions.
    - Vignettes des listes (vignettes/*.webp) : cache « 2work-vignettes », rempli au fil de l'affichage, conservé entre les versions.
    Changer V à chaque mise en ligne d'une nouvelle version. */
-const V = "2work-v2026-11-10c", VIDEOS = "2work-videos", VIGNETTES = "2work-vignettes", ETAT = "2work-etat";
-const COQUILLE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./icons/logo.png", "./icons/qr.png", "./consignes.js",
+const V = "2work-v2026-11-10d", VIDEOS = "2work-videos", VIGNETTES = "2work-vignettes", ETAT = "2work-etat";
+const COQUILLE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./icons/logo.png", "./icons/qr.png", "./consignes.js", "./fonds/chaud.webp", "./fonds/vert.webp",
   ...["barlow-latin-400", "barlow-latin-500", "barlow-latin-600", "barlow-latin-700", "barlow-condensed-latin-600", "barlow-condensed-latin-700", "barlow-condensed-latin-800"].map(f => `./fonts/${f}-normal.woff2`)];
 self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(COQUILLE)).then(() => self.skipWaiting())));
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(l => Promise.all(l.filter(n => ![V, VIDEOS, VIGNETTES, ETAT].includes(n)).map(n => caches.delete(n)))).then(() => self.clients.claim())));
@@ -30,10 +30,13 @@ async function video(r) {   // vidéo en cache : réponse partielle (206) pour S
 self.addEventListener("periodicsync", e => { if (e.tag === "rappel") e.waitUntil(rappel()); });
 async function rappel() {
   const c = await caches.open(ETAT), url = new URL("rappel.json", self.registration.scope).href, m = await c.match(url); if (!m) return;
-  const R = await m.json(), d = new Date(), p2 = n => String(n).padStart(2, "0"), j = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`, t = R.jours[(d.getDay() + 6) % 7];
-  if (!R.actif || !t || R.fait === j || R.envoye === j || `${p2(d.getHours())}:${p2(d.getMinutes())}` < R.heure) return;
-  await self.registration.showNotification(R.titre, { body: t, icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "2work-rappel-" + j, data: "./?go=semaine" });
-  await c.put(url, new Response(JSON.stringify({ ...R, envoye: j })));
+  const R = await m.json(), d = new Date(), p2 = n => String(n).padStart(2, "0"), j = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`, hm = `${p2(d.getHours())}:${p2(d.getMinutes())}`, t = R.jours[(d.getDay() + 6) % 7];
+  if (!R.actif || R.fait === j) return;
+  const opt = (body, cle, data) => ({ body, icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "2work-" + cle + "-" + j, data });
+  if (t && R.envoye !== j && hm >= R.heure) { await self.registration.showNotification(R.titre, opt(t, "rappelEnvoye", "./?go=semaine")); R.envoye = j; }
+  else if (R.serie > 0 && R.envoyeSerie !== j && hm >= "20:00") { await self.registration.showNotification(R.msgSerie[0], opt(R.msgSerie[1], "rappelSerie", "./")); R.envoyeSerie = j; }   // la série se termine ce soir
+  else return;
+  await c.put(url, new Response(JSON.stringify(R)));
 }
 self.addEventListener("notificationclick", e => { e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: "window" }).then(l => l.length ? l[0].focus() : self.clients.openWindow(e.notification.data || "./"))); });

@@ -4,10 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>2 WORK</title>
-<meta name="theme-color" content="#0B0E14">
+<meta name="theme-color" content="#0C0A09">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/favicon-64.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-startup-image" href="icons/lancement/1320x2868.jpg" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/1290x2796.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/1206x2622.jpg" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/1179x2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/1170x2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/1284x2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/1125x2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/1242x2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/828x1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="icons/lancement/750x1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="2 WORK">
@@ -23,9 +33,9 @@
 @font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 800; font-display: swap; src: url(fonts/barlow-condensed-latin-800-normal.woff2) format("woff2"); }
 /* ===== 2 WORK · design « net » : surfaces plates, bordures fines, une couleur d'accent par séance, clair et sombre par les mêmes variables ===== */
 :root {
---brand: #2F5BFF; --brand-fonce: #0B1A6E; --accent: var(--brand);
---bg: #F4F6FA; --surface: #FFFFFF; --soft: #E9EDF5; --ligne: rgba(15,23,42,.09); --ink: #0F172A; --muted: #5A6478;
---accent-txt: color-mix(in srgb, var(--accent) 82%, #000); --fond-o: .2;
+--brand: #EA580C; --vert: #15803D; --accent: var(--brand);
+--bg: #FBF6F1; --surface: #FFFFFF; --soft: #F1E8DF; --ligne: rgba(60,30,10,.11); --ink: #1C1410; --muted: #6B5D52; --voile: 251,246,241;
+--accent-txt: color-mix(in srgb, var(--accent) 82%, #000); --fond-o: .6;
 --ok: #15803D; --rose: #E11D48; --or: #B45309; --or-fond: #FFF4D1; --or-bord: #F6DC8B;
 --ombre: 0 1px 2px rgba(15,23,42,.05), 0 10px 24px -14px rgba(15,23,42,.18);
 --verre: var(--surface); --relief: var(--ombre);
@@ -35,8 +45,8 @@
 color-scheme: light;
 }
 html[data-theme="dark"] { color-scheme: dark;
---brand: #3D6BFF; --bg: #0B0E14; --surface: #151A24; --soft: #212837; --ligne: rgba(255,255,255,.09); --ink: #F3F5F9; --muted: #9BA4B6;
---accent-txt: color-mix(in srgb, var(--accent) 62%, #fff); --fond-o: .3;
+--bg: #0C0A09; --surface: #1A1512; --soft: #2B221D; --ligne: rgba(255,238,220,.10); --ink: #FAF6F2; --muted: #B5A89D; --voile: 12,10,9;
+--accent-txt: color-mix(in srgb, var(--accent) 62%, #fff); --fond-o: .9;
 --ok: #4ADE80; --rose: #FB7185; --or: #FCD34D; --or-fond: #2E2508; --or-bord: #5C4610;
 --ombre: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 28px -16px rgba(0,0,0,.7); }
 
@@ -45,15 +55,18 @@ html[data-theme="dark"] { color-scheme: dark;
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 html, body, button, a, input, select, label, summary, .stepper { touch-action: manipulation; }   /* pas de zoom au double toucher : deux appuis rapides sur + ou − = deux réglages */
 body { font-family: var(--texte); font-size: 16px; line-height: 1.45; color: var(--ink); min-height: 100vh; display: flex; justify-content: center; -webkit-font-smoothing: antialiased; background: var(--bg); }
-/* fond mouvant : trois halos de couleur (dont la teinte de la séance en cours) qui dérivent lentement ; seul « transform » est animé */
+/* fond mouvant : bandes laquées (orange partout, vert émeraude dans les Outils) qui dérivent lentement, reflet qui les traverse,
+   voile de la couleur du thème par-dessus pour garder les textes lisibles ; seuls « transform » et « opacity » sont animés */
 .fond { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: var(--fond-o); transition: opacity .6s; }
-.fond i { position: absolute; width: 90vmax; height: 90vmax; border-radius: 50%; will-change: transform; background: radial-gradient(closest-side, var(--h), transparent); animation: derive var(--d) ease-in-out infinite alternate; }
-.fond i:nth-child(1) { --h: var(--accent); --d: 19s; left: -35vmax; top: -45vmax; }
-.fond i:nth-child(2) { --h: #7C3AED; --d: 26s; right: -45vmax; top: 10vh; animation-delay: -8s; }
-.fond i:nth-child(3) { --h: #06B6D4; --d: 23s; left: -30vmax; bottom: -50vmax; animation-delay: -15s; }
-@keyframes derive { from { transform: translate3d(-6vw, -4vh, 0) scale(.85); } 50% { transform: translate3d(10vw, 8vh, 0) scale(1.1); } to { transform: translate3d(22vw, -6vh, 0) scale(.95); } }
-body:has(#session:not(.hidden), #pret:not(.hidden)) .fond { opacity: calc(var(--fond-o) * .55); }   /* plus discret pendant l'effort */
-body:has(#accueil:not(.hidden)) .fond { opacity: 0; }
+.fond i { position: absolute; inset: -9%; background: center / cover no-repeat; opacity: 0; transition: opacity .8s; will-change: transform; animation: derive 26s ease-in-out infinite alternate; }
+.fond .chaud { background-image: url(fonds/chaud.webp); opacity: 1; } .fond .vert { background-image: url(fonds/vert.webp); animation-delay: -9s; }
+body:has(#outils:not(.hidden), #outil:not(.hidden)) .fond .chaud { opacity: 0; } body:has(#outils:not(.hidden), #outil:not(.hidden)) .fond .vert { opacity: 1; }
+.fond b { position: absolute; inset: -60%; background: linear-gradient(118deg, transparent 47%, rgba(255,255,255,.10) 50%, transparent 53%); will-change: transform; animation: reflet 12s ease-in-out infinite; }
+.fond::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(var(--voile),.66), rgba(var(--voile),.42) 45%, rgba(var(--voile),.2)); transition: opacity .6s; }
+@keyframes derive { from { transform: scale(1.02); } to { transform: scale(1.16) translate3d(-3%, 2.5%, 0); } }
+@keyframes reflet { from { transform: translate3d(-45%, -45%, 0); } to { transform: translate3d(45%, 45%, 0); } }
+body:has(#session:not(.hidden), #pret:not(.hidden)) .fond { opacity: calc(var(--fond-o) * .6); }   /* plus discret pendant l'effort */
+body:has(#accueil:not(.hidden)) .fond { opacity: 1; } body:has(#accueil:not(.hidden)) .fond::after { opacity: 0; }   /* écran de démarrage : les bandes à pleine couleur */
 main { width: 100%; max-width: 560px; padding: 64px 16px 40px; }
 .hidden { display: none !important; }
 button { font: inherit; color: inherit; cursor: pointer; border: 0; border-radius: 999px; -webkit-tap-highlight-color: transparent; transition: transform .15s var(--doux), background-color .2s, color .2s, opacity .2s; }
@@ -71,13 +84,14 @@ h1 { font-family: var(--titre); font-weight: 700; font-size: clamp(2.1rem, 9.5vw
 background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--r); box-shadow: var(--ombre); }
 
 /* ----- Écran d'accueil ----- */
-body:has(#accueil:not(.hidden)) { background: radial-gradient(80% 55% at 50% 42%, #2346D8, var(--brand-fonce) 55%, #050A2E); }
+body:has(#accueil:not(.hidden)) { background: #000; }
 .accueil { cursor: pointer; min-height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px; color: #fff; }
 .logo { width: 190px; }
-.logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 36px rgba(0,0,0,.4)); }
-.signature { font-size: .8rem; letter-spacing: .06em; opacity: .7; margin: 6px 0 40px; }
-.touche { font-weight: 500; padding: 12px 22px; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); animation: pulse 2.4s ease-in-out infinite; }
-@keyframes pulse { 50% { opacity: .55; } }
+.logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 14px 30px rgba(0,0,0,.55)); animation: logoEntre .9s cubic-bezier(.3, 1.5, .5, 1) both; }
+.signature { font-size: .8rem; letter-spacing: .06em; opacity: .8; margin: 6px 0 34px; animation: frais .6s .5s ease-out both; }
+.charge { width: 132px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.25); overflow: hidden; animation: frais .4s .3s ease-out both; }
+.charge i { display: block; height: 100%; width: 0; border-radius: 4px; background: #fff; animation: charge 1.9s .3s cubic-bezier(.4, 0, .2, 1) forwards; }
+@keyframes logoEntre { from { opacity: 0; transform: scale(.6); } } @keyframes charge { to { width: 100%; } }
 
 /* ----- Boutons de navigation ----- */
 .quit, .back { background: color-mix(in srgb, var(--surface) 82%, transparent); color: var(--ink); border: 1px solid var(--ligne); font-weight: 600; font-size: .9rem;
@@ -95,6 +109,14 @@ background: color-mix(in srgb, var(--surface) 80%, transparent); border: 1px sol
 body:has(.nav:not(.hidden)) main { padding-bottom: 120px; }
 :is(#progres, #progs, #reglages) > .back { display: none; }   /* la barre remplace « ← Retour » sur ces écrans */
 .voix-secours { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; right: 110px; z-index: 20; padding: 10px 14px; border-radius: 16px; font-weight: 600; font-size: .92rem; background: var(--ink); color: var(--bg); box-shadow: 0 12px 26px -10px rgba(0,0,0,.5); animation: frais .3s ease-out; }
+/* notifications dans l'appli : bandeau qui descend du haut, un à la fois */
+.notif { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 50%; z-index: 25; width: min(calc(100% - 24px), 536px); display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border-radius: 20px;
+background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--ligne); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); box-shadow: 0 18px 36px -14px rgba(0,0,0,.55); transform: translateX(-50%); animation: notifEntre .38s var(--doux); }
+.notif.sort { animation: notifSort .26s ease-in forwards; } .notif:active:not(:disabled) { transform: translateX(-50%) scale(.98); }
+.notif .n-ico { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; font-size: 1.25rem; background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.notif > span:nth-child(2) { flex: 1; min-width: 0; } .notif b { display: block; font-size: .95rem; line-height: 1.2; } .notif small { display: block; color: var(--muted); font-size: .82rem; line-height: 1.3; margin-top: 2px; } .notif i { font-style: normal; font-size: 1.3rem; color: var(--muted); }
+body:has(#session:not(.hidden)) .notif { left: 12px; width: calc(100% - 124px); transform: none; animation-name: frais; }   /* en séance : à côté du bouton Menu */
+@keyframes notifEntre { from { opacity: 0; transform: translateX(-50%) translateY(-120%); } } @keyframes notifSort { to { opacity: 0; transform: translateX(-50%) translateY(-120%); } }
 .avis-etoiles { display: flex; justify-content: center; gap: 4px; } .avis-etoiles button { background: none; padding: 0 4px; font-size: 2.3rem; line-height: 1; color: var(--soft); } .avis-etoiles button.on { color: #F5B301; }
 textarea.choixVoix { width: 100%; resize: vertical; }
 /* outils : filtres en pastilles défilantes, courbes, grand affichage des minuteurs */
@@ -293,19 +315,25 @@ background: color-mix(in srgb, var(--surface) 78%, transparent); border: 1px sol
 .schema-muscle { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; }
 .schema-muscle text { font-size: 10px; fill: var(--muted); font-weight: 600; }
 .schema-carte p { font-size: .82rem; color: var(--muted); margin-top: 4px; }
-.sm-sil { fill: #E6EAF4; stroke: #BAC3DA; stroke-width: 1.2; paint-order: stroke; }
-.sm-m { fill: url(#smG); stroke: #9AA5C4; stroke-width: .5; stroke-linejoin: round; } .sm-tete .sm-m { fill: #C9D0E4; }
-.sm-g1 { stop-color: #D3D9EA; } .sm-g2 { stop-color: #BCC5DE; }
-.sm-trait { fill: none; stroke: #7E8AAE; stroke-width: 1.1; stroke-linecap: round; } .sm-oeil { fill: #F8FAFF; } .sm-iris { fill: #2E3B6E; }
-.sm-hl { fill: #F43F5E; stroke: #FFE4E8; stroke-width: .5; filter: drop-shadow(0 0 3px rgba(244,63,94,.85)); animation: smPulse 1.8s ease-in-out infinite; }
-.sm-prof { fill: rgba(244,63,94,.4); stroke: #F43F5E; stroke-width: .9; stroke-dasharray: 2 1.5; animation: smPulse 1.8s ease-in-out infinite; }
-.sm-peau { fill: rgba(251,113,133,.6); stroke: #F43F5E; filter: drop-shadow(0 0 4px #F43F5E); animation: smPulse 1.8s ease-in-out infinite; }
-.sm-f { stroke: none; } .sm-fl { stroke: rgba(60,70,110,.2); stroke-width: .4; } .sm-hl .sm-fl { stroke: rgba(120,0,30,.35); }
-.sm-t { fill: #F4F1EA; stroke: #AEB6CE; stroke-width: .4; } .sm-apo { fill: #FFFFFF; opacity: .35; } .sm-div { fill: none; stroke: #8E99BA; stroke-width: .55; stroke-linecap: round; opacity: .8; }
-@keyframes smPulse { 50% { opacity: .7; } }
-html[data-theme="dark"] .sm-fl { stroke: rgba(10,16,48,.28); } html[data-theme="dark"] .sm-t { fill: #6E7AB3; stroke: #1A2350; } html[data-theme="dark"] .sm-apo { fill: #8590C2; } html[data-theme="dark"] .sm-div { stroke: #1A2350; }
-html[data-theme="dark"] .sm-sil { fill: #2B3768; stroke: #55639C; } html[data-theme="dark"] .sm-m { stroke: #1A2350; } html[data-theme="dark"] .sm-tete .sm-m { fill: #3F4E8E; }
-html[data-theme="dark"] .sm-g1 { stop-color: #4A5A9C; } html[data-theme="dark"] .sm-g2 { stop-color: #34427E; } html[data-theme="dark"] .sm-trait { stroke: #8C98C6; } html[data-theme="dark"] .sm-oeil { fill: #E6EAF5; } html[data-theme="dark"] .sm-iris { fill: #1A2350; }
+/* écorché en volume : chaque muscle porte son propre dégradé (lumière en haut à gauche), le muscle du jour est incandescent */
+.sm-sil { fill: #C9CED8; stroke: #9AA2B2; stroke-width: 1.4; paint-order: stroke; }
+.sm-m { fill: url(#smG); stroke: #7F8798; stroke-width: .45; stroke-linejoin: round; }
+.sm-g0 { stop-color: #FFFFFF; } .sm-g1 { stop-color: #D3D8E2; } .sm-g2 { stop-color: #9DA6B8; }
+.sm-trait { fill: none; stroke: #6F7889; stroke-width: 1.1; stroke-linecap: round; } .sm-oeil { fill: #F8FAFF; } .sm-iris { fill: #2B303B; }
+.sm-hl { fill: url(#smH); stroke: #FFF1DD; stroke-width: .6; filter: drop-shadow(0 0 3.5px rgba(249,115,22,.95)); animation: smPulse 1.8s ease-in-out infinite; }
+.sm-prof { fill: rgba(249,115,22,.38); stroke: #F97316; stroke-width: .9; stroke-dasharray: 2 1.5; animation: smPulse 1.8s ease-in-out infinite; }
+.sm-peau { fill: rgba(251,146,60,.55); stroke: #F97316; filter: drop-shadow(0 0 4px #F97316); animation: smPulse 1.8s ease-in-out infinite; }
+.sm-f { stroke: none; } .sm-fl { stroke: rgba(40,45,60,.22); stroke-width: .4; } .sm-hl .sm-fl { stroke: rgba(120,40,0,.4); }
+.sm-t { fill: #F4F1EA; stroke: #A9AFBC; stroke-width: .4; } .sm-apo { fill: #FFFFFF; opacity: .35; } .sm-div { fill: none; stroke: #7B8394; stroke-width: .55; stroke-linecap: round; opacity: .85; }
+.sm-ombre { fill: rgba(0,0,0,.22); }
+@keyframes smPulse { 50% { opacity: .72; } }
+.sm-loupe { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 8px 0 4px; } .sm-loupe span { max-width: 15ch; text-align: left; font-size: .82rem; color: var(--muted); }
+.sm-zoom { flex: none; width: 136px; height: 136px; border-radius: 50%; background: var(--bg); border: 2px solid #F97316; box-shadow: 0 0 0 5px rgba(249,115,22,.16); }
+.schema-carte.plein .sm-loupe { display: none; }
+html[data-theme="dark"] .sm-sil { fill: #2A2522; stroke: #6A5E55; } html[data-theme="dark"] .sm-m { stroke: #14100E; }
+html[data-theme="dark"] .sm-g0 { stop-color: #A39890; } html[data-theme="dark"] .sm-g1 { stop-color: #655B54; } html[data-theme="dark"] .sm-g2 { stop-color: #3A322D; }
+html[data-theme="dark"] .sm-trait { stroke: #B9ADA3; } html[data-theme="dark"] .sm-oeil { fill: #EDE7E0; } html[data-theme="dark"] .sm-iris { fill: #14100E; }
+html[data-theme="dark"] .sm-fl { stroke: rgba(0,0,0,.3); } html[data-theme="dark"] .sm-t { fill: #D8CDBD; stroke: #14100E; } html[data-theme="dark"] .sm-apo { fill: #D8CDBD; opacity: .3; } html[data-theme="dark"] .sm-div { stroke: #14100E; }
 
 /* ----- Mes progrès ----- */
 .hero-serie { position: relative; overflow: hidden; text-align: center; padding: 22px 16px 18px; border-radius: 24px; color: #fff; margin-bottom: 12px; background: linear-gradient(150deg, #FB923C, #F43F5E 60%, #BE123C); box-shadow: 0 16px 30px -18px #E11D48; }
@@ -488,7 +516,8 @@ button:active:not(:disabled) { transform: none; }
 try { const t = localStorage.getItem("theme") || "sombre"; document.documentElement.dataset.theme = t === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : t === "sombre" ? "dark" : "light"; } catch (e) {}</script>
 </head>
 <body>
-<div class="fond" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="fond" aria-hidden="true"><i class="chaud"></i><i class="vert"></i><b></b></div>
+<button id="notif" class="notif hidden" aria-live="polite"></button>
 <p id="voixSecours" class="voix-secours hidden" role="status"></p>
 <button id="quitBtn" class="quit hidden" aria-label="Quitter et retourner au menu d’accueil">✕ Menu</button>
 <main>
@@ -496,7 +525,7 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <section id="accueil" class="accueil">
 <div class="logo"><img alt="Logo 2 Work" width="288" height="212" src="icons/logo.png"></div>
 <p class="signature">made by Aidou</p>
-<p class="touche">Touche l’écran pour continuer</p>
+<div class="charge" role="progressbar" aria-label="Chargement"><i></i></div>
 </section>
 
 <section id="menu" class="hidden">
@@ -675,6 +704,10 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <div class="reglage">
 <label for="sonsBtn">Sons de l’interface<small>Petits sons quand tu touches les menus, les boutons et les options</small></label>
 <button id="sonsBtn" class="toggle" aria-pressed="true">Activés</button>
+</div>
+<div class="reglage">
+<label for="notifsBtn"><span data-en="In-app notifications">Notifications dans l’appli</span><small data-en="Greetings, streak alerts, milestones and tips, shown as banners">Salutations, alertes de série, paliers et conseils, en bandeaux</small></label>
+<button id="notifsBtn" class="toggle" aria-pressed="true">Activées</button>
 </div>
 <div class="reglage">
 <label for="vibBtn">Vibrations<small>Au toucher, à chaque changement d’exercice, au repos et pendant les 3 dernières secondes</small></label>
@@ -2006,7 +2039,7 @@ function afficherEcran(nom) {
   ecranCourant = nom;
   if (nom !== "session") clearInterval(timer);
   $("plusRepos").classList.add("hidden");   // aucun chrono ne tourne hors de la séance
-  if (["menu", "reglages", "accueil", "profil", "planning", "page", "bienvenue", "outils", "outil"].includes(nom)) document.documentElement.style.setProperty("--accent", "var(--brand)");
+  if (["menu", "reglages", "accueil", "profil", "planning", "page", "bienvenue", "outils", "outil"].includes(nom)) document.documentElement.style.setProperty("--accent", nom.startsWith("outil") ? "var(--vert)" : "var(--brand)");
   if (typeof garderEcran === "function") garderEcran(nom === "pret" || nom === "session");
   ["accueil","menu","home","preview","session","pret","end","reglages","muscle","progres","progs","prog","recap","profil","planning","page","bienvenue","outils","outil"].forEach(s => $(s).classList.toggle("hidden", s !== nom));
   $("quitBtn").classList.toggle("hidden", ["menu", "accueil", "reglages", "muscle", "progres", "progs", "prog", "recap", "profil", "planning", "page", "bienvenue", "outils", "outil"].includes(nom));
@@ -2023,7 +2056,7 @@ function afficherEcran(nom) {
   if (nom !== "outil") clearInterval(tMin);   // un minuteur libre ne tourne que sur son écran
   const onglet = { menu: "nMenu", progres: "nProgres", progs: "nProgs", outils: "nOutils", reglages: "reglagesBtn" }[nom];   // barre de navigation : écrans principaux seulement
   $("nav").classList.toggle("hidden", !onglet); [...$("nav").children].forEach(b => b.setAttribute("aria-current", b.id === onglet ? "page" : "false"));
-  if (nom === "menu") majReprise();
+  if (nom === "menu") { majReprise(); setTimeout(notifsMenu, 1100); }
   if (!["pret", "session"].includes(nom)) { clearTimeout(tSecours); $("voixSecours").classList.add("hidden"); }   // pas d'annonce de secours hors séance
   majVerrou();
 }
@@ -2339,7 +2372,9 @@ function media(e) {
 function fondu() { const el = $("session"); el.classList.remove("frais"); void el.offsetWidth; el.classList.add("frais"); }
 
 function afficher() {
-  noterSeance(); fondu(); $("plusRepos").classList.add("hidden");
+  noterSeance(); fondu();
+  if (index && index === Math.floor(liste.length / 2)) notifier("", "💪", L("Mi-séance !", "Halfway!"), L(`Plus que ${liste.length - index} étapes, tiens bon.`, `${liste.length - index} steps to go, hang in there.`), null, true);
+  else if (index > 2 && index === liste.length - 1) notifier("", "🏁", L("Dernier exercice", "Last exercise"), L("Donne tout, c’est presque fini.", "Give it everything, almost done."), null, true); $("plusRepos").classList.add("hidden");
   const e = liste[index], kc = e.duree >= 10 && changements(e.id);
   programmerConseils(e, conseilDejaDit === index); conseilDejaDit = -1;
   bandeauCote(kc ? kc.seg[LANGUE === "en" ? 1 : 0][0] : "");
@@ -2819,7 +2854,7 @@ function celebrer() {
   $("fCharges").innerHTML = formCharges(); brancherCharges();
   $("fPartage").innerHTML = blocPartage(); brancherPartage();
   envoyerSante(lireHist().slice(-1)[0]).then(r => r && $("fPartage").insertAdjacentHTML("afterbegin", r));
-  confettis(); majRappelSW();
+  confettis(); majRappelSW(); setTimeout(notifsFin, 2800);
   [523, 659, 784, 1047].forEach((f, i) => bip(f, i === 3 ? 600 : 160, .18, "triangle", .35 + i * .13)); vibrer([90, 60, 90, 60, 260]);
   if (neufs.length) { [1319, 1568, 2093].forEach((f, i) => bip(f, 220, .12, "sine", 1.5 + i * .1)); setTimeout(() => vibrer([40, 50, 40, 50, 40]), 1500); }
 }
@@ -3155,7 +3190,7 @@ const sombreSys = matchMedia("(prefers-color-scheme: dark)");
 function appliquerTheme() {
   const d = theme === "sombre" || (theme === "auto" && sombreSys.matches);
   document.documentElement.dataset.theme = d ? "dark" : "light";
-  document.querySelector('meta[name="theme-color"]').content = d ? "#0B0E14" : "#F4F6FA";
+  document.querySelector('meta[name="theme-color"]').content = d ? "#0C0A09" : "#FBF6F1";
   [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).setAttribute("aria-pressed", theme === t));
 }
 [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).onclick = () => { theme = t; stocker("theme", t); appliquerTheme(); });
@@ -4137,7 +4172,7 @@ async function telechargerVideos(maj) {
 /* ============ SAUVEGARDE ET RESTAURATION ============
    Fichier JSON avec toutes les données de l'appli (et seulement elles). Avant une restauration, les données actuelles sont copiées
    dans « sauvegardeAvantRestauration » : rien n'est jamais perdu. */
-const CLE_APPLI = /^(tests|corps|rappelNotif|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
+const CLE_APPLI = /^(tests|corps|rappelNotif|notifsAppli|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
 function donneesAppli() { const d = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (CLE_APPLI.test(k)) d[k] = localStorage.getItem(k); } } catch (e) {} return d; }
 async function sauvegarder() {
   const j = jourCle(), f = JSON.stringify({ app: "2WORK", version: 1, date: new Date().toISOString(), donnees: donneesAppli() });
@@ -4378,7 +4413,7 @@ const DIV = { F: [[38, 81, 44, 100, 48, 123], [3, 92, 16, 90, 30, 92, 38, 98], [
     [61, 235, 61.5, 247], [64.5, 237, 65, 249], [68, 236, 68.5, 246], [13, 391, 13, 397], [16, 391, 16, 398], [19, 391, 19, 398], [22, 390, 22, 396]],
   B: [[40, 83, 46, 100, 49, 122], [4, 100, 22, 97], [6, 126, 16, 112], [62, 235, 62.5, 247], [65.5, 237, 66, 249], [69, 236, 69.5, 246], [11.5, 296, 11.5, 344]] };
 const VISAGE = [[4, 26.5, 8, 25.5, 12, 26.5], [5, 31, 8, 30.2, 11, 31], [1.2, 34, 2.2, 40, 0.6, 41.5], [0.5, 48, 4, 47.4, 5.5, 46.6], [19, 36, 20.5, 39, 19.5, 43]];
-const SM_DEFS = `<defs><linearGradient id="smG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="sm-g1"/><stop offset="1" class="sm-g2"/></linearGradient>${Array.from({ length: 12 }, (_, k) => `<pattern id="smF${k}" width="2.2" height="2.2" patternUnits="userSpaceOnUse" patternTransform="rotate(${k * 15})"><path class="sm-fl" d="M0 1.1H2.2"/></pattern>`).join("")}</defs>`;
+const SM_DEFS = `<defs><radialGradient id="smG" cx=".36" cy=".26" r=".9"><stop offset="0" class="sm-g0"/><stop offset=".45" class="sm-g1"/><stop offset="1" class="sm-g2"/></radialGradient><radialGradient id="smH" cx=".36" cy=".26" r=".9"><stop offset="0" stop-color="#FFE3A8"/><stop offset=".45" stop-color="#FB923C"/><stop offset="1" stop-color="#DC2626"/></radialGradient>${Array.from({ length: 12 }, (_, k) => `<pattern id="smF${k}" width="2.2" height="2.2" patternUnits="userSpaceOnUse" patternTransform="rotate(${k * 15})"><path class="sm-fl" d="M0 1.1H2.2"/></pattern>`).join("")}</defs>`;
 function schemaMuscle(id) {
   const cles = (LOC[id] || "").split(" ").filter(k => REG[k]), peau = LOC[id] === "peau", tete = cles.some(k => REG[k][0] === "H");
   const profond = cles.length && cles.every(k => REG[k][1].includes("p"));
@@ -4386,6 +4421,12 @@ function schemaMuscle(id) {
   const planche = (v, cx) => Object.keys(REG).filter(k => REG[k][0] === v && !REG[k][1].includes("p")).map(k => smFormes(REG[k].slice(2), cx, uni(k), fib(k))).join("");
   const cible = (v, cx) => cles.filter(k => REG[k][0] === v).map(k => REG[k][1].includes("p") ? `<g class="sm-prof">${smFormes(REG[k].slice(2), cx, uni(k))}</g>` : `<g class="sm-hl">${smFormes(REG[k].slice(2), cx, uni(k), fib(k))}</g>`).join("");
   const peauG = (l, cx) => `<g class="sm-sil">${smFormes(l, cx)}</g>`;
+  // loupe : gros plan sur le muscle quand il est petit sur la planche (un seul côté s'il ne touche pas l'axe du corps)
+  const cadre = v => { let a = 1e9, b = -1e9, c = 1e9, d = -1e9, axe = false;
+    cles.filter(k => REG[k][0] === v).forEach(k => REG[k].slice(2).forEach(p => { for (let i = 0; i < p.length; i += 2) { a = Math.min(a, p[i]); b = Math.max(b, p[i]); c = Math.min(c, p[i + 1]); d = Math.max(d, p[i + 1]); } if (!uni(k) && Math.min(...p.filter((_, i) => !(i % 2))) <= 3) axe = true; }));
+    return b < a ? null : { x0: axe ? -b : a, x1: b, y0: c, y1: d }; };
+  const vz = cadre("F") ? "F" : "B", K = !tete && !peau && cadre(vz), tz = K && Math.max(K.x1 - K.x0, K.y1 - K.y0, 36) + 26;
+  const loupe = K && tz < 150 ? `<div class="sm-loupe"><svg class="sm-zoom" viewBox="${((vz === "F" ? 85 : 255) + (K.x0 + K.x1) / 2 - tz / 2).toFixed(1)} ${((K.y0 + K.y1) / 2 - tz / 2).toFixed(1)} ${tz} ${tz}" aria-hidden="true"><use href="#smV${vz}"/></svg><span>🔍 ${L("Gros plan", "Close-up")} · ${vz === "F" ? L("vue de face", "front view") : L("vue de dos", "back view")}</span></div>` : "";
   let svg;
   if (tete) {
     const cx = 120;
@@ -4394,9 +4435,9 @@ function schemaMuscle(id) {
       <g class="sm-oeil"><ellipse cx="${cx - 20}" cy="78" rx="8" ry="4.5"/><ellipse cx="${cx + 20}" cy="78" rx="8" ry="4.5"/></g><g class="sm-iris"><circle cx="${cx - 20}" cy="78" r="2.6"/><circle cx="${cx + 20}" cy="78" r="2.6"/></g>
       ${cible("H", cx)}</svg>`;
   } else svg = `<svg viewBox="0 0 340 412" class="schema-muscle" role="img">${SM_DEFS}
-    ${[["F", 85], ["B", 255]].map(([v, cx]) => peauG(SIL, cx) + `<g class="sm-m">${planche(v, cx)}</g><g class="sm-apo">${smFormes(APO[v], cx)}</g><g class="sm-t">${smFormes(TEND[v], cx)}</g><path class="sm-div" d="${smLignes(DIV[v], cx) + (v === "F" ? smLignes(VISAGE, cx) : "")}"/>` + cible(v, cx) + (peau ? `<g class="sm-peau">${smFormes(SIL, cx)}</g>` : "")).join("")}
+    ${[["F", 85], ["B", 255]].map(([v, cx]) => `<g id="smV${v}"><ellipse class="sm-ombre" cx="${cx}" cy="399" rx="40" ry="4.5"/>` + peauG(SIL, cx) + `<g class="sm-m">${planche(v, cx)}</g><g class="sm-apo">${smFormes(APO[v], cx)}</g><g class="sm-t">${smFormes(TEND[v], cx)}</g><path class="sm-div" d="${smLignes(DIV[v], cx) + (v === "F" ? smLignes(VISAGE, cx) : "")}"/>` + cible(v, cx) + (peau ? `<g class="sm-peau">${smFormes(SIL, cx)}</g>` : "") + "</g>").join("")}
     <text x="85" y="410" text-anchor="middle">${L("Face", "Front")}</text><text x="255" y="410" text-anchor="middle">${L("Dos", "Back")}</text></svg>`;
-  return `<div class="schema-carte" onclick="this.classList.toggle('plein')">${svg}<p>${peau ? L("Présents dans toute la peau, à la base de chaque poil.", "Found throughout the skin, at the base of every hair.") : profond ? L("🔍 Muscle profond : il se trouve sous d’autres muscles (zone en pointillés).", "🔍 Deep muscle: it lies beneath other muscles (dotted area).") : L("Le muscle est surligné.", "The muscle is highlighted.")}${tete ? " · " + L("Vue de face du visage", "Front view of the face") : ""} · <b>${L("Touche pour agrandir", "Tap to enlarge")}</b></p></div>`;
+  return `<div class="schema-carte" onclick="this.classList.toggle('plein')">${svg}${loupe}<p>${peau ? L("Présents dans toute la peau, à la base de chaque poil.", "Found throughout the skin, at the base of every hair.") : profond ? L("🔍 Muscle profond : il se trouve sous d’autres muscles (zone en pointillés).", "🔍 Deep muscle: it lies beneath other muscles (dotted area).") : L("Le muscle est surligné.", "The muscle is highlighted.")}${tete ? " · " + L("Vue de face du visage", "Front view of the face") : ""} · <b>${L("Touche pour agrandir", "Tap to enlarge")}</b></p></div>`;
 }
 
 /* ============ CARNET DE CHARGES (séances de salle) ============
@@ -4524,7 +4565,9 @@ function vueMode(grp) {
 const vueK = (cat, titre, sous) => sousListe("choicesK", cat, "kcat", titre, sous);
 
 function ouvrirListe(type) { type === "seance" ? vuePlan() : vueCats(); }
-document.addEventListener("click", () => { if (!$("accueil").classList.contains("hidden")) besoinBienvenue() ? ecran("bienvenue", () => bienvenue(1)) : ecran("menu"); });
+/* Écran de démarrage : le logo s'anime, la barre se remplit, puis l'appli s'ouvre seule (un toucher l'ouvre tout de suite) */
+const entrer = () => { if (!$("accueil").classList.contains("hidden")) besoinBienvenue() ? ecran("bienvenue", () => bienvenue(1)) : ecran("menu"); };
+document.addEventListener("click", entrer); setTimeout(entrer, 2400);
 $("mEch").onclick = () => ouvrirListe("echauffement");
 $("mSeance").onclick = () => ouvrirListe("seance");
 $("mCalme").onclick = vueCalme;
@@ -4946,16 +4989,22 @@ setTimeout(() => { const c = new URLSearchParams(location.search).get("defi"); i
    fixe appli fermée : le rappel part quand l'appli est ouverte ou en arrière-plan, et sur Android (appli installée) le service worker
    vérifie aussi de lui-même quelques fois par jour (Periodic Background Sync). Sur iPhone, l'agenda (.ics) reste le rappel fiable. */
 const rappelActif = () => lire("rappelNotif") === "1" && "Notification" in window && Notification.permission === "granted";
+const msgRappel = () => { const n = lireProfil().nom, s = series(lireHist()).cur;   // un message différent chaque jour, avec le prénom et la série
+  return duJour([L(`${n ? n + ", c" : "C"}’est l’heure de ta séance 💪`, `${n ? n + ", it" : "It"}’s time for your workout 💪`), L(`Ta séance t’attend${n ? ", " + n : ""} 🔥`, `Your workout is waiting${n ? ", " + n : ""} 🔥`),
+    s > 1 ? L(`Jour ${s + 1} de ta série : on continue ?`, `Day ${s + 1} of your streak: shall we go on?`) : L("Dix minutes suffisent pour commencer 🙌", "Ten minutes is enough to get started 🙌"), L(`Ton futur toi te dira merci${n ? ", " + n : ""} 🙌`, `Your future self will thank you${n ? ", " + n : ""} 🙌`)]); };
+const msgSerie = s => [L(`🔥 Ta série de ${s} jour${s > 1 ? "s" : ""} s’arrête à minuit`, `🔥 Your ${s}-day streak ends at midnight`), L("Le défi du jour, 5 minutes, suffit à la sauver.", "The 5-minute daily challenge is enough to save it.")];
 async function majRappelSW() {   // copie pour le service worker (il n'a pas accès au stockage de la page)
-  try { const P = lirePlanning(), c = await caches.open("2work-etat");
-    await c.put("rappel.json", new Response(JSON.stringify({ actif: rappelActif(), heure: P && P.heure || "18:00", jours: Object.fromEntries(semaine().map(x => [x.j, x.s.t])), fait: lireHist().some(h => h.j === jourCle()) ? jourCle() : "", envoye: lire("rappelEnvoye") || "", titre: L("C’est l’heure de ta séance 💪", "Time for your workout 💪") })));
+  try { const P = lirePlanning(), c = await caches.open("2work-etat"), s = series(lireHist()).cur;
+    await c.put("rappel.json", new Response(JSON.stringify({ actif: rappelActif(), heure: P && P.heure || "18:00", jours: Object.fromEntries(semaine().map(x => [x.j, x.s.t])), fait: lireHist().some(h => h.j === jourCle()) ? jourCle() : "",
+      envoye: lire("rappelEnvoye") || "", titre: msgRappel(), serie: s, msgSerie: msgSerie(s), envoyeSerie: lire("rappelSerie") || "" })));
   } catch (e) {}
 }
 async function verifierRappel() {
-  if (!rappelActif() || lire("rappelEnvoye") === jourCle() || lireHist().some(h => h.j === jourCle())) return;
-  const P = lirePlanning(), x = semaine().find(s => s.j === jourSemaine()), d = new Date(), hm = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-  if (!P || !x || hm < (P.heure || "18:00")) return;
-  try { const r = await navigator.serviceWorker.getRegistration(); if (!r) return; await r.showNotification(L("C’est l’heure de ta séance 💪", "Time for your workout 💪"), { body: x.s.t + " · " + x.s.s, icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "2work-rappel-" + jourCle(), data: "./?go=semaine" }); stocker("rappelEnvoye", jourCle()); majRappelSW(); } catch (e) {}
+  if (!rappelActif() || lireHist().some(h => h.j === jourCle())) return;
+  const P = lirePlanning(), x = semaine().find(s => s.j === jourSemaine()), d = new Date(), hm = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"), s = series(lireHist()).cur;
+  const envoyer = async (cle, titre, body, data) => { try { const r = await navigator.serviceWorker.getRegistration(); if (!r) return; await r.showNotification(titre, { body, icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "2work-" + cle + "-" + jourCle(), data }); stocker(cle, jourCle()); majRappelSW(); } catch (e) {} };
+  if (P && x && hm >= (P.heure || "18:00") && lire("rappelEnvoye") !== jourCle()) envoyer("rappelEnvoye", msgRappel(), x.s.t + " · " + x.s.s, "./?go=semaine");
+  else if (s > 0 && hm >= "20:00" && lire("rappelSerie") !== jourCle()) envoyer("rappelSerie", ...msgSerie(s), "./");   // la série se termine ce soir
 }
 async function basculerRappel() {
   if (rappelActif()) stocker("rappelNotif", "0");
@@ -4967,7 +5016,7 @@ async function basculerRappel() {
 }
 function blocRappel(msg) {   // sous le planning de la semaine
   const Z = $("plNotif"); if (!Z) return; const on = rappelActif();
-  Z.innerHTML = `<div class="carnet"><div class="reglage-ligne"><span><b>🔔 ${L("Notifications de rappel", "Reminder notifications")}</b><small>${L("Les jours prévus, à l’heure du rappel, si la séance n’est pas faite", "On planned days, at the reminder time, if the workout is not done")}</small></span><button class="toggle" id="plNotifBtn" aria-pressed="${on}">${on ? L("Activées", "On") : L("Activer", "Turn on")}</button></div>
+  Z.innerHTML = `<div class="carnet"><div class="reglage-ligne"><span><b>🔔 ${L("Notifications de rappel", "Reminder notifications")}</b><small>${L("Rappel personnalisé les jours prévus, et alerte à 20 h si ta série risque de s’arrêter", "Personalised reminder on planned days, and an 8 pm alert if your streak is about to end")}</small></span><button class="toggle" id="plNotifBtn" aria-pressed="${on}">${on ? L("Activées", "On") : L("Activer", "Turn on")}</button></div>
     <p class="sh-aide">${msg || (iOS() ? L("Sur iPhone, la notification ne part que si l’appli installée a été ouverte dans la journée : garde aussi les rappels de l’agenda.", "On iPhone, the notification is only sent if the installed app was opened that day: keep the calendar reminders too.") : L("Sur Android avec l’appli installée, le rappel arrive même appli fermée, à quelques heures près selon le téléphone. Pour une heure exacte, ajoute aussi les rappels à ton agenda.", "On Android with the app installed, the reminder arrives even when the app is closed, within a few hours depending on the phone. For an exact time, also add the reminders to your calendar."))}</p></div>`;
   $("plNotifBtn").onclick = async () => blocRappel(await basculerRappel());
 }
@@ -4975,6 +5024,64 @@ setInterval(verifierRappel, 60000); document.addEventListener("visibilitychange"
 
 bouton($("choicesP"), "Séance express", L("Ton temps, ta zone, ton matériel : la séance est prête", "Your time, area and equipment: the workout is ready"), "#0EA5E9", () => ouvrirExpress());
 $("choicesP").insertBefore($("choicesP").lastChild, $("choicesP").children[1]);
+
+/* ============ NOTIFICATIONS DANS L'APPLI ============
+   Bandeaux personnalisés (prénom, série, planning, paliers) en haut de l'écran : un à la fois, 6 s, touche pour agir ou fermer.
+   Chaque sujet au plus une fois par jour (clé « notifsVues »), deux bandeaux au plus par passage sur le menu. Réglage « notifsAppli ». */
+let fileNotifs = [], tNotif = null, notifsActives = lire("notifsAppli") !== "0";
+function notifier(id, ico, titre, texte, action, enSeance) {   // id vide = pas de limite par jour
+  if (!notifsActives) return false;
+  if (id) { const vues = lireJSON("notifsVues", {}); if (vues[id] === jourCle()) return false; vues[id] = jourCle(); stocker("notifsVues", JSON.stringify(vues)); }
+  fileNotifs.push({ ico, titre, texte, action, enSeance }); montrerNotif(); return true;
+}
+function montrerNotif() {
+  const Z = $("notif"); if (!Z.classList.contains("hidden") || !fileNotifs.length) return;
+  const n = fileNotifs.shift();
+  if (["session", "pret"].includes(ecranCourant) !== !!n.enSeance || ["accueil", "recap", "bienvenue"].includes(ecranCourant)) return montrerNotif();   // plus dans son contexte : abandonnée
+  Z.innerHTML = `<span class="n-ico">${n.ico}</span><span><b></b><small></small></span>${n.action ? "<i>›</i>" : ""}`; Z.querySelector("b").textContent = n.titre; Z.querySelector("small").textContent = n.texte;
+  Z.classList.remove("hidden", "sort"); if (sonsUI && !n.enSeance) { bip(1568, 90, .07); bip(2093, 130, .05, "sine", .09); }
+  const fermer = () => { clearTimeout(tNotif); Z.classList.add("sort"); setTimeout(() => { Z.classList.add("hidden"); montrerNotif(); }, 260); };
+  Z.onclick = () => { fermer(); if (n.action) n.action(); };
+  tNotif = setTimeout(fermer, n.enSeance ? 3500 : 6000);
+}
+const PALIERS = [1, 5, 10, 25, 50, 75, 100, 150, 200, 300, 500];
+function notifsMenu() {   // à l'arrivée sur le menu : salutation puis, par priorité, ce qui mérite l'attention aujourd'hui
+  if (ecranCourant !== "menu" || !notifsActives) return;
+  const h = lireHist(), nom = lireProfil().nom, virg = nom ? ", " + nom : "", S = series(h), fait = h.some(x => x.j === jourCle()), hr = new Date().getHours();
+  const x = semaine().find(s => s.j === jourSemaine()), absent = h.length ? joursDepuis(h[h.length - 1].j) : null, T0 = lireTests(), C0 = lireCorps();
+  let nb = 0; const N = (...a) => { if (nb < 2 && notifier(...a)) nb++; };
+  const sal = hr < 5 ? ["🌙", "Encore debout", "Still up"] : hr < 12 ? ["☀️", "Bonjour", "Good morning"] : hr < 18 ? ["👋", "Bon après-midi", "Good afternoon"] : ["🌆", "Bonsoir", "Good evening"];
+  N("bonjour", sal[0], L(sal[1], sal[2]) + virg + (hr < 5 ? " ?" : " !"),
+    fait ? L("Séance du jour faite : bien joué. Pense à t’hydrater et à bien dormir.", "Today’s workout is done: well played. Remember to drink and sleep well.")
+    : x ? L(`Au programme aujourd’hui : ${x.s.t}.`, `On today’s plan: ${x.s.t}.`)
+    : S.cur > 1 ? L(`Ta série est à ${S.cur} jours. On la prolonge ?`, `Your streak is at ${S.cur} days. Shall we extend it?`)
+    : h.length ? L("Dix minutes suffisent pour une bonne séance express.", "Ten minutes is enough for a good quick workout.") : L("Prêt pour ta toute première séance ?", "Ready for your very first workout?"),
+    fait ? null : x ? x.s.go : () => ouvrirExpress());
+  if (!fait && absent >= 4) N("absence", "🤗", L(`Content de te revoir${virg} !`, `Good to see you again${virg}!`), L(`${absent} jours sans séance : reprends en douceur, 10 minutes suffisent.`, `${absent} days without a workout: ease back in, 10 minutes is enough.`), () => ouvrirExpress());
+  if (!fait && S.cur > 0 && hr >= 18) N("serieDanger", "🔥", L(`Ta série de ${S.cur} jour${S.cur > 1 ? "s" : ""} s’arrête à minuit`, `Your ${S.cur}-day streak ends at midnight`), L("Le défi du jour suffit à la sauver.", "The daily challenge is enough to save it."), () => $("defiBtn").click());
+  if (!fait && S.cur >= 6) N("repos", "🧘", L(`${S.cur} jours d’affilée${virg} !`, `${S.cur} days in a row${virg}!`), L("Ton corps progresse au repos : choisis une récupération aujourd’hui.", "Your body improves at rest: pick a recovery session today."), vueCalme);
+  const pal = PALIERS.find(p => p === h.length + 1 && p > 1);
+  if (!fait && pal) N("palier", "🎯", L(`Plus qu’une séance pour atteindre ${pal}`, `One more workout to reach ${pal}`), L("Le prochain palier est à portée de main.", "The next milestone is within reach."));
+  const prog = PROGRAMMES.find(([id]) => progAvance(id) > 0 && progAvance(id) < NB_PROG);
+  if (!fait && prog) N("prog", "🗓️", L(prog[1], prog[2]), L(`Le jour ${progAvance(prog[0]) + 1} sur ${NB_PROG} t’attend.`, `Day ${progAvance(prog[0]) + 1} of ${NB_PROG} is waiting.`), () => ouvrirProg(prog[0]));
+  if (T0.length && joursDepuis(T0[T0.length - 1].j) >= 28) N("tests", "📈", L("Un mois depuis tes tests de forme", "A month since your fitness tests"), L("Refais-les pour voir tes progrès.", "Repeat them to see your progress."), ouvrirTests);
+  if (C0.length && joursDepuis(C0[C0.length - 1].j) >= 7) N("pesee", "⚖️", L("Mesure de la semaine ?", "Weekly check-in?"), L("Ta dernière mesure a plus de 7 jours.", "Your last entry is more than 7 days old."), ouvrirCorps);
+  if (lire("muscleVu") !== jourCle()) { const m = muscleDuJour(); N("muscle", "💡", L("Muscle du jour : ", "Muscle of the day: ") + (LANGUE === "en" ? m[3] : m[2])[0], L("Une minute pour savoir à quoi il sert.", "One minute to learn what it does."), ouvrirMuscle); }
+  if (!fait && lireJSON("defiSerie", {}).jour !== jourCle()) { const d = duJour(DEFIS); N("defi", "⭐", L("Défi du jour : ", "Daily challenge: ") + L(d[0], d[1]), L("Court, différent chaque jour.", "Short, different every day."), () => $("defiBtn").click()); }
+}
+function notifsFin() {   // sur l'écran de fin : paliers franchis avec cette séance
+  const h = lireHist(), nom = lireProfil().nom, S = series(h), n = h.length, mn = minutes(h), av = mn - Math.round(h[n - 1].s / 60), H = [1, 5, 10, 25, 50, 100].find(k => av < k * 60 && mn >= k * 60);
+  const sem = d => { const l = new Date(d); l.setDate(l.getDate() - jourSemaine(l)); return jourCle(l); }, parSem = {};
+  h.forEach(x => { const [a, m, j] = x.j.split("-"), k = sem(new Date(a, m - 1, j)); (parSem[k] = parSem[k] || new Set()).add(x.j); });
+  const cette = parSem[sem(new Date())] || new Set(), prevus = (lirePlanning() || { jours: [] }).jours.length;
+  if (PALIERS.includes(n)) notifier("fin" + n, "🏅", n === 1 ? L(`Première séance${nom ? ", " + nom : ""} !`, `First workout${nom ? ", " + nom : ""}!`) : L(`${n}e séance${nom ? ", " + nom : ""} !`, `Workout number ${n}${nom ? ", " + nom : ""}!`), n === 1 ? L("Le plus dur est fait : commencer.", "The hardest part is done: starting.") : L("La régularité, c’est ça le vrai secret.", "Consistency is the real secret."), ouvrirProgres);
+  if ([3, 7, 14, 21, 30, 50, 100].includes(S.cur)) notifier("serie" + S.cur, "🔥", L(`${S.cur} jours d’affilée !`, `${S.cur} days in a row!`), L("Ta série grandit : reviens demain pour la prolonger.", "Your streak is growing: come back tomorrow to extend it."), ouvrirProgres);
+  if (H) notifier("heures" + H, "⏱️", L(`${H} heure${H > 1 ? "s" : ""} d’entraînement au total`, `${H} hour${H > 1 ? "s" : ""} of training in total`), L("Chaque minute compte, et tu les as toutes faites.", "Every minute counts, and you did them all."), ouvrirProgres);
+  if (prevus && cette.size === prevus) notifier("semaineOk", "✅", L("Objectif de la semaine atteint", "Weekly goal reached"), L(`Tes ${prevus} jours prévus sont faits. Profite de ta récupération.`, `Your ${prevus} planned days are done. Enjoy your recovery.`), () => ouvrirPlanning("menu"));
+}
+function majNotifsBtn() { $("notifsBtn").textContent = notifsActives ? L("Activées", "On") : L("Coupées", "Off"); $("notifsBtn").setAttribute("aria-pressed", notifsActives); }
+$("notifsBtn").onclick = () => { notifsActives = !notifsActives; stocker("notifsAppli", notifsActives ? "1" : "0"); majNotifsBtn(); };
+majNotifsBtn();
 
 /* ============ BARRE DE NAVIGATION ============ */
 $("nMenu").onclick = () => ecranCourant !== "menu" && retour(() => ecran("menu"));

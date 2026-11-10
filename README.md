@@ -17,3 +17,5 @@ Données : tout reste dans le stockage local du téléphone (aucun compte, aucun
 - Séance : chrono calé sur l'heure réelle, reprise d'une séance interrompue, commandes sur l'écran verrouillé (réglage « Écouter ma musique en même temps » coupé), voix de secours.
 - Partage : « Défier un ami » envoie une séance par lien (`?defi=…`) ; bouton d'avis (adresse facultative dans `AVIS_EMAIL`, `index.html`).
 - Rappels : agenda (.ics) et notifications les jours planifiés (service worker).
+- Fond : `fonds/chaud.webp` (partout) et `fonds/vert.webp` (Outils), animés en CSS. Écrans de lancement iPhone dans `icons/lancement/`.
+- Notifications dans l'appli (bandeaux personnalisés) et notifications système (rappel du jour, série en danger à 20 h).
