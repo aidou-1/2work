@@ -63,8 +63,8 @@ function seanceCardio(grp, cle, niv = lireNiv(), moins = 0) {
   const total = Math.round(plan.reduce((s, q) => s + q.d + q.r, 0) / 60), zr = zoneRouge(), nv = NIV_RENFO[v], titre = L(C[1], C[2]) + " · " + L(S[1], S[2]);
   const html = `<li class="etude prog-carte-jour" style="--accent:${C[3]}"><div><small><b>${L(S[1], S[2])} · ${L(nv[1], nv[2])}</b></small><small>🎯 ${L(C[5], C[6])}</small>
     <small>❤️ ${cle === "facile" ? L("Reste en zone facile : si tu ne peux plus parler, ralentis.", "Stay in the easy zone: if you can no longer talk, slow down.") : zr ? L(`Zone rouge : ${zr} bpm et plus sur les efforts durs (90 % de ton maximum estimé). Repars quand le cœur est bien redescendu.`, `Red zone: ${zr} bpm and above on hard efforts (90% of your estimated maximum). Go again once your heart rate has come back down.`) : L("Sans ceinture cardio, fie-toi à l’effort ressenti. Avec ton âge dans le profil, l’appli calcule ta zone rouge.", "Without a heart-rate strap, go by perceived effort. With your age in the profile, the app works out your red zone.")}</small>
-    <small>💡 ${L(S[5], S[6])}</small></div></li>` + blocs.map(blocHtml).join("");
-  return { type: "seance", cat: grp, cardioS: cle, fixe: true, couleur: C[3], plan, exercices: plan.map(q => q.id), listeHtml: html, rpe: C[4], total, titre, titreFr: C[1] + " · " + S[1], detail: "" };
+    <small>💡 ${L(S[5], S[6])}</small>${/course|tapis|cote/.test(S[0]) && alluresVma() ? `<small>🏃 ${alluresVma()}</small>` : ""}</div></li>` + blocs.map(blocHtml).join("");
+  return { type: "seance", cat: grp, cardioS: cle, niv: nv[0], fixe: true, couleur: C[3], plan, exercices: plan.map(q => q.id), listeHtml: html, rpe: C[4], total, titre, titreFr: C[1] + " · " + S[1], detail: "" };
 }
 
 /* Effort ressenti (0 à 10) noté en fin de séance cardio, gardé avec la séance dans l'historique (« ef ») et comparé à l'effort visé. */
@@ -73,12 +73,14 @@ const blocEffort = () => `<div class="carnet ressenti"><h3>💬 ${L("Ton effort 
 function brancherEffort() {
   document.querySelectorAll("[data-ef]").forEach(b => b.onclick = () => {
     const v = +b.dataset.ef, h = lireHist(), x = h[h.length - 1], cible = parseInt(routine.rpe); if (!x) return;
-    x.ef = v; stocker("historique", JSON.stringify(h));
+    x.ef = v; x.ec = cible; stocker("historique", JSON.stringify(h));
+    const ordre = NIV_RENFO.map(n => n[0]), i = ordre.indexOf(x.nv), trois = h.filter(y => y.ef !== undefined && y.ec >= 8 && y.nv === x.nv).slice(-3), vers = trois.length < 3 || i < 0 ? "" : trois.every(y => y.ef <= y.ec - 2) ? ordre[i + 1] : trois.every(y => y.ef > y.ec || y.ef === 10 && y.ec < 9) ? ordre[i - 1] : "";   // 3 séances dures de suite trop faciles ou trop dures → changer de niveau
     document.querySelectorAll("[data-ef]").forEach(y => y.setAttribute("aria-pressed", y === b));
     $("efRes").innerHTML = `<p class="sh-ok">✓ ${cible < 5 ? (v > 4 ? L("Trop soutenu pour une récupération : la prochaine fois, ralentis jusqu’à pouvoir parler.", "Too hard for a recovery session: next time, slow down until you can talk.") : L("Parfait : une vraie séance facile, c’est ce qui te fait récupérer.", "Perfect: a truly easy session is what helps you recover."))
       : v < cible - 1 ? L("Tu avais de la marge : pars plus fort sur chaque effort, ou passe au niveau supérieur.", "You had more in the tank: go harder on each effort, or move up a level.")
       : v > cible + (cible < 9) ? L("Très dur aujourd’hui : garde ce niveau, et soigne ton sommeil avant la prochaine séance dure.", "Very hard today: stay at this level, and look after your sleep before the next hard session.")
-      : L("Pile dans la cible. Laisse 48 h avant ta prochaine séance dure.", "Right on target. Leave 48 h before your next hard session.")}</p>`;
+      : L("Pile dans la cible. Laisse 48 h avant ta prochaine séance dure.", "Right on target. Leave 48 h before your next hard session.")}</p>` + (vers ? `<p class="sh-aide">${L("Trois séances dures de suite ", "Three hard sessions in a row ")}${ordre.indexOf(vers) > i ? L("en dessous de l’effort visé : le niveau est devenu trop facile.", "below the target effort: this level has become too easy.") : L("au-dessus de l’effort visé : le niveau est trop dur pour l’instant.", "above the target effort: this level is too hard for now.")}</p><button class="toggle" id="efNiv">${L("Passer au niveau", "Switch to level")} ${L(...NIV_RENFO.find(n => n[0] === vers).slice(1, 3))}</button>` : "");
+    if ($("efNiv")) $("efNiv").onclick = () => { stocker("niveauRenfo", vers); $("efNiv").outerHTML = `<p class="sh-ok">✓ ${L("C’est noté pour tes prochaines séances.", "Noted for your next sessions.")}</p>`; };
   });
 }
 function ouvrirCardio(grp = grpCourant || "boxe") {
@@ -86,7 +88,7 @@ function ouvrirCardio(grp = grpCourant || "boxe") {
   outil(boxe ? L("Cardio boxe", "Boxing cardio") : L("Cardio par intervalles", "Interval cardio"), L("Des efforts courts et très intenses, une vraie récupération entre chaque : la façon la plus efficace de gagner du souffle pour ton sport.", "Short, very intense efforts with real recovery in between: the most effective way to build fitness for your sport."),
     `<div class="carnet"><span class="champ-titre">${L("Où t’entraînes-tu aujourd’hui ?", "Where are you training today?")}</span>${chips("cs", SUPPORTS.filter(x => boxe || !x[7]).map(x => [x[0], x[1], x[2]]), S[0])}
       <span class="champ-titre">${L("Ton niveau", "Your level")}</span>${chips("cn", NIV_RENFO.map(n => [n[0], n[1], n[2]]), lireNiv())}
-      <p class="sh-aide">${L("Trois règles : échauffe-toi toujours, donne tout sur chaque effort, et ne raccourcis jamais le repos. ", "Three rules: always warm up, give everything on each effort, and never cut the rest short. ")}${zr ? L(`Ta zone rouge commence à ${zr} bpm.`, `Your red zone starts at ${zr} bpm.`) : ""}</p></div>
+      <p class="sh-aide">${L("Trois règles : échauffe-toi toujours, donne tout sur chaque effort, et ne raccourcis jamais le repos. ", "Three rules: always warm up, give everything on each effort, and never cut the rest short. ")}${zr ? L(`Ta zone rouge commence à ${zr} bpm.`, `Your red zone starts at ${zr} bpm.`) : ""} ${alluresVma() || L("Fais le test navette (Outils → Tests de forme) pour connaître tes allures.", "Take the shuttle test (Tools → Fitness tests) to know your paces.")}</p></div>
      <h2 class="sec">${L("Choisis ta séance", "Choose your session")}</h2><div id="cListe"></div>${notes.length ? `<h2 class="sec">${L("Tes derniers efforts ressentis", "Your latest perceived efforts")}</h2><ul class="carnet ef-liste">${notes.map(x => `<li><span>${x.j.slice(8)}/${x.j.slice(5, 7)} · ${propre(x.t)}</span><b>${x.ef}/10</b></li>`).join("")}</ul>` : ""}
      <p class="prog-avert">${L("Efforts très intenses : demande l’avis d’un médecin en cas de problème de santé, et arrête-toi en cas de douleur dans la poitrine, de vertige ou de malaise. Garde 48 h entre deux séances dures.", "Very intense efforts: ask a doctor if you have a health condition, and stop if you feel chest pain, dizziness or unwell. Leave 48 h between two hard sessions.")}</p>`, () => vueMode(grp));
   const liste = () => { $("cListe").innerHTML = ""; CARDIOS.filter(c => boxe || !c[8]).forEach(c => { const s = seanceCardio(grp, c[0]);

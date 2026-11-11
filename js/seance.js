@@ -253,7 +253,7 @@ function afficherEcran(nom) {
   if (nom !== "outil") clearInterval(tMin);   // un minuteur libre ne tourne que sur son écran
   const onglet = { menu: "nMenu", progres: "nProgres", progs: "nProgs", outils: "nOutils", reglages: "reglagesBtn" }[nom];   // barre de navigation : écrans principaux seulement
   $("nav").classList.toggle("hidden", !onglet); [...$("nav").children].forEach(b => b.setAttribute("aria-current", b.id === onglet ? "page" : "false"));
-  if (nom === "menu") { majReprise(); majVitalite(); }
+  if (nom === "menu") { majReprise(); majVitalite(); majJeu(); }
   if (!["pret", "session"].includes(nom)) { clearTimeout(tSecours); $("voixSecours").classList.add("hidden"); }   // pas d'annonce de secours hors séance
   majVerrou();
 }

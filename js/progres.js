@@ -4,12 +4,12 @@ const L = (fr, en) => LANGUE === "en" ? en : fr;
 let totalPrevu = 0;
 const lireHist = () => lireJSON("historique", []);
 const minutes = h => Math.round(h.reduce((t, x) => t + x.s, 0) / 60);
-function series(h) {   // série en cours (jusqu'à aujourd'hui ou hier) et meilleure série
+function series(h) {   // série en cours (jusqu'à aujourd'hui ou hier) et meilleure série ; un joker par semaine pardonne un jour sans séance
   const jours = [...new Set(h.map(x => x.j))].map(j => Date.UTC(...j.split("-").map((v, i) => i === 1 ? v - 1 : +v)) / 864e5).sort((a, b) => a - b);
-  let best = 0, cur = 0, prec = null;
-  jours.forEach(d => { cur = prec !== null && d - prec === 1 ? cur + 1 : 1; best = Math.max(best, cur); prec = d; });
+  let best = 0, cur = 0, prec = null, jk = null; const sem = d => Math.floor((d + 3) / 7), joker = d => sem(d) !== jk && ((jk = sem(d)), true);   // jk : semaine du dernier joker dépensé
+  jours.forEach(d => { cur = prec !== null && (d - prec === 1 || (d - prec === 2 && joker(d - 1))) ? cur + 1 : 1; best = Math.max(best, cur); prec = d; });
   const auj = jourNum() + Date.UTC(2026, 9, 22) / 864e5;
-  return { cur: prec !== null && auj - prec <= 1 ? cur : 0, best };
+  return { cur: prec !== null && (auj - prec <= 1 || (auj - prec === 2 && joker(auj - 1))) ? cur : 0, best, joker: jk === sem(auj) };
 }
 function statsGlobales() {
   const h = lireHist(), sr = series(h), parJour = {};
@@ -161,7 +161,7 @@ function celebrer() {
   $("fBilan").innerHTML = [[mn, L("minutes", "minutes")], [n, L(n > 1 ? "exercices" : "exercice", n > 1 ? "exercises" : "exercise")], [S.serie, L(S.serie > 1 ? "jours d’affilée" : "jour d’affilée", S.serie > 1 ? "days in a row" : "day in a row")]]
     .map(([v, t], k) => `<div style="--k:${k}"><b data-v="${v}">0</b><span>${t}</span></div>`).join("");
   setTimeout(() => $("fBilan").querySelectorAll("b").forEach(b => compteur(b, +b.dataset.v)), 800);
-  $("fTrophees").innerHTML = neufs.map((t, k) => `<div class="nouveau-trophee" style="--k:${k}">${medaille(t, "n")}<div><small>${L("Nouveau trophée", "New trophy")}</small><b>${L(t[1], t[2])}</b><span>${L(t[3], t[4])}</span></div></div>`).join("");
+  $("fTrophees").innerHTML = blocGain() + neufs.map((t, k) => `<div class="nouveau-trophee" style="--k:${k}">${medaille(t, "n")}<div><small>${L("Nouveau trophée", "New trophy")}</small><b>${L(t[1], t[2])}</b><span>${L(t[3], t[4])}</span></div></div>`).join("");
   if (fc.n) $("fSub").textContent += " ❤️ " + L(`${Math.round(fc.somme / fc.n)} bpm en moyenne, ${fc.max} au maximum.`, `${Math.round(fc.somme / fc.n)} bpm on average, ${fc.max} max.`);
   $("fRessenti").innerHTML = blocRessenti(); brancherRessenti(); brancherEffort();
   $("fCharges").innerHTML = formCharges(); brancherCharges();
@@ -197,11 +197,12 @@ function ouvrirProgres() {
     <div class="carte"><h2>${L("Cette semaine", "This week")}</h2><div class="barres">${sem.map((m, k) => `<div class="${k === (auj.getDay() + 6) % 7 ? "auj" : ""}"><b>${m || ""}</b><i style="--h:${m / mx * 100}%;--k:${k}"></i>${JOURS()[k]}</div>`).join("")}</div></div>
     <div class="carte"><h2>${L("4 derniers mois", "Last 4 months")}</h2><div class="chaleur">${cases}</div>
       <div class="legende-ch">${L("Moins", "Less")} <i style="background:var(--soft)"></i><i style="background:#C7D2FE"></i><i style="background:#818CF8"></i><i style="background:#4F46E5"></i><i style="background:#312E81"></i> ${L("Plus", "More")}</div></div>
+    ${blocsJeu()}
     ${sectionCharges()}
     <h2 class="sec">${L("Trophées", "Trophies")} · ${nbT}/${TROPHEES.length}</h2>
     <div class="carte"><div class="trophees">${TROPHEES.map((t, k) => `<div class="trophee${deja[t[0]] ? "" : " verrou"}" style="--k:${k}">${medaille(t, "p")}<b>${L(t[1], t[2])}</b>${L(t[3], t[4])}</div>`).join("")}</div></div>
     ${dernieres ? `<h2 class="sec">${L("Dernières séances", "Recent workouts")}</h2><ul class="list historique">${dernieres}</ul>` : `<p class="vide">${L("Termine ta première séance pour allumer la flamme !", "Finish your first workout to light the flame!")}</p>`}`;
-  $("prCorps").querySelectorAll("[data-m]").forEach(b => b.onclick = () => ouvrirRecap(b.dataset.m));
+  $("prCorps").querySelectorAll("[data-m]").forEach(b => b.onclick = () => ouvrirRecap(b.dataset.m)); $("voirBilan").onclick = () => ouvrirBilan(lundiDe(), ouvrirProgres);
   document.documentElement.style.setProperty("--accent", "#F97316");
   ecran("progres");
   setTimeout(() => $("prCorps").querySelectorAll("[data-v]").forEach(b => compteur(b, +b.dataset.v)), 350);

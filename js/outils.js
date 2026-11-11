@@ -15,7 +15,8 @@ $("otTitre").textContent = L("Outils", "Tools"); $("otSub").textContent = L("Tou
 [["Bibliothèque d’exercices", "Exercise library", "Les {n} exercices en vidéo, par zone et par matériel", "All {n} exercises on video, by area and equipment", "#2563EB", () => ouvrirBiblio()],
  ["Quick start", "Quick start", "15 min, sans matériel, focus cuisses, très intense… coche et c’est parti", "15 min, no equipment, leg focus, very intense… tick and go", "#0EA5E9", () => ouvrirExpress()],
  ["Minuteurs", "Timers", "Chrono, compte à rebours, EMOM et AMRAP", "Stopwatch, countdown, EMOM and AMRAP", "#D9480F", () => ouvrirMinuteur()],
- ["Tests de forme", "Fitness tests", "Pompes, squats, gainage, souplesse : mesure tes progrès chaque mois", "Push-ups, squats, plank, flexibility: measure your progress every month", "#16A34A", () => ouvrirTests()],
+ ["Mode combat", "Fight mode", "Rounds de boxe avec cloche, repos et enchaînements annoncés", "Boxing rounds with bell, rest and called combinations", "#DC2626", () => ouvrirCombat()],
+ ["Tests de forme", "Fitness tests", "VMA, pompes, squats, gainage, souplesse : mesure tes progrès chaque mois", "Top aerobic speed, push-ups, squats, plank, flexibility: measure your progress every month", "#16A34A", () => ouvrirTests()],
  ["Suivi du corps", "Body tracking", "Poids et mensurations, avec leur courbe", "Weight and measurements, with their chart", "#DB2777", () => ouvrirCorps()],
  ["Calculateurs", "Calculators", "Charge maximale (1RM), pourcentages de charge, allures de course", "One-rep max (1RM), load percentages, running paces", "#7C3AED", () => ouvrirCalculs()]]
   .forEach(([f, e, df, de, c, fn]) => bouton($("otListe"), L(f, e), L(df, de).replace("{n}", Object.keys(EXERCICES).length), c, fn));
@@ -194,6 +195,7 @@ const TESTS = [["pompes", "Pompes max", "Max push-ups", "rép.", "reps", "Un max
   ["planche", "Gainage planche", "Plank hold", "s", "s", "Planche sur les avant-bras, corps aligné : arrête le chrono dès que le bassin descend ou monte.", "Forearm plank, body in a straight line: stop the stopwatch as soon as your hips drop or rise."],
   ["chaise", "Chaise contre le mur", "Wall sit", "s", "s", "Dos au mur, cuisses à l’horizontale, mains hors des cuisses : tiens le plus longtemps possible.", "Back against the wall, thighs horizontal, hands off your thighs: hold as long as you can."],
   ["souplesse", "Souplesse (doigts-orteils)", "Flexibility (sit and reach)", "cm", "cm", "Assis jambes tendues, penche-toi sans à-coup : distance entre le bout des doigts et les orteils. Positif si tu dépasses les orteils, négatif sinon.", "Sitting with straight legs, lean forward smoothly: distance between fingertips and toes. Positive if you reach past your toes, negative otherwise."]];
+TESTS.unshift(["navette", "Test navette (VMA)", "Shuttle test (top aerobic speed)", "km/h", "km/h", "Allers-retours sur 20 mètres au rythme des bips, de plus en plus vite : le test guidé note tout seul ta vitesse maximale aérobie.", "20-metre shuttles in time with the beeps, faster and faster: the guided test records your top aerobic speed by itself."]);
 const lireTests = () => lireJSON("tests", []);
 function ouvrirTests() {
   const R = lireTests();
@@ -201,7 +203,9 @@ function ouvrirTests() {
     TESTS.map(([id, f, e, uf, ue, pf, pe]) => { const l = R.filter(x => x.id === id), d = l[l.length - 1], best = l.length ? Math.max(...l.map(x => x.v)) : null, age = d ? joursDepuis(d.j) : null;
       return `<div class="carnet"><h3>${L(f, e)}</h3><p>${L(pf, pe)}</p>${courbe(l.map(x => x.v), "#16A34A")}
         <p class="sh-ok">${d ? L(`Dernier : ${d.v} ${uf} (${dateCourte(d.j)}) · record : ${best} ${uf}`, `Last: ${d.v} ${ue} (${dateCourte(d.j)}) · best: ${best} ${ue}`) + (l.length > 1 ? " · " + (d.v - l[0].v >= 0 ? "+" : "") + (d.v - l[0].v) + " " + L("depuis le début", "since the start") : "") : L("Pas encore de mesure.", "No result yet.")}${age !== null && age >= 28 ? " · " + L("à refaire !", "time to retest!") : ""}</p>
-        <div class="favForm"><input class="choixVoix" type="number" inputmode="decimal" step="1" data-test="${id}" placeholder="${L("Résultat en", "Result in")} ${L(uf, ue)}"><button class="toggle" data-ok="${id}">${L("Noter", "Save")}</button></div></div>`; }).join(""));
+        ${id === "navette" ? `<button class="primary" id="navGo">${L("Lancer le test guidé", "Start the guided test")}</button>` : ""}
+        <div class="favForm"><input class="choixVoix" type="number" inputmode="decimal" step="${id === "navette" ? .5 : 1}" data-test="${id}" placeholder="${L("Résultat en", "Result in")} ${L(uf, ue)}"><button class="toggle" data-ok="${id}">${L("Noter", "Save")}</button></div></div>`; }).join(""));
+  $("navGo").onclick = ouvrirNavette;
   setTimeout(() => $("oCorps").querySelectorAll("[data-ok]").forEach(b => b.onclick = () => {
     const v = parseFloat($("oCorps").querySelector(`[data-test="${b.dataset.ok}"]`).value); if (!Number.isFinite(v) || v < -60 || v > 2000) return;
     stocker("tests", JSON.stringify([...lireTests().filter(x => !(x.id === b.dataset.ok && x.j === jourCle())), { j: jourCle(), id: b.dataset.ok, v }])); const y = scrollY; ouvrirTests(); setTimeout(() => scrollTo(0, y), 60); }), 0);

@@ -446,6 +446,7 @@ function renduRenfo(grp) {
     bouton(C, `${L(fr, en)} · ${s.total} min`, `${L(dFr, dEn)} · ${L("4 blocs", "4 blocks")}`, R.couleur, () => { ROUTINES.renfo = seanceRenfo(grp, m, lireNiv()); CONSEILLES.renfo = ROUTINES.renfo.exercices; ouvrirRoutine("renfo"); }); });
   C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Ton cardio", "Your cardio")}</h2>`);
   bouton(C, grp === "boxe" ? L("Cardio boxe", "Boxing cardio") : L("Cardio par intervalles", "Interval cardio"), L("Sprints, intervalles, pyramide" + (grp === "boxe" ? ", rounds de combat" : "") + " : dehors, sur tapis, à vélo, à la corde…", "Sprints, intervals, pyramid" + (grp === "boxe" ? ", fight rounds" : "") + ": outdoors, treadmill, bike, rope…"), "#DC2626", () => ouvrirCardio(grp));
+  if (grp === "boxe") bouton(C, L("Mode combat", "Fight mode"), L("Rounds avec cloche, repos et enchaînements annoncés par la voix", "Rounds with bell, rest and combinations called by the voice"), "#DC2626", () => ouvrirCombat(() => vueMode(grp)));
   if (grp === "boxe") bouton(C, L("Programme : exceller en cardio", "Programme: excel at cardio"), L("4 semaines, 3 séances dures et 1 facile par semaine", "4 weeks, 3 hard sessions and 1 easy one per week"), "#BE123C", () => ouvrirProg("cardioBoxe"));
   C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Personnaliser", "Customise")}</h2>`);
   [["", "Poids du corps"], ["Mat", "Avec matériel"]].forEach(([s, t]) => { const k = SEANCE(grp) + s;
