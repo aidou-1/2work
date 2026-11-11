@@ -349,7 +349,14 @@ const iOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.pl
 let invitInstall = null;
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); invitInstall = e; if (ecranCourant === "reglages") renduAppli(); });
 addEventListener("appinstalled", () => { invitInstall = null; protegerDonnees(); });
-if ("serviceWorker" in navigator && /^https?:/.test(location.protocol) && !/claude/.test(location.hostname)) navigator.serviceWorker.register("sw.js").catch(() => {});
+/* Mises à jour : la page arrive du réseau mais les scripts du cache ; quand une nouvelle version prend la main, on recharge une fois
+   (seulement hors séance), sinon l'appli tournerait avec les anciens scripts jusqu'au lancement suivant. Retour dans l'appli = recherche de mise à jour. */
+if ("serviceWorker" in navigator && /^https?:/.test(location.protocol) && !/claude/.test(location.hostname)) {
+  const avant = !!navigator.serviceWorker.controller; let recharge = false;
+  navigator.serviceWorker.register("sw.js").then(reg => document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update().catch(() => {}); })).catch(() => {});
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!avant || recharge) return; recharge = true;
+    const go = () => location.reload(); if (["menu", "accueil", "reglages", "outils", "moi"].includes(ecranCourant)) go(); else addEventListener("pagehide", go, { once: true }); });
+}
 async function protegerDonnees() { try { return navigator.storage && navigator.storage.persist ? await navigator.storage.persist() : false; } catch (e) { return false; } }
 if (installee()) protegerDonnees();
 const UA = navigator.userAgent, android = () => /android/i.test(UA);
