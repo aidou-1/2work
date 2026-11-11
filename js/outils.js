@@ -102,23 +102,17 @@ function vitalite(h = lireHist(), auj = new Date(jourCle())) {
   return Math.min(100, Math.round(h.reduce((v, x) => { const d = Math.round((auj - new Date(x.j)) / 864e5); return d >= 0 && d < 14 ? v + 26 * Math.min(1, x.s / 300) * Math.pow(.78, d) : v; }, 0)));
 }
 const etatVita = v => v >= 80 ? ["feu", "En feu 🔥", "On fire 🔥"] : v >= 50 ? ["forme", "Plein d’énergie ⚡", "Full of energy ⚡"] : v >= 20 ? ["baisse", "Énergie en baisse", "Energy dropping"] : ["plat", "À plat 😴", "Drained 😴"];
-function avatarSvg(v = vitalite(), a = lireAvatar()) {
-  const p = PEAUX[a.peau] || PEAUX[1], c = CHEVEUX[a.chev] || CHEVEUX[1], e = etatVita(v)[0], f = a.g === "f", lon = +a.lon || 0;
-  const dos = lon === 2 ? `<path d="M30 52C26 20 94 20 90 52c0 22 6 40 2 62H28c-4-22 2-40 2-62z" fill="${c}"/>` : lon === 1 ? `<path d="M31 52C27 22 93 22 89 52c0 12 3 22 1 32H30c-2-10 1-20 1-32z" fill="${c}"/>` : "";
-  const yeux = e === "plat" ? `<path d="M46 60h10M64 60h10" stroke="#2B1D14" stroke-width="2.6" stroke-linecap="round"/>` : `<circle cx="51" cy="60" r="3.2" fill="#2B1D14"/><circle cx="69" cy="60" r="3.2" fill="#2B1D14"/>${f ? `<path d="M45 55l-3-2M75 55l3-2" stroke="#2B1D14" stroke-width="1.6" stroke-linecap="round"/>` : ""}`;
-  const bouche = e === "plat" ? "M53 76q7-4 14 0" : e === "baisse" ? "M54 75h12" : e === "feu" ? "M50 72q10 11 20 0z" : "M52 73q8 7 16 0";
+function avatarSvg(v = vitalite(), a = lireAvatar()) {   // buste : la tête du personnage (js/moi.js) et le haut qu'il porte
+  const e = etatVita(v)[0], [dos, visage] = tetePerso(a, e), tee = article(a.tee) || article("t0");
   return `<svg class="avatar av-${e}" viewBox="0 0 120 130" aria-hidden="true">
     ${e === "feu" ? `<g class="av-flammes"><path d="M60 2c6 14 34 22 34 56 0 10-4 18-8 24H34c-4-6-8-14-8-24C26 30 50 22 60 2z" fill="#F97316"/><path d="M60 16c4 10 22 16 22 40 0 8-3 14-6 18H44c-3-4-6-10-6-18 0-22 16-28 22-40z" fill="#FDE047"/></g>` : e === "forme" ? `<circle class="av-aura" cx="60" cy="58" r="50" fill="none" stroke="#FACC15" stroke-width="3" stroke-dasharray="6 9"/>` : ""}
-    ${dos}<path d="M22 130c0-26 16-36 38-36s38 10 38 36z" fill="${f ? "#DB2777" : "#EA580C"}"/><path d="M50 92h20v8q-10 8-20 0z" fill="${p}"/>
-    <ellipse cx="60" cy="60" rx="27" ry="31" fill="${p}"/><ellipse cx="33" cy="62" rx="4" ry="6" fill="${p}"/><ellipse cx="87" cy="62" rx="4" ry="6" fill="${p}"/>
-    <path d="${f || lon ? "M32 56C28 22 92 22 88 56c-6-12-16-20-30-20-12 0-22 8-26 20z" : "M33 52C30 24 90 24 87 52c-5-9-12-14-27-14S38 43 33 52z"}" fill="${c}"/>
-    ${yeux}<path d="${bouche}" fill="${e === "feu" ? "#7F1D1D" : "none"}" stroke="#7A3B2A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    ${dos}<path d="M22 130c0-26 16-36 38-36s38 10 38 36z" fill="${tee[5]}"/><path d="M50 92h20v8q-10 8-20 0z" fill="${PEAUX[a.peau] || PEAUX[1]}"/>${visage}</svg>`;
 }
 function majVitalite() {   // carte du menu : avatar, barre de vitalité, et un appui pour recharger en 5 minutes
   const Z = $("vitaCarte"); if (!Z) return; const v = vitalite(), e = etatVita(v), fait = lireHist().some(x => x.j === jourCle());
   Z.innerHTML = `<button class="vita-av" id="vitaAv" aria-label="${L("Modifier mon avatar", "Edit my avatar")}">${avatarSvg(v)}</button><div class="vita-txt"><strong>${L(e[1], e[2])}</strong><div class="vita-barre vb-${e[0]}" role="progressbar" aria-valuenow="${v}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.max(4, v)}%"></i></div>
     <small>${L("Vitalité", "Vitality")} ${v} % · ${fait ? L("rechargée aujourd’hui, reviens demain", "recharged today, come back tomorrow") : v >= 80 ? L("garde le feu allumé", "keep the fire burning") : L("5 minutes suffisent pour la remonter", "5 minutes is enough to raise it")}</small></div>${fait ? "" : `<button class="sc-go" id="vitaGo" aria-label="${L("Séance de 5 minutes", "5-minute workout")}">${ico("eclair")}<small>5 min</small></button>`}`;
-  $("vitaAv").onclick = () => ouvrirProfil("menu"); if ($("vitaGo")) $("vitaGo").onclick = () => ouvrirExpress({ min: 5 });
+  $("vitaAv").onclick = () => ouvrirMoi(); if ($("vitaGo")) $("vitaGo").onclick = () => ouvrirExpress({ min: 5 });
 }
 function blocAvatar() {   // éditeur dans le profil
   const a = lireAvatar(), v = vitalite(), rond = (attr, l, sel) => l.map((c, i) => `<button class="pastille" data-${attr}="${i}" aria-pressed="${i === sel}" style="--c:${c}" aria-label="${attr} ${i + 1}"></button>`).join("");
@@ -382,13 +376,16 @@ $("rgAvis").onclick = ouvrirAvis;
    le retour de l'appli (feuille ouverte, schéma en plein écran, bouton ← Retour, sinon ✕ Menu) au lieu de fermer l'appli. */
 let piege = false;
 const armerRetour = () => { if (!piege && !["menu", "accueil"].includes(ecranCourant)) { try { history.pushState({ app: 1 }, ""); piege = true; } catch (e) {} } };
-addEventListener("popstate", () => {
-  piege = false;
+addEventListener("popstate", ev => {
+  if (ev.state && ev.state.app) { piege = true; return; }   // on vient de revenir sur l'entrée piège : rien à faire
+  piege = false; sansAnim = true;   // le geste du téléphone anime déjà la page : l'appli change d'écran d'un coup, sans seconde animation
   const plein = document.querySelector(".schema-carte.plein"), b = $(ecranCourant) && $(ecranCourant).querySelector(".back");
-  if ($("feuille")) fermerFeuille(); else if (plein) plein.click(); else if (ecranCourant === "recap") $("rcFermer").click();
-  else if (ecranCourant === "bienvenue") $("bvPasser").click(); else if (ecranCourant === "end") $("restart").click();
-  else if (b) b.click(); else if (!["menu", "accueil"].includes(ecranCourant)) $("quitBtn").click();
-  setTimeout(armerRetour, 400);   // une fois l'écran changé : s'il reste hors du menu (feuille fermée, « Quitter ? »…), le piège est reposé
+  try {
+    if ($("feuille")) fermerFeuille(); else if (plein) plein.click(); else if (ecranCourant === "recap") $("rcFermer").click();
+    else if (ecranCourant === "bienvenue") $("bvPasser").click(); else if (ecranCourant === "end") $("restart").click();
+    else if (b) b.click(); else if (!["menu", "accueil"].includes(ecranCourant)) $("quitBtn").click();
+  } finally { sansAnim = false; }
+  if (!["menu", "accueil"].includes(ecranCourant)) history.forward();   // encore hors du menu : l'entrée piège existe toujours, on y retourne (une entrée reposée sans appui serait ignorée par le navigateur)
 });
 addEventListener("click", () => setTimeout(armerRetour, 400), true);   // posé après un appui (geste de l'utilisateur, exigé par les navigateurs), une fois l'écran changé
 

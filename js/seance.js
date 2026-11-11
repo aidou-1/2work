@@ -215,7 +215,7 @@ function setDuree(d) {
   if (routineCle) ouvrirApercu(routineCle);
 }
 
-let tPret, tMin = null, ecranCourant = "accueil", sensRetour = false, genEcran = 0;
+let tPret, tMin = null, ecranCourant = "accueil", sensRetour = false, genEcran = 0, sansAnim = false;
 const mouvementReduit = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* Change d'écran. "avant" : modifications du DOM à faire dans la même transition (ex. changer de liste).
    Pour revenir en arrière, appeler retour(() => ...) : la transition part dans l'autre sens. */
@@ -225,7 +225,7 @@ function ecran(nom, avant) {
   sensRetour = false;
   const g = ++genEcran;   // un écran demandé entre-temps l'emporte (sinon une transition en retard couperait le chrono)
   const maj = () => { if (avant) avant(); if (g === genEcran) afficherEcran(nom); };
-  if (!change || mouvementReduit()) return maj();
+  if (!change || mouvementReduit() || sansAnim) return maj();
   document.documentElement.dataset.sens = ecranCourant === "accueil" ? "splash" : sens;   // sortie de l'écran de démarrage : le menu s'ouvre en cercle depuis le logo
   if (document.startViewTransition) return document.startViewTransition(maj).ready.catch(() => {});   // une transition interrompue par la suivante n'est pas une erreur
   maj();
@@ -236,10 +236,10 @@ function afficherEcran(nom) {
   ecranCourant = nom;
   if (nom !== "session") clearInterval(timer);
   $("plusRepos").classList.add("hidden");   // aucun chrono ne tourne hors de la séance
-  if (["menu", "reglages", "accueil", "profil", "planning", "page", "bienvenue", "outils", "outil"].includes(nom)) document.documentElement.style.setProperty("--accent", nom.startsWith("outil") ? "var(--vert)" : "var(--brand)");
+  if (["menu", "reglages", "accueil", "profil", "planning", "page", "bienvenue", "outils", "outil", "moi"].includes(nom)) document.documentElement.style.setProperty("--accent", nom.startsWith("outil") ? "var(--vert)" : "var(--brand)");
   if (typeof garderEcran === "function") garderEcran(nom === "pret" || nom === "session");
-  ["accueil","menu","home","preview","session","pret","end","reglages","muscle","progres","progs","prog","recap","profil","planning","page","bienvenue","outils","outil"].forEach(s => $(s).classList.toggle("hidden", s !== nom));
-  $("quitBtn").classList.toggle("hidden", ["menu", "accueil", "reglages", "muscle", "progres", "progs", "prog", "recap", "profil", "planning", "page", "bienvenue", "outils", "outil"].includes(nom));
+  ["accueil","menu","home","preview","session","pret","end","reglages","muscle","progres","progs","prog","recap","profil","planning","page","bienvenue","outils","outil","moi"].forEach(s => $(s).classList.toggle("hidden", s !== nom));
+  $("quitBtn").classList.toggle("hidden", ["menu", "accueil", "reglages", "muscle", "progres", "progs", "prog", "recap", "profil", "planning", "page", "bienvenue", "outils", "outil", "moi"].includes(nom));
   if (nom === "menu" && typeof majTableau === "function") majTableau();
   if (nom === "menu" && typeof majSemaine === "function") majSemaine();
   if (nom === "menu" && typeof majBanniere === "function") majBanniere();
@@ -251,7 +251,7 @@ function afficherEcran(nom) {
   $("quitBtn").dataset.conf = "";
   $("quitBtn").textContent = T("✕ Menu");
   if (nom !== "outil") clearInterval(tMin);   // un minuteur libre ne tourne que sur son écran
-  const onglet = { menu: "nMenu", progres: "nProgres", progs: "nProgs", outils: "nOutils", reglages: "reglagesBtn" }[nom];   // barre de navigation : écrans principaux seulement
+  const onglet = { menu: "nMenu", progres: "nProgres", progs: "nProgs", outils: "nOutils", moi: "nMoi", reglages: "reglagesBtn" }[nom];   // barre de navigation : écrans principaux seulement
   $("nav").classList.toggle("hidden", !onglet); [...$("nav").children].forEach(b => b.setAttribute("aria-current", b.id === onglet ? "page" : "false"));
   if (nom === "menu") { majReprise(); majVitalite(); majJeu(); }
   if (!["pret", "session"].includes(nom)) { clearTimeout(tSecours); $("voixSecours").classList.add("hidden"); }   // pas d'annonce de secours hors séance
