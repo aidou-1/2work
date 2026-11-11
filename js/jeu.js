@@ -58,12 +58,28 @@ function ouvrirBilan(l = lundiDe(), retourVers = () => ecran("menu")) {
 
 /* --- Carte du menu : niveau, barre d'XP, défis de la semaine ; le dimanche soir et le lundi, le bilan de la semaine écoulée --- */
 function majJeu() {
-  const Z = $("jeuCarte"); if (!Z) return; const N = niveauXp(), D = defisSemaine(), d = new Date(), j = d.getDay();
+  const Z = $("jeuCarte"); if (!Z) return; const N = niveauXp(), d = new Date(), j = d.getDay(), E = document.querySelector("#menu .entete");
   const lb = j === 1 ? decaler(lundiDe(), -7) : j === 0 && d.getHours() >= 17 ? lundiDe() : "", aBilan = lb && lire("bilanVu") !== lb && statsSemaine(lb).n;
-  Z.innerHTML = `<button class="jeu-niv" id="jeuNiv" aria-label="${L("Mon niveau et mes défis", "My level and challenges")}"><b>${N.n}</b><span><strong>${L("Niveau", "Level")} ${N.n} · ${N.nom}</strong>${barreXp(N)}<small>${N.dans} / ${N.pour} XP · ${L("défis de la semaine", "weekly challenges")} ${D.filter(x => x.ok).length}/3</small></span></button>
-    ${aBilan ? `<button class="jeu-bilan" id="jeuBilan">📊 ${L("Ton bilan de la semaine est prêt", "Your weekly summary is ready")} ›</button>` : ""}`;
-  $("jeuNiv").onclick = () => { ouvrirProgres(); setTimeout(() => $("jeuBloc") && $("jeuBloc").scrollIntoView({ behavior: "smooth", block: "start" }), 400); };
+  if (!$("nivBadge")) { E.insertAdjacentHTML("beforeend", `<button class="niv-badge" id="nivBadge"></button>`); $("nivBadge").onclick = ouvrirNiveau; }
+  $("nivBadge").setAttribute("aria-label", L("Niveau", "Level") + " " + N.n + " · " + N.nom); $("nivBadge").style.setProperty("--p", N.pct + "%"); $("nivBadge").innerHTML = `<b>${N.n}</b><small>${L("Niv.", "Lvl")}</small>`;
+  Z.innerHTML = aBilan ? `<button class="jeu-bilan" id="jeuBilan">📊 ${L("Ton bilan de la semaine est prêt", "Your weekly summary is ready")} ›</button>` : "";
   if ($("jeuBilan")) $("jeuBilan").onclick = () => ouvrirBilan(lb);
+}
+/* Écran du niveau : avancement, ce que rapporte chaque type de séance, défis en cours, et récompenses offertes tous les 3 niveaux (js/moi.js) */
+function ouvrirNiveau() {
+  const N = niveauXp(), D = defisSemaine(), R = ARTICLES.filter(x => x[4] < 0).sort((a, b) => b[4] - a[4]), FAM = { tee: ["Tenue", "Outfit"], acc: ["Accessoire", "Accessory"], mur: ["Mur du home gym", "Home gym wall"], sol: ["Sol du home gym", "Home gym floor"], obj: ["Objet du home gym", "Home gym item"] };
+  const gain = (min, f) => 10 + min * f, ligne = (t, x) => `<li><span>${t}</span><b>+${x} XP</b></li>`;
+  outil(L("Niveau", "Level") + " " + N.n + " · " + N.nom, L("Chaque séance te fait gagner des points d’expérience (XP). Ils font monter ton niveau et servent à acheter tenues et décors dans l’onglet Moi.", "Every workout earns experience points (XP). They raise your level and buy outfits and decor in the Me tab."),
+    `<div class="carte niv-carte"><div class="niv-tete"><b class="xp-rond">${N.n}</b><span><strong>${N.dans} / ${N.pour} XP</strong>${barreXp(N)}<small>${L("Encore", "Another")} ${N.pour - N.dans} XP ${L("pour le niveau", "to reach level")} ${N.n + 1}${N.n < RANGS.length ? " · " + L(...RANGS[N.n]) : ""}</small></span><b class="xp-rond suivant">${N.n + 1}</b></div>
+       <p class="sh-aide">${L("Total gagné", "Total earned")} : ${N.xp} XP · ${L("à dépenser", "to spend")} : ${solde()} XP. ${L("Dépenser des XP ne fait jamais baisser ton niveau.", "Spending XP never lowers your level.")}</p></div>
+     <div class="carte"><h2>${L("Ce que tu vas gagner", "What you will earn")}</h2><ul class="carnet ef-liste records">
+       ${ligne(L("Échauffement ou étirements · 10 min", "Warm-up or stretching · 10 min"), gain(10, 1))}${ligne(L("Renfo, salle ou cardio · 20 min", "Strength, gym or cardio · 20 min"), gain(20, 2))}${ligne(L("Renfo, salle ou cardio · 30 min", "Strength, gym or cardio · 30 min"), gain(30, 2))}${ligne(L("Tabata · 8 min", "Tabata · 8 min"), gain(8, 3))}${ligne(L("Chaque défi de la semaine réussi", "Each weekly challenge completed"), 50)}${ligne(L("Bonus si les trois défis sont réussis", "Bonus when all three challenges are done"), 50)}</ul>
+       <p class="sh-aide">${L("Règle : 10 XP par séance, plus ses minutes × 1 (échauffement, récupération), × 2 (renfo, salle, cardio) ou × 3 (Tabata).", "Rule: 10 XP per workout, plus its minutes × 1 (warm-up, recovery), × 2 (strength, gym, cardio) or × 3 (Tabata).")}</p></div>
+     <div class="carte"><h2>${L("Défis de la semaine", "Weekly challenges")} · ${D.filter(d => d.ok).length}/3</h2>${listeDefis(D)}</div>
+     <h2 class="sec">${L("Récompenses de palier", "Milestone rewards")}</h2><div class="carte"><ul class="paliers">${R.map(x => { const n = -x[4], ok = N.n >= n, c = typeof x[5] === "string" && x[5][0] === "#" ? x[5] : x[6] && x[6][0] === "#" ? x[6] : "#F5B301";
+       return `<li class="${ok ? "ok" : ""}"><b class="xp-rond${ok ? "" : " verrou"}">${n}</b><i style="--c:${c}"></i><span><strong>${L(x[2], x[3])}</strong><small>${L(...FAM[x[1]])} · ${ok ? L("débloqué, à retrouver dans Moi", "unlocked, find it in Me") : L("dans", "in") + " " + (n - N.n) + " " + L(n - N.n > 1 ? "niveaux" : "niveau", n - N.n > 1 ? "levels" : "level")}</small></span></li>`; }).join("")}</ul>
+       <button class="toggle contour" id="nivMoi">${L("Ouvrir ma boutique", "Open my shop")}</button></div>`, () => ecran("menu"));
+  $("nivMoi").onclick = () => { essai = ""; ouvrirMoi(); };
 }
 
 /* --- Fin de séance : XP gagnés, passage de niveau, défis qui viennent d'être réussis --- */
@@ -71,6 +87,7 @@ function blocGain() {
   const h = lireHist(), av = h.slice(0, -1), A = niveauXp(xpTotal(av)), B = niveauXp(xpTotal(h)), l = lundiDe(), dA = defisSemaine(l, av), neufs = defisSemaine(l, h).filter((d, k) => d.ok && !dA[k].ok);
   if (B.n > A.n) setTimeout(() => { confettis(); [784, 1047, 1319, 1568].forEach((f, i) => bip(f, 200, .14, "triangle", i * .12)); }, 2200);
   return `<div class="nouveau-trophee gain-xp"><b class="xp-rond">${B.n}</b><div><small>+${B.xp - A.xp} XP${B.n > A.n ? " · " + L("niveau supérieur !", "level up!") : ""}</small><b>${L("Niveau", "Level")} ${B.n} · ${B.nom}</b>${barreXp(B)}</div></div>`
+    + ARTICLES.filter(x => -x[4] > A.n && -x[4] <= B.n).map(x => `<div class="nouveau-trophee"><b class="xp-rond ok">🎁</b><div><small>${L("Récompense de palier débloquée", "Milestone reward unlocked")}</small><b>${L(x[2], x[3])}</b><span>${L("À retrouver dans l’onglet Moi", "Find it in the Me tab")}</span></div></div>`).join("")
     + neufs.map(d => `<div class="nouveau-trophee"><b class="xp-rond ok">✓</b><div><small>${L("Défi de la semaine réussi · +50 XP", "Weekly challenge done · +50 XP")}</small><b>${L(d.fr, d.en)}</b></div></div>`).join("");
 }
 
