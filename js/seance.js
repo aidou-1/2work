@@ -271,6 +271,9 @@ function horloge(fn) {
     if (n > 0) prevu = Date.now() + 1000;
   }, 200);
 }
+// Sortie commune des sons : au-delà de 100 % de volume, un limiteur évite la saturation quand plusieurs bips se superposent (cloche, alerte)
+let limiteur = null;
+const sortie = () => { if (!limiteur) { limiteur = audio.createDynamicsCompressor(); limiteur.threshold.value = -3; limiteur.knee.value = 0; limiteur.ratio.value = 20; limiteur.attack.value = .002; limiteur.release.value = .1; limiteur.connect(audio.destination); } return limiteur; };
 function bip(freq = 880, ms = 150, vol = 0.15, forme = "sine", decalage = 0, attaque = 0.015) {
   try {
     if (!volSons || muet) return;
@@ -278,7 +281,7 @@ function bip(freq = 880, ms = 150, vol = 0.15, forme = "sine", decalage = 0, att
     if (audio.state !== "running") audio.resume();   // « suspended », ou « interrupted » sur iPhone après la voix
     const o = audio.createOscillator(), g = audio.createGain();
     vol *= volSons; o.type = forme; o.frequency.value = freq;
-    o.connect(g); g.connect(audio.destination);
+    o.connect(g); g.connect(sortie());
     const t = audio.currentTime + decalage, fin = t + ms / 1000;
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol, t + attaque);
@@ -391,7 +394,7 @@ function glisse(f0, f1, ms, vol) {   // « whoosh » : bruit filtré dont la fr�
     const src = audio.createBufferSource(), f = audio.createBiquadFilter(), g = audio.createGain(), t = audio.currentTime, fin = t + ms / 1000;
     src.buffer = bruit; f.type = "bandpass"; f.Q.value = 1.4; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, fin);
     if (!volSons) return; vol *= volSons; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + ms / 3000); g.gain.exponentialRampToValueAtTime(.0001, fin);
-    src.connect(f); f.connect(g); g.connect(audio.destination); src.start(t); src.stop(fin + .02);
+    src.connect(f); f.connect(g); g.connect(sortie()); src.start(t); src.stop(fin + .02);
   } catch (e) {}
 }
 function vibrer(motif) {
