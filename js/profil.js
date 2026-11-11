@@ -218,6 +218,8 @@ function majSemaine() {   // carte « Aujourd'hui » du menu et salutation
   else { const pro = x ? null : S.find(s => s.j > auj) || S[0];
     Z.innerHTML = `<button class="sc-corps" id="scOuvrir" style="--c:${x ? x.s.c : "#64748B"}"><span class="sc-ico">${x ? (fait ? "✅" : "🎯") : "🌙"}</span><span><strong>${x ? (fait ? L("Séance du jour faite !", "Today’s workout done!") : L("Aujourd’hui", "Today") + " · " + x.s.t) : L("Aujourd’hui : repos", "Today: rest")}</strong><small>${x ? x.s.s : L("Prochaine séance", "Next workout") + " " + JOURS_LONGS()[pro.j] + " : " + pro.s.t}</small></span></button>${x && !fait ? `<button class="sc-go" id="scGo" aria-label="${L("Lancer", "Start")}">${ico("lecture")}</button>` : ""}`;
     if ($("scGo")) $("scGo").onclick = e => { e.stopPropagation(); x.s.go(); }; }
+  const D = !fait && seanceDuJour(x);   // proposition du jour : récupération si la fatigue monte, sinon programme en cours, planning, ou séance choisie d'après les derniers jours
+  if (D) { Z.innerHTML = `<button class="sc-corps" id="scOuvrir" style="--c:${D.c}"><span class="sc-ico">${D.ico || "🎯"}</span><span><strong>${L("Aujourd’hui", "Today")} · ${D.t}</strong><small>${D.r || D.s}</small></span></button><button class="sc-go" id="scGo" aria-label="${L("Lancer", "Start")}">${ico("lecture")}</button>`; $("scGo").onclick = e => { e.stopPropagation(); D.go(); }; }
   $("scOuvrir").onclick = () => ouvrirPlanning("menu");
 }
 
@@ -394,7 +396,7 @@ async function telechargerVideos(maj) {
 /* ============ SAUVEGARDE ET RESTAURATION ============
    Fichier JSON avec toutes les données de l'appli (et seulement elles). Avant une restauration, les données actuelles sont copiées
    dans « sauvegardeAvantRestauration » : rien n'est jamais perdu. */
-const CLE_APPLI = /^(tests|corps|cardioSupport|combat|boutique|rappelNotif|avatar|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
+const CLE_APPLI = /^(tests|corps|cardioSupport|combat|boutique|progPerso|duel|rappelNotif|avatar|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
 function donneesAppli() { const d = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (CLE_APPLI.test(k)) d[k] = localStorage.getItem(k); } } catch (e) {} return d; }
 async function sauvegarder() {
   const j = jourCle(), f = JSON.stringify({ app: "2WORK", version: 1, date: new Date().toISOString(), donnees: donneesAppli() });

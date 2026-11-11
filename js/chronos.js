@@ -34,18 +34,25 @@ function ouvrirNavette() {
 const COMBOS = [   // [FR, EN] ; simples puis avancées
   [["Jab", "Jab"], ["Jab, direct", "Jab, cross"], ["Double jab", "Double jab"], ["Jab, direct, crochet", "Jab, cross, hook"], ["Direct, crochet", "Cross, hook"], ["Jab au corps, direct", "Jab to the body, cross"], ["Jab, jab, direct", "Jab, jab, cross"], ["Bouge, puis jab", "Move, then jab"], ["Recule, puis direct", "Step back, then cross"]],
   [["Jab, direct, crochet, direct", "Jab, cross, hook, cross"], ["Jab, direct, esquive, direct", "Jab, cross, slip, cross"], ["Crochet au corps, crochet à la tête", "Hook to the body, hook to the head"], ["Direct, uppercut, crochet", "Cross, uppercut, hook"], ["Double jab, direct au corps", "Double jab, cross to the body"], ["Esquive, crochet, direct", "Slip, hook, cross"], ["Jab, uppercut, crochet, pas de côté", "Jab, uppercut, hook, side step"], ["Rafale de six directs", "Six straight punches, fast"], ["Feinte, direct, crochet au corps", "Feint, cross, hook to the body"]]];
+const THEMES = {   // rounds à thème : [nom FR, EN, enchaînements [FR, EN]] ; « sac » alterne rafales de 10 s et déplacements
+  libre: ["Libre", "Free"], corps: ["Travail au corps", "Body work", [["Jab au corps", "Jab to the body"], ["Double jab au corps, direct à la tête", "Double jab to the body, cross to the head"], ["Crochet au corps, crochet au corps", "Hook to the body, hook to the body"], ["Direct au corps, crochet à la tête", "Cross to the body, hook to the head"], ["Jab en haut, direct au corps", "Jab upstairs, cross to the body"], ["Uppercut au corps, crochet à la tête", "Uppercut to the body, hook to the head"]]],
+  defense: ["Défense", "Defence", [["Esquive à gauche, esquive à droite", "Slip left, slip right"], ["Bloque, puis jab", "Block, then jab"], ["Un pas en arrière, un pas en avant", "One step back, one step in"], ["Garde haute, avance", "High guard, walk forward"], ["Rotation du buste, puis crochet", "Roll under, then hook"], ["Pas de côté, puis jab", "Side step, then jab"]]],
+  contre: ["Contre-attaque", "Counter-punching", [["Esquive, direct", "Slip, cross"], ["Bloque, crochet", "Block, hook"], ["Recule, jab, direct", "Step back, jab, cross"], ["Pare, uppercut", "Parry, uppercut"], ["Esquive, crochet au corps, crochet à la tête", "Slip, hook to the body, hook to the head"], ["Rotation, direct, crochet", "Roll, cross, hook"]]],
+  sac: ["Rafales au sac", "Bag flurries"], mixte: ["Mixte : un thème par round", "Mixed: one theme per round"] };
 function ouvrirCombat(retourVers) {
-  clearInterval(tMin); const R = { r: 6, d: 180, p: 60, c: 1, ...lireJSON("combat", {}) }; let t0 = 0, cumul = 0, sec = -1, phase = "", prochain = 0;
+  clearInterval(tMin); const R = { r: 6, d: 180, p: 60, c: 1, t: "libre", g: "d", ...lireJSON("combat", {}) }; let t0 = 0, cumul = 0, sec = -1, phase = "", prochain = 0, rafale = false;
+  const theme = k => R.t === "mixte" ? ["libre", "corps", "defense", "contre"][k % 4] : R.t, mains = () => R.g === "d" ? L("Jab : main gauche · direct : main droite", "Jab: left hand · cross: right hand") : L("Jab : main droite · direct : main gauche", "Jab: right hand · cross: left hand");
   const total = () => R.r * R.d + (R.r - 1) * R.p, ecoule = () => (cumul + (t0 ? Date.now() - t0 : 0)) / 1000 - 10;   // 10 s de préparation
   outil(L("Mode combat", "Fight mode"), L("Des rounds comme en salle : la cloche, l’alerte des dix dernières secondes, et un coach qui annonce les enchaînements.", "Rounds like at the gym: the bell, the ten-second warning, and a coach calling the combinations."),
     `<div class="carnet" id="cbRegl"><span class="champ-titre">${L("Rounds", "Rounds")}</span>${chips("cr", [3, 4, 6, 8, 10, 12].map(n => [n, n, n]), R.r)}
       <span class="champ-titre">${L("Durée du round", "Round length")}</span>${chips("cd", [[120, "2 min", "2 min"], [180, "3 min", "3 min"]], R.d)}
       <span class="champ-titre">${L("Repos", "Rest")}</span>${chips("cp", [[30, "30 s", "30 s"], [60, "1 min", "1 min"]], R.p)}
-      <span class="champ-titre">${L("Enchaînements annoncés", "Called combinations")}</span>${chips("cc", [[0, "Aucun", "None"], [1, "Simples", "Basic"], [2, "Avancés", "Advanced"]], R.c)}</div>
-     <p class="count" id="cbLab"></p><div class="time petit" id="cbTemps"></div><p class="combo" id="cbCombo" aria-live="polite"></p>
+      <span class="champ-titre">${L("Enchaînements annoncés", "Called combinations")}</span>${chips("cc", [[0, "Aucun", "None"], [1, "Simples", "Basic"], [2, "Avancés", "Advanced"]], R.c)}
+      <span class="champ-titre">${L("Thème des rounds", "Round theme")}</span>${chips("ct", Object.entries(THEMES).map(([k, v]) => [k, v[0], v[1]]), R.t)}<span class="champ-titre">${L("Ta garde", "Your stance")}</span>${chips("cg", [["d", "Droitier", "Orthodox"], ["g", "Gaucher", "Southpaw"]], R.g)}</div>
+     <p class="count" id="cbLab"></p><div class="time petit" id="cbTemps"></div><p class="combo" id="cbCombo" aria-live="polite"></p><p class="sh-aide" id="cbMains" style="text-align:center"></p>
      <div class="controls" style="grid-template-columns:1fr 1.6fr"><button id="cbStop">${L("Arrêter", "Stop")}</button><button id="cbGo" class="main">${L("Démarrer", "Start")}</button></div><div id="cbRes"></div>`, retourVers);
   const aff = () => { $("cbLab").textContent = `${R.r} rounds · ${mmss(total())} ${L("au total", "in total")}`; $("cbTemps").textContent = mmss(R.d); };
-  [["cr", "r"], ["cd", "d"], ["cp", "p"], ["cc", "c"]].forEach(([n, k]) => brancherChips(n, v => { R[k] = +v; stocker("combat", JSON.stringify(R)); if (!t0 && !cumul) aff(); }));
+  [["cr", "r"], ["cd", "d"], ["cp", "p"], ["cc", "c"], ["ct", "t"], ["cg", "g"]].forEach(([n, k]) => brancherChips(n, v => { R[k] = /t|g/.test(k) ? v : +v; stocker("combat", JSON.stringify(R)); if (!t0 && !cumul) aff(); }));
   const fin = complet => {
     clearInterval(tMin); garderEcran(false); const fait = Math.max(0, Math.min(total(), Math.round(ecoule()))); t0 = cumul = 0; phase = ""; sec = -1;
     $("cbRegl").classList.remove("hidden"); $("cbGo").textContent = L("Démarrer", "Start"); $("cbCombo").textContent = ""; document.documentElement.style.setProperty("--accent", "var(--vert)"); aff();
@@ -63,11 +70,12 @@ function ouvrirCombat(retourVers) {
     const k = Math.floor(e / (R.d + R.p)), dans = e - k * (R.d + R.p), combat = dans < R.d, reste = Math.ceil((combat ? R.d : R.d + R.p) - dans), ph = (combat ? "c" : "r") + k;
     $("cbLab").textContent = combat ? `Round ${k + 1}/${R.r}` : L("Repos · round suivant : ", "Rest · next round: ") + (k + 2) + "/" + R.r; $("cbTemps").textContent = mmss(reste);
     if (ph !== phase) { phase = ph; sons.change(); if (combat) setTimeout(sons.change, 350); document.documentElement.style.setProperty("--accent", combat ? "#DC2626" : "#10B981"); $("cbCombo").textContent = combat ? "" : L("Respire, bois une gorgée, relâche les épaules.", "Breathe, take a sip, relax your shoulders.");
-      parler(combat ? "Round " + (k + 1) : L("Repos", "Rest")); prochain = dans + 5; }
+      parler(combat ? "Round " + (k + 1) + (theme(k) !== "libre" ? ". " + L(...THEMES[theme(k)]).split(" :")[0] : "") : L("Repos", "Rest")); prochain = dans + 6; rafale = false; $("cbMains").textContent = combat ? mains() : ""; }
     else if (combat && reste === 10) { [0, .18, .36].forEach(d => bip(1900, 70, .3, "square", d)); vibrer([40, 40, 40]); parler(L("Dix secondes", "Ten seconds")); prochain = 1e9; }
     else if (!combat && reste === 10) parler(L("Dix secondes, en garde", "Ten seconds, guard up"));
     else if (!combat && reste <= 3) sons.alerte();
-    else if (combat && R.c && dans >= prochain) { const l = COMBOS.slice(0, R.c).flat(), c = l[Math.floor(Math.random() * l.length)]; $("cbCombo").textContent = L(...c); parler(c[langueVoix === "fr" ? 0 : 1], 700, 1.3); prochain = dans + 5 + Math.random() * 4; }
+    else if (combat && theme(k) === "sac" && dans >= prochain) { rafale = !rafale; const c = rafale ? ["Rafale ! Dix secondes à fond", "Flurry! Ten seconds all out"] : ["Stop. Bouge autour du sac", "Stop. Move around the bag"]; $("cbCombo").textContent = L(...c); parler(c[langueVoix === "fr" ? 0 : 1], 700, 1.2); if (rafale) sons.alerte(); prochain = dans + 10; }
+    else if (combat && R.c && dans >= prochain) { const th = theme(k), l = th === "libre" ? COMBOS.slice(0, R.c).flat() : THEMES[th][2], c = l[Math.floor(Math.random() * l.length)]; $("cbCombo").textContent = L(...c); parler(c[langueVoix === "fr" ? 0 : 1], 700, 1.3); prochain = dans + 5 + Math.random() * 4; }
   };
   $("cbGo").onclick = () => { amorcerVoix(); if (t0) { cumul += Date.now() - t0; t0 = 0; clearInterval(tMin); $("cbGo").textContent = L("Reprendre", "Resume"); return; }
     if (!cumul) { $("cbRes").innerHTML = ""; $("cbRegl").classList.add("hidden"); } t0 = Date.now(); $("cbGo").textContent = L("Pause", "Pause"); garderEcran(true); sec = -99; clearInterval(tMin); tMin = setInterval(tic, 200); tic(); };

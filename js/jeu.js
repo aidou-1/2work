@@ -51,8 +51,9 @@ function ouvrirBilan(l = lundiDe(), retourVers = () => ecran("menu")) {
   outil(L("Ma semaine", "My week"), dateCourte(l) + " – " + dateCourte(decaler(l, 6)), !S.n ? `<p class="vide">${L("Aucune séance cette semaine pour l’instant : 5 minutes suffisent pour lancer la machine.", "No workout this week yet: 5 minutes is enough to get going.")}</p>` :
     `<div class="kpis">${[[S.min, L("minutes", "minutes"), "#10B981"], [S.n, L("séances", "workouts"), "#2F5BFF"], [S.jours + "/7", L("jours actifs", "active days"), "#F59E0B"], ["+" + (S.xp + fait * 50 + (fait === 3 ? 50 : 0)), "XP", "#E11D48"]].map(([v, t, c]) => `<div class="kpi" style="--c:${c}"><b>${v}</b><span>${t}</span></div>`).join("")}</div>
      <div class="carte"><h2>${L("Par rapport à la semaine d’avant", "Compared with the week before")}</h2><p>${!S.nPrec ? L("Pas de séance la semaine d’avant : tu repars sur de bonnes bases.", "No workout the week before: you are off to a fresh start.") : d > 0 ? L(`${d} minutes de plus (${S.minPrec} → ${S.min}). Belle progression !`, `${d} more minutes (${S.minPrec} → ${S.min}). Nice progress!`) : d < 0 ? L(`${-d} minutes de moins (${S.minPrec} → ${S.min}). Une semaine plus légère fait aussi partie de l’entraînement.`, `${-d} fewer minutes (${S.minPrec} → ${S.min}). A lighter week is part of training too.`) : L("Exactement le même volume : la régularité paie.", "Exactly the same volume: consistency pays off.")}${S.ef !== null ? " " + L(`Effort ressenti le plus haut : ${S.ef}/10.`, `Highest perceived effort: ${S.ef}/10.`) : ""}</p></div>
-     <div class="carte"><h2>${L("Défis de la semaine", "Weekly challenges")} · ${fait}/3</h2>${listeDefis(S.defis)}</div>
+     <div class="carte"><h2>${L("Défis de la semaine", "Weekly challenges")} · ${fait}/3</h2>${listeDefis(S.defis)}</div>${l === lundiDe() ? blocDuel(S) : ""}
      <button class="primary" id="bilanPartage">📸 ${L("Partager ma semaine", "Share my week")}</button><div id="shAide"></div>`, retourVers);
+  if ($("duelGo")) $("duelGo").onclick = () => envoyerDuel($("duelGo"));
   if ($("bilanPartage")) $("bilanPartage").onclick = () => carteSemaine(S).toBlob(b => envoyer(b, "2work-semaine.jpg", "image/jpeg").then(r => { if (r === "telecharge") zoneAide().innerHTML = `<p class="sh-ok">${L("Image enregistrée dans tes téléchargements.", "Image saved to your downloads.")}</p>`; }), "image/jpeg", .92);
 }
 
@@ -110,3 +111,56 @@ function blocsJeu() {
       <p class="sh-aide">${L("Moyenne", "Average")} : ${(ef.reduce((t, x) => t + x.ef, 0) / ef.length).toFixed(1)}/10 ${L("sur", "over")} ${ef.length} ${L("séances", "sessions")}.</p></div>` : ""}
     ${rec.length ? `<div class="carte"><h2>${L("Records personnels", "Personal records")}</h2><ul class="carnet ef-liste records">${rec.map(([v, t]) => `<li><span>${t}</span><b>${v}</b></li>`).join("")}</ul></div>` : ""}`;
 }
+
+/* --- Séance du jour (accueil) : x = séance prévue au planning aujourd'hui, s'il y en a une. Renvoie { t, s, c, go, r: raison, ico } --- */
+function seanceDuJour(x) {
+  const h = lireHist(), l = lundiDe(), auj = jourCle(), niv = lireNiv(), S = statsSemaine(l, h), prec = [1, 2, 3, 4].map(k => statsSemaine(decaler(l, -7 * k), h).charge).filter(Boolean), moy = prec.length ? prec.reduce((a, b) => a + b) / prec.length : 0;
+  const hier = h.filter(y => y.j === decaler(auj, -1)), dur = y => y.ef >= 9 || y.m === "tabata", der = h[h.length - 1], vide = der ? Math.round((new Date(auj + "T12:00") - new Date(der.j + "T12:00")) / 864e5) : 99;
+  const fatigue = moy >= 40 && S.charge > moy * 1.5 ? L("Ta charge de la semaine dépasse nettement ta moyenne : récupère aujourd’hui.", "Your weekly load is well above your average: recover today.")
+    : h.slice(-2).length === 2 && h.slice(-2).every(y => dur(y) && y.j >= decaler(auj, -2)) ? L("Deux séances très dures de suite : place à la récupération.", "Two very hard sessions in a row: time to recover.") : "";
+  if (fatigue) return { ...tpl("C:repos", niv), r: fatigue, ico: "🧘" };
+  const P = PROGRAMMES.map(p => [p, progAvance(p[0])]).filter(([, a]) => a > 0 && a < NB_PROG).sort((a, b) => b[1] - a[1])[0];
+  if (P) return { t: L(P[0][1], P[0][2]), s: L("Programme · jour", "Programme · day") + " " + (P[1] + 1) + "/" + NB_PROG, c: P[0][5], go: () => ouvrirProg(P[0][0]) };
+  if (x) return x.s;
+  const plan = PLANS[lireProfil().objectif], sem = Array.isArray(plan) ? plan : PLANS.forme, cle = vide >= 3 ? "R:complet" : hier.some(y => ["seance", "salle", "tabata"].includes(y.m)) ? "C:repos" : sem[(new Date().getDay() + 6) % 7].replace("@", "complet"), T0 = tpl(cle, niv);
+  return T0 && { ...T0, r: vide >= 3 && vide < 99 ? L(`${vide} jours sans séance : on relance avec une séance complète.`, `${vide} days without a workout: restart with a full-body session.`) : cle === "C:repos" ? L("Séance intense hier : aujourd’hui, on récupère.", "Hard session yesterday: today is for recovery.") : "", ico: cle === "C:repos" ? "🧘" : "🎯" };
+}
+
+/* --- Duel de la semaine : on envoie son total d'XP de la semaine par lien (?duel=…), l'ami le retrouve dans son bilan (clé « duel ») --- */
+const lienDuel = () => location.origin + location.pathname + "?duel=" + btoa(unescape(encodeURIComponent(JSON.stringify({ n: lireProfil().nom || "", x: statsSemaine().xp, l: lundiDe() })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+function blocDuel(S) {
+  const d = lireJSON("duel", null), ok = d && d.l === S.l, e = ok ? S.xp - d.x : 0;
+  return `<div class="carte"><h2>⚔️ ${L("Duel de la semaine", "Weekly duel")}</h2>${ok ? `<ul class="carnet ef-liste records"><li><span>${propre(d.n) || L("Ton ami", "Your friend")}</span><b>${d.x} XP</b></li><li><span>${L("Toi", "You")}</span><b>${S.xp} XP</b></li></ul><p>${e > 0 ? L(`Tu mènes de ${e} XP. Envoie ton score pour le lui montrer !`, `You lead by ${e} XP. Send your score to show them!`) : e < 0 ? L(`Il te manque ${-e} XP pour passer devant : une séance de 20 minutes en rapporte 50.`, `You need ${-e} XP to take the lead: a 20-minute workout earns 50.`) : L("Égalité parfaite : la prochaine séance fera la différence.", "A perfect tie: the next workout will decide.")}</p>`
+    : `<p>${L("Envoie ton total d’XP de la semaine à un ami : il verra s’il fait mieux, et pourra te renvoyer le sien.", "Send your weekly XP total to a friend: they will see whether they beat it, and can send theirs back.")}</p>`}<button class="toggle contour" id="duelGo">${ok ? L("Envoyer mon score", "Send my score") : L("Défier un ami", "Challenge a friend")}</button></div>`;
+}
+async function envoyerDuel(b) {
+  const n = lireProfil().nom, url = lienDuel(), texte = L(`${n || "Ton ami"} a gagné ${statsSemaine().xp} XP cette semaine sur 2 WORK. Tu fais mieux ?`, `${n || "Your friend"} earned ${statsSemaine().xp} XP this week on 2 WORK. Can you beat it?`);
+  try { if (navigator.share) await navigator.share({ title: "2 WORK", text: texte, url }); else { await navigator.clipboard.writeText(texte + " " + url); b.textContent = L("✓ Lien copié", "✓ Link copied"); } } catch (e) {}
+}
+addEventListener("DOMContentLoaded", () => { const c = new URLSearchParams(location.search).get("duel"); if (!c) return;
+  try { const d = JSON.parse(decodeURIComponent(escape(atob(c.replace(/-/g, "+").replace(/_/g, "/"))))); if (!(d.x >= 0 && d.x < 1e5) || !/^\d{4}-\d\d-\d\d$/.test(d.l)) return;
+    stocker("duel", JSON.stringify({ n: propre(d.n || "").slice(0, 20), x: Math.round(d.x), l: d.l })); history.replaceState(null, "", location.pathname); finBienvenue(); afficherEcran("menu"); ouvrirBilan(); } catch (e) {} });
+
+/* --- Programme sur mesure : 4 semaines assemblées à partir des journées des programmes existants, selon l'objectif, le rythme et l'intensité.
+   Gardé dans « progPerso » (même format que PROGRAMMES) et placé en tête de la liste ; son avancement suit la clé habituelle prog_perso. --- */
+const PERSO_OBJ = [["forme", "Être en forme", "Get fit", ["force", "cardio", "force", "hiit", "gainage", "cardio"]], ["perte", "Perdre du poids", "Lose weight", ["hiit", "cardio", "force", "hiit", "cardio", "gainage"]],
+  ["force", "Gagner en force", "Get stronger", ["force", "gainage", "force", "hiit", "force", "cardio"]], ["souplesse", "Mobilité et posture", "Mobility and posture", ["mobilite", "gainage", "mobilite", "force", "mobilite", "cardio"]]];
+const PERSO_RYTHME = { 3: [1, 0, 1, 0, 1, 0, 0], 4: [1, 1, 0, 1, 0, 1, 0], 5: [1, 1, 0, 1, 1, 0, 1], 6: [1, 1, 1, 0, 1, 1, 1] }, PERSO_INT = [[25, 25, [2, 2, 3, 2], "doux"], [30, 20, [2, 3, 3, 2], "dyn"], [35, 25, [3, 3, 4, 2], "dyn"]];
+function composerProgPerso(obj, n, int) {
+  const O = PERSO_OBJ.find(o => o[0] === obj), banque = t => PROGRAMMES.filter(p => p[0] !== "perso").flatMap(p => p[10]).filter(d => d[0] === t && d[3].every(e => EXERCICES[e])), vus = {}, tire = t => { const b = banque(t); vus[t] = (vus[t] || 0) + 1; return b[(vus[t] - 1) % b.length]; };
+  let k = 0, r = 0; const sem = PERSO_RYTHME[n].map(tr => tr ? tire(O[3][k++]) : tire(r++ % 2 ? "mobilite" : "recup"));
+  return ["perso", "Mon programme · " + O[1], "My programme · " + O[2], `Programme sur mesure : ${n} séances et ${7 - n} jours de récupération par semaine, pendant 4 semaines.`, `Custom programme: ${n} workouts and ${7 - n} recovery days a week, for 4 weeks.`, "#0EA5E9", [["Doux", "Gentle"], ["Modéré", "Moderate"], ["Intense", "Intense"]][int], "",
+    [O[1], n + " séances par semaine", "Progression sur 4 semaines"], [O[2], n + " workouts a week", "4-week progression"], sem, PERSO_INT[int]];
+}
+function ouvrirProgPerso() {
+  const R = { o: "forme", n: 4, i: Math.max(0, NIV_RENFO.findIndex(x => x[0] === lireNiv())) }, a = progAvance("perso"), existe = PROGRAMMES[0][0] === "perso";
+  outil(L("Mon programme sur mesure", "My custom programme"), L("Trois choix, et l’appli assemble 4 semaines de séances au poids du corps, avec la bonne alternance d’efforts et de récupération.", "Three choices, and the app builds 4 weeks of bodyweight workouts, with the right balance of effort and recovery."),
+    `<div class="carnet"><span class="champ-titre">${L("Ton objectif", "Your goal")}</span>${chips("po", PERSO_OBJ.map(o => o.slice(0, 3)), R.o)}<span class="champ-titre">${L("Séances par semaine", "Workouts a week")}</span>${chips("pn", [3, 4, 5, 6].map(v => [v, v, v]), R.n)}
+      <span class="champ-titre">${L("Intensité", "Intensity")}</span>${chips("pi", [[0, "Douce", "Gentle"], [1, "Modérée", "Moderate"], [2, "Intense", "Intense"]], R.i)}</div><div id="ppApercu"></div>
+     ${existe && a ? `<p class="prog-avert">${L(`Tu as déjà un programme sur mesure (jour ${a}/${NB_PROG}) : en créer un nouveau le remplace et repart du jour 1. Tes séances déjà faites restent dans l’historique.`, `You already have a custom programme (day ${a}/${NB_PROG}): creating a new one replaces it and restarts at day 1. Your completed workouts stay in your history.`)}</p>` : ""}
+     <button class="primary" id="ppCreer">${L("Créer mon programme", "Create my programme")}</button>`, () => ouvrirProgs(true));
+  const apercu = () => { const P = composerProgPerso(R.o, R.n, R.i); $("ppApercu").innerHTML = `<h2 class="sec">${L("Ta semaine type", "Your typical week")}</h2><ul class="carnet ef-liste records">${P[10].map((d, k) => `<li><span>${L("Jour", "Day")} ${k + 1} · ${L(d[1], d[2])}</span><b style="color:${PTYPES[d[0]][0]}">${L(PTYPES[d[0]][1], PTYPES[d[0]][2])}</b></li>`).join("")}</ul>`; return P; };
+  [["po", "o", String], ["pn", "n", Number], ["pi", "i", Number]].forEach(([c, k, f]) => brancherChips(c, v => { R[k] = f(v); apercu(); })); apercu();
+  $("ppCreer").onclick = () => { const P = apercu(); if (PROGRAMMES[0][0] === "perso") PROGRAMMES.shift(); PROGRAMMES.unshift(P); stocker("progPerso", JSON.stringify(P)); stocker("prog_perso", 0); ouvrirProg("perso"); };
+}
+{ const pp = lireJSON("progPerso", null); if (Array.isArray(pp) && pp[0] === "perso" && Array.isArray(pp[10])) PROGRAMMES.unshift(pp); }
