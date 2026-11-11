@@ -6,7 +6,7 @@ const lundiDe = (j = jourCle()) => { const d = new Date(j + "T12:00"); d.setDate
 const decaler = (j, n) => { const d = new Date(j + "T12:00"); d.setDate(d.getDate() + n); return jourCle(d); };
 const numSemaine = l => Math.round(new Date(l + "T12:00") / 6048e5);
 const estCardio = x => x.m === "tabata" || x.tb || x.ef !== undefined || x.k === "combat";
-const xpSeance = x => 10 + Math.round(x.s / 60 * ({ tabata: 3, seance: 2, salle: 2 }[x.m] || 1));
+const xpSeance = x => 10 + Math.round(x.s / 60 * ({ tabata: 3, seance: 2, salle: 2 }[x.m] || 1)) + (x.bx || 0);   // bx : bonus des objets du home gym, figé à la fin de la séance
 const minDe = l => Math.round(l.reduce((t, x) => t + x.s, 0) / 60);
 const DEFIS_SEM = [   // trois familles ; [texte FR, EN, cible, mesure sur les séances de la semaine]
   [["3 séances cette semaine", "3 workouts this week", 3, l => l.length], ["4 séances cette semaine", "4 workouts this week", 4, l => l.length], ["60 minutes d’entraînement", "60 minutes of training", 60, minDe], ["90 minutes d’entraînement", "90 minutes of training", 90, minDe], ["3 jours actifs différents", "3 different active days", 3, l => new Set(l.map(x => x.j)).size]],
@@ -84,9 +84,10 @@ function ouvrirNiveau() {
 
 /* --- Fin de séance : XP gagnés, passage de niveau, défis qui viennent d'être réussis --- */
 function blocGain() {
-  const h = lireHist(), av = h.slice(0, -1), A = niveauXp(xpTotal(av)), B = niveauXp(xpTotal(h)), l = lundiDe(), dA = defisSemaine(l, av), neufs = defisSemaine(l, h).filter((d, k) => d.ok && !dA[k].ok);
+  const h = lireHist(), der = h[h.length - 1]; if (der && der.bx === undefined) { der.bx = bonusGym(der); stocker("historique", JSON.stringify(h)); }
+  const av = h.slice(0, -1), A = niveauXp(xpTotal(av)), B = niveauXp(xpTotal(h)), l = lundiDe(), dA = defisSemaine(l, av), neufs = defisSemaine(l, h).filter((d, k) => d.ok && !dA[k].ok);
   if (B.n > A.n) setTimeout(() => { confettis(); [784, 1047, 1319, 1568].forEach((f, i) => bip(f, 200, .14, "triangle", i * .12)); }, 2200);
-  return `<div class="nouveau-trophee gain-xp"><b class="xp-rond">${B.n}</b><div><small>+${B.xp - A.xp} XP${B.n > A.n ? " · " + L("niveau supérieur !", "level up!") : ""}</small><b>${L("Niveau", "Level")} ${B.n} · ${B.nom}</b>${barreXp(B)}</div></div>`
+  return `<div class="nouveau-trophee gain-xp"><svg class="perso-fete" viewBox="0 30 120 200" aria-hidden="true">${persoSvg(lireAvatar(), "feu", "victoire")}</svg><div><small>+${B.xp - A.xp} XP${der && der.bx ? L(` (dont +${der.bx} grâce à ton home gym)`, ` (+${der.bx} from your home gym)`) : ""}${B.n > A.n ? " · " + L("niveau supérieur !", "level up!") : ""}</small><b>${L("Niveau", "Level")} ${B.n} · ${B.nom}</b>${barreXp(B)}</div></div>`
     + ARTICLES.filter(x => -x[4] > A.n && -x[4] <= B.n).map(x => `<div class="nouveau-trophee"><b class="xp-rond ok">🎁</b><div><small>${L("Récompense de palier débloquée", "Milestone reward unlocked")}</small><b>${L(x[2], x[3])}</b><span>${L("À retrouver dans l’onglet Moi", "Find it in the Me tab")}</span></div></div>`).join("")
     + neufs.map(d => `<div class="nouveau-trophee"><b class="xp-rond ok">✓</b><div><small>${L("Défi de la semaine réussi · +50 XP", "Weekly challenge done · +50 XP")}</small><b>${L(d.fr, d.en)}</b></div></div>`).join("");
 }

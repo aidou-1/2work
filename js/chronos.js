@@ -67,7 +67,7 @@ function ouvrirCombat(retourVers) {
     else if (combat && reste === 10) { [0, .18, .36].forEach(d => bip(1900, 70, .3, "square", d)); vibrer([40, 40, 40]); parler(L("Dix secondes", "Ten seconds")); prochain = 1e9; }
     else if (!combat && reste === 10) parler(L("Dix secondes, en garde", "Ten seconds, guard up"));
     else if (!combat && reste <= 3) sons.alerte();
-    else if (combat && R.c && dans >= prochain) { const l = COMBOS.slice(0, R.c).flat(), c = l[Math.floor(Math.random() * l.length)]; $("cbCombo").textContent = L(...c); parler(c[langueVoix === "fr" ? 0 : 1]); prochain = dans + 5 + Math.random() * 4; }
+    else if (combat && R.c && dans >= prochain) { const l = COMBOS.slice(0, R.c).flat(), c = l[Math.floor(Math.random() * l.length)]; $("cbCombo").textContent = L(...c); parler(c[langueVoix === "fr" ? 0 : 1], 700, 1.3); prochain = dans + 5 + Math.random() * 4; }
   };
   $("cbGo").onclick = () => { amorcerVoix(); if (t0) { cumul += Date.now() - t0; t0 = 0; clearInterval(tMin); $("cbGo").textContent = L("Reprendre", "Resume"); return; }
     if (!cumul) { $("cbRes").innerHTML = ""; $("cbRegl").classList.add("hidden"); } t0 = Date.now(); $("cbGo").textContent = L("Pause", "Pause"); garderEcran(true); sec = -99; clearInterval(tMin); tMin = setInterval(tic, 200); tic(); };
