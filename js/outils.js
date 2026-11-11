@@ -345,14 +345,14 @@ if (LANGUE === "en") document.querySelectorAll("[data-en]").forEach(e => { e.tex
    Note sur 5, ce qui plaît, ce qui gêne, message libre et contexte anonyme (aucun nom, aucune donnée de santé).
    Envoi par la page du formulaire Google, préremplie : ses réponses arrivent dans une feuille Google, prête à trier et analyser.
    AVIS_FORM = identifiant du formulaire publié (après /forms/d/e/) et numéros « entry. » de ses questions, tirés du lien prérempli.
-   Le formulaire n'a pas de question « contexte » : le contexte technique est ajouté à la fin du commentaire.
+   Le contexte technique n'est envoyé que si le formulaire a une question pour lui (AVIS_FORM.contexte) : le commentaire reste celui de la personne.
    Sans formulaire renseigné, l'avis part par la feuille de partage du téléphone, comme avant. */
 const AVIS_FORM = { id: "1FAIpQLSftVfIv8XIvV0uDcGJi9fCrXXidM8E-PtThj7YDlqMEoZee6w", note: "1743096007", aime: "141393001", gene: "1201111177", message: "1354644341", pratique: "324741575" };
 const AVIS_THEMES = [["Séances guidées", "Guided workouts"], ["Voix et consignes", "Voice and cues"], ["Boxe et mode combat", "Boxing and fight mode"], ["Cardio", "Cardio"], ["Programmes", "Programmes"],
   ["Personnage et boutique", "Character and shop"], ["Progrès et niveaux", "Progress and levels"], ["Design", "Design"], ["Facilité d’utilisation", "Ease of use"], ["Bugs ou lenteurs", "Bugs or slowness"]];
 // L'avis s'ouvre sur la page Google du formulaire, déjà remplie : la personne n'a qu'à toucher « Envoyer ».
 // (Un envoi direct, sans passer par cette page, arrivait dans la feuille avec toutes les cases vides.)
-const lienAvis = r => `https://docs.google.com/forms/d/e/${AVIS_FORM.id}/viewform?usp=pp_url&` + new URLSearchParams(Object.entries({ ...r, message: [r.message, r.contexte && "— " + r.contexte].filter(Boolean).join("\n") })
+const lienAvis = r => `https://docs.google.com/forms/d/e/${AVIS_FORM.id}/viewform?usp=pp_url&` + new URLSearchParams(Object.entries(AVIS_FORM.contexte ? r : { ...r, contexte: "" })
   .filter(([k, v]) => AVIS_FORM[k] && v !== "").map(([k, v]) => ["entry." + AVIS_FORM[k], String(v)]));
 function ouvrirAvis() {
   let note = 0; const groupe = (k, l) => `<div class="chips avis-choix" data-g="${k}">${l.map(([f, e], i) => `<button class="toggle" data-i="${i}" aria-pressed="false">${L(f, e)}</button>`).join("")}</div>`;
