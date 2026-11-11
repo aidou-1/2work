@@ -253,19 +253,21 @@ function ouvrirCalculs() {
 }
 
 /* ============ DÉFIER UN AMI : une séance envoyée par lien (?defi=…), ouverte telle quelle dans son appli ============ */
+const coderLien = d => btoa(unescape(encodeURIComponent(JSON.stringify(d)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""), decoderLien = c => JSON.parse(decodeURIComponent(escape(atob(c.replace(/-/g, "+").replace(/_/g, "/")))));
+async function partagerLien(texte, url, b) { try { if (navigator.share) await navigator.share({ title: "2 WORK", text: texte, url }); else { await navigator.clipboard.writeText(texte + " " + url); b.textContent = L("✓ Lien copié", "✓ Link copied"); } } catch (e) {} }
 function lienDefi() {
   const d = { t: routine.defi ? routine.titre.split(" · ").pop() : routine.titre, i: ids, d: dureeGlobale, r: mode === "seance" || mode === "salle" ? repos : 0, de: lireProfil().nom || "", dj: routine.defi ? 1 : 0 };
-  return location.origin + location.pathname + "?defi=" + btoa(unescape(encodeURIComponent(JSON.stringify(d)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return location.origin + location.pathname + "?defi=" + coderLien(d);
 }
 $("amiBtn").onclick = async () => {
   const url = lienDefi(), n = lireProfil().nom, t = routine.titre, texte = routine.defi
     ? L(`${n || "Ton ami"} te défie de réussir le défi du jour sur 2 WORK : « ${t.split(" · ").pop()} ». À toi de jouer !`, `${n || "Your friend"} challenges you to complete today’s daily challenge on 2 WORK: “${t.split(" · ").pop()}”. Your turn!`)
     : L(`${n || "Ton ami"} te défie de réussir sa séance sur 2 WORK : « ${t} », ${ids.length} exercices. Relève le défi !`, `${n || "Your friend"} challenges you to complete their workout on 2 WORK: “${t}”, ${ids.length} exercises. Take the challenge!`);
-  try { if (navigator.share) await navigator.share({ title: "2 WORK", text: texte, url }); else { await navigator.clipboard.writeText(texte + " " + url); $("amiBtn").textContent = L("✓ Lien copié", "✓ Link copied"); } } catch (e) {}
+  return partagerLien(texte, url, $("amiBtn"));
 };
 function ouvrirDefiAmi(code) {   // renvoie vrai si le lien est valide
   try {
-    const d = JSON.parse(decodeURIComponent(escape(atob(code.replace(/-/g, "+").replace(/_/g, "/"))))), de = propre(d.de || "").slice(0, 20);
+    const d = decoderLien(code), de = propre(d.de || "").slice(0, 20);
     if (!Array.isArray(d.i) || !d.i.length || d.i.length > 80 || !d.i.every(id => EXERCICES[id]) || !(d.d >= 5 && d.d <= 120) || !(d.r >= 0 && d.r <= 300)) return false;
     ROUTINES.ami = { type: "seance", fixe: true, amiDj: !!d.dj, retour: () => ecran("menu"), ami: de, titre: (de ? L("Défi de ", "Challenge from ") + de + " · " : L("Défi · ", "Challenge · ")) + propre(d.t || "").slice(0, 60), detail: "", couleur: "#DB2777", duree: d.d, repos: d.r, exercices: d.i };
     CONSEILLES.ami = d.i; history.replaceState(null, "", location.pathname); finBienvenue(); afficherEcran("menu"); ouvrirRoutine("ami"); return true;

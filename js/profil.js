@@ -26,24 +26,31 @@ async function envoyer(b, nom, type, texte) {
   return "telecharge";
 }
 function lignesTexte(x, t, max) { const l = []; let c = ""; t.split(" ").forEach(m => { if (x.measureText(c + " " + m).width > max && c) { l.push(c); c = m; } else c = c ? c + " " + m : m; }); return l.concat(c); }
+/* Cartes à partager (séance, semaine, personnage) : toile 1080 de large, dégradé, bulles, titre « 2 WORK » et adresse du site ; puis 4 tuiles chiffrées */
+function toileCarte(h, degrade, bulles = [[900, 240, 320], [120, 1180, 240], [980, 1640, 180]]) {
+  const c = document.createElement("canvas"); c.width = 1080; c.height = h; const x = c.getContext("2d"), T1 = "'Barlow Condensed', Arial Narrow, sans-serif", T2 = "Barlow, Arial, sans-serif", g = x.createLinearGradient(0, 0, h > 1500 ? 1080 : 0, h);
+  degrade.forEach(([p, col]) => g.addColorStop(p, col)); x.fillStyle = g; x.fillRect(0, 0, 1080, h);
+  x.fillStyle = "rgba(255,255,255,.1)"; bulles.forEach(([u, v, r]) => { x.beginPath(); x.arc(u, v, r, 0, 7); x.fill(); });
+  x.fillStyle = "#fff"; x.textAlign = "center"; x.font = `500 36px ${T2}`; x.fillText("aidou-1.github.io/2work", 540, h - 70); x.font = `800 72px ${T1}`; x.fillText("2 WORK", 540, h > 1500 ? 170 : 120);
+  return { c, x, T1, T2 };
+}
+function tuilesCarte({ x, T1, T2 }, tuiles, y0) {
+  tuiles.forEach(([v, t], k) => { const cx = k % 2 ? 790 : 290, cy = y0 + Math.floor(k / 2) * 330;
+    x.fillStyle = "rgba(255,255,255,.15)"; x.beginPath(); x.roundRect ? x.roundRect(cx - 230, cy - 140, 460, 280, 44) : x.rect(cx - 230, cy - 140, 460, 280); x.fill();
+    x.fillStyle = "#fff"; x.font = `800 150px ${T1}`; x.fillText(v, cx, cy + 40); x.font = `600 40px ${T2}`; x.fillText(t, cx, cy + 100); });
+}
 function carteSeance(a) {
-  const c = document.createElement("canvas"); c.width = 1080; c.height = 1920; const x = c.getContext("2d"), T1 = "'Barlow Condensed', Arial Narrow, sans-serif", T2 = "Barlow, Arial, sans-serif";
-  const g = x.createLinearGradient(0, 0, 1080, 1920); g.addColorStop(0, a.couleur); g.addColorStop(.6, "#4F46E5"); g.addColorStop(1, "#1E1B4B"); x.fillStyle = g; x.fillRect(0, 0, 1080, 1920);
-  x.fillStyle = "rgba(255,255,255,.1)"; [[900, 240, 320], [120, 1180, 240], [980, 1640, 180]].forEach(([u, v, r]) => { x.beginPath(); x.arc(u, v, r, 0, 7); x.fill(); });
-  x.fillStyle = "#fff"; x.textAlign = "center"; x.font = `800 72px ${T1}`; x.fillText("2 WORK", 540, 170);
+  const K = toileCarte(1920, [[0, a.couleur], [.6, "#4F46E5"], [1, "#1E1B4B"]]), { c, x, T1, T2 } = K;
   x.font = `700 44px ${T2}`; x.globalAlpha = .85; x.fillText(L("SÉANCE TERMINÉE ✓", "WORKOUT COMPLETE ✓"), 540, 270); x.globalAlpha = 1;
   x.font = `800 104px ${T1}`; const tout = lignesTexte(x, a.t, 940), lt = tout.slice(0, 3); if (tout.length > 3) lt[2] = lt[2].replace(/[\s·]+$/, "") + "…"; lt.forEach((l, k) => x.fillText(l, 540, 410 + k * 110));
   const y0 = 410 + lt.length * 110 + 30, date = a.fin.toLocaleDateString(LANGUE === "en" ? "en-GB" : "fr-FR", { weekday: "long", day: "numeric", month: "long" });
   x.font = `600 42px ${T2}`; x.globalAlpha = .85; x.fillText(date.charAt(0).toUpperCase() + date.slice(1), 540, y0); x.globalAlpha = 1;
   const S = statsGlobales();
-  [[Math.max(1, Math.round(a.s / 60)), L("minutes", "minutes")], [a.n, L("exercices", "exercises")], [kcalEst(a), L("kcal estimées", "est. kcal")], [S.serie, L(S.serie > 1 ? "jours d’affilée" : "jour d’affilée", "day streak")]].forEach(([v, t], k) => {
-    const cx = k % 2 ? 790 : 290, cy = y0 + 230 + Math.floor(k / 2) * 330;
-    x.fillStyle = "rgba(255,255,255,.15)"; x.beginPath(); x.roundRect ? x.roundRect(cx - 230, cy - 140, 460, 280, 44) : x.rect(cx - 230, cy - 140, 460, 280); x.fill();
-    x.fillStyle = "#fff"; x.font = `800 150px ${T1}`; x.fillText(v, cx, cy + 40); x.font = `600 40px ${T2}`; x.fillText(t, cx, cy + 100); });
+  tuilesCarte(K, [[Math.max(1, Math.round(a.s / 60)), L("minutes", "minutes")], [a.n, L("exercices", "exercises")], [kcalEst(a), L("kcal estimées", "est. kcal")], [S.serie, L(S.serie > 1 ? "jours d’affilée" : "jour d’affilée", "day streak")]], y0 + 230);
   let y = y0 + 790; const ex = a.noms.slice(0, Math.max(0, Math.min(5, Math.floor((1770 - y) / 58) - 1))); x.textAlign = "left"; x.font = `600 38px ${T2}`;
   ex.forEach(n => { x.globalAlpha = .9; x.fillText("✓  " + (n.length > 34 ? n.slice(0, 33) + "…" : n), 150, y); y += 58; });
   if (a.noms.length > ex.length) { x.globalAlpha = .7; const r = a.noms.length - ex.length; x.fillText(L(`+ ${r} ${r > 1 ? "autres exercices" : "autre exercice"}`, `+ ${r} more exercise${r > 1 ? "s" : ""}`), 150, y); }
-  x.globalAlpha = 1; x.textAlign = "center"; x.font = `500 36px ${T2}`; x.fillText("aidou-1.github.io/2work", 540, 1850);
+  x.globalAlpha = 1;
   return c;
 }
 function partagerCarte() {

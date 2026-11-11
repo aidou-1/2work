@@ -149,10 +149,9 @@ $("moiCorps").addEventListener("click", ev => {
   $("moiCorps").addEventListener("pointerup", lacher); $("moiCorps").addEventListener("pointercancel", lacher); }
 /* Carte à partager : la pièce et le personnage dessinés sur une image 1080 × 1350, avec le niveau */
 function partagerPerso() {
-  const N = niveauXp(), p = lireProfil(), img = new Image(), T1 = "'Barlow Condensed', Arial Narrow, sans-serif", T2 = "Barlow, Arial, sans-serif";
-  img.onload = () => { const c = document.createElement("canvas"); c.width = 1080; c.height = 1350; const x = c.getContext("2d"), g = x.createLinearGradient(0, 0, 0, 1350); g.addColorStop(0, "#EA580C"); g.addColorStop(1, "#1C1210"); x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
-    x.drawImage(img, 40, 170, 1000, 833); x.fillStyle = "#fff"; x.textAlign = "center"; x.font = `800 84px ${T1}`; x.fillText("2 WORK", 540, 120);
-    x.font = `800 96px ${T1}`; x.fillText((p.nom ? p.nom + " · " : "") + L("NIVEAU", "LEVEL") + " " + N.n, 540, 1130); x.font = `600 52px ${T2}`; x.fillText(N.nom + " · " + N.xp + " XP", 540, 1205); x.globalAlpha = .8; x.font = `500 38px ${T2}`; x.fillText("aidou-1.github.io/2work", 540, 1295);
+  const N = niveauXp(), p = lireProfil(), img = new Image();
+  img.onload = () => { const { c, x, T1, T2 } = toileCarte(1350, [[0, "#EA580C"], [1, "#1C1210"]], []);
+    x.drawImage(img, 40, 170, 1000, 833); x.font = `800 96px ${T1}`; x.fillText((p.nom ? p.nom + " · " : "") + L("NIVEAU", "LEVEL") + " " + N.n, 540, 1130); x.font = `600 52px ${T2}`; x.fillText(N.nom + " · " + N.xp + " XP", 540, 1205);
     c.toBlob(b => envoyer(b, "2work-personnage.jpg", "image/jpeg").then(r => { if (r === "telecharge" && $("shAide")) $("shAide").innerHTML = `<p class="sh-ok">${L("Image enregistrée dans tes téléchargements.", "Image saved to your downloads.")}</p>`; }), "image/jpeg", .92); };
   img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(sceneSvg().replace("<svg ", `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="900" `));
 }

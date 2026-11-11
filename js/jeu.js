@@ -24,6 +24,7 @@ const RANGS = [["Débutant", "Beginner"], ["Régulier", "Regular"], ["Motivé", 
 const seuilXp = n => 75 * n * (n - 1);   // XP nécessaires pour atteindre le niveau n : 0, 150, 450, 900, 1500…
 function niveauXp(xp = xpTotal()) { let n = 1; while (seuilXp(n + 1) <= xp) n++; const a = seuilXp(n), b = seuilXp(n + 1); return { n, xp, nom: L(...RANGS[Math.min(n, RANGS.length) - 1]), dans: xp - a, pour: b - a, pct: Math.round((xp - a) / (b - a) * 100) }; }
 const barreXp = N => `<div class="vita-barre vb-xp" role="progressbar" aria-valuenow="${N.pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.max(3, N.pct)}%"></i></div>`;
+const carteDefis = (D, plus = "") => `<div class="carte"><h2>${L("Défis de la semaine", "Weekly challenges")} · ${D.filter(d => d.ok).length}/3</h2>${listeDefis(D)}${plus}</div>`;
 const listeDefis = D => `<ul class="defis-sem">${D.map(d => `<li class="${d.ok ? "ok" : ""}"><span>${d.ok ? "✓" : "○"} ${L(d.fr, d.en)}</span><b>${d.v}/${d.cible}</b><i style="--p:${d.v / d.cible * 100}%"></i></li>`).join("")}</ul>`;
 
 /* --- Bilan de la semaine : chiffres, comparaison avec la semaine d'avant, carte à partager --- */
@@ -32,26 +33,19 @@ function statsSemaine(l = lundiDe(), h = lireHist()) {
   return { l, s, n: s.length, min: minDe(s), jours: new Set(s.map(x => x.j)).size, xp: s.reduce((t, x) => t + xpSeance(x), 0), charge: s.reduce((t, x) => t + xpSeance(x) - 10, 0), ef: ef.length ? Math.max(...ef) : null, defis: defisSemaine(l, h), minPrec: minDe(p), nPrec: p.length };
 }
 function carteSemaine(S) {
-  const c = document.createElement("canvas"); c.width = 1080; c.height = 1920; const x = c.getContext("2d"), T1 = "'Barlow Condensed', Arial Narrow, sans-serif", T2 = "Barlow, Arial, sans-serif", N = niveauXp(), sr = series(lireHist());
-  const g = x.createLinearGradient(0, 0, 1080, 1920); g.addColorStop(0, "#F97316"); g.addColorStop(.55, "#C2410C"); g.addColorStop(1, "#1C1210"); x.fillStyle = g; x.fillRect(0, 0, 1080, 1920);
-  x.fillStyle = "rgba(255,255,255,.09)"; [[920, 260, 330], [100, 1240, 250], [980, 1660, 190]].forEach(([u, v, r]) => { x.beginPath(); x.arc(u, v, r, 0, 7); x.fill(); });
-  x.fillStyle = "#fff"; x.textAlign = "center"; x.font = `800 72px ${T1}`; x.fillText("2 WORK", 540, 170);
+  const K = toileCarte(1920, [[0, "#F97316"], [.55, "#C2410C"], [1, "#1C1210"]]), { c, x, T1, T2 } = K, N = niveauXp(), sr = series(lireHist());
   x.font = `800 120px ${T1}`; x.fillText(L("MA SEMAINE", "MY WEEK"), 540, 400); x.font = `600 44px ${T2}`; x.globalAlpha = .85; x.fillText(dateCourte(S.l) + " – " + dateCourte(decaler(S.l, 6)), 540, 480); x.globalAlpha = 1;
-  [[S.min, L("minutes", "minutes")], [S.n, L(S.n > 1 ? "séances" : "séance", S.n > 1 ? "workouts" : "workout")], [S.jours, L(S.jours > 1 ? "jours actifs" : "jour actif", S.jours > 1 ? "active days" : "active day")], [sr.cur, L(sr.cur > 1 ? "jours d’affilée" : "jour d’affilée", "day streak")]].forEach(([v, t], k) => {
-    const cx = k % 2 ? 790 : 290, cy = 720 + Math.floor(k / 2) * 330;
-    x.fillStyle = "rgba(255,255,255,.15)"; x.beginPath(); x.roundRect ? x.roundRect(cx - 230, cy - 140, 460, 280, 44) : x.rect(cx - 230, cy - 140, 460, 280); x.fill();
-    x.fillStyle = "#fff"; x.font = `800 150px ${T1}`; x.fillText(v, cx, cy + 40); x.font = `600 40px ${T2}`; x.fillText(t, cx, cy + 100); });
+  tuilesCarte(K, [[S.min, L("minutes", "minutes")], [S.n, L(S.n > 1 ? "séances" : "séance", S.n > 1 ? "workouts" : "workout")], [S.jours, L(S.jours > 1 ? "jours actifs" : "jour actif", S.jours > 1 ? "active days" : "active day")], [sr.cur, L(sr.cur > 1 ? "jours d’affilée" : "jour d’affilée", "day streak")]], 720);
   x.font = `800 76px ${T1}`; x.fillText(L("NIVEAU", "LEVEL") + " " + N.n + " · " + N.nom.toUpperCase(), 540, 1370);
   x.textAlign = "left"; x.font = `600 40px ${T2}`; S.defis.forEach((d, k) => { x.globalAlpha = d.ok ? 1 : .6; x.fillText((d.ok ? "✓  " : "○  ") + L(d.fr, d.en), 150, 1490 + k * 66); });
-  x.globalAlpha = 1; x.textAlign = "center"; x.font = `500 36px ${T2}`; x.fillText("aidou-1.github.io/2work", 540, 1850);
-  return c;
+  x.globalAlpha = 1; return c;
 }
 function ouvrirBilan(l = lundiDe(), retourVers = () => ecran("menu")) {
   const S = statsSemaine(l), d = S.min - S.minPrec, fait = S.defis.filter(x => x.ok).length; stocker("bilanVu", l);
   outil(L("Ma semaine", "My week"), dateCourte(l) + " – " + dateCourte(decaler(l, 6)), !S.n ? `<p class="vide">${L("Aucune séance cette semaine pour l’instant : 5 minutes suffisent pour lancer la machine.", "No workout this week yet: 5 minutes is enough to get going.")}</p>` :
     `<div class="kpis">${[[S.min, L("minutes", "minutes"), "#10B981"], [S.n, L("séances", "workouts"), "#2F5BFF"], [S.jours + "/7", L("jours actifs", "active days"), "#F59E0B"], ["+" + (S.xp + fait * 50 + (fait === 3 ? 50 : 0)), "XP", "#E11D48"]].map(([v, t, c]) => `<div class="kpi" style="--c:${c}"><b>${v}</b><span>${t}</span></div>`).join("")}</div>
      <div class="carte"><h2>${L("Par rapport à la semaine d’avant", "Compared with the week before")}</h2><p>${!S.nPrec ? L("Pas de séance la semaine d’avant : tu repars sur de bonnes bases.", "No workout the week before: you are off to a fresh start.") : d > 0 ? L(`${d} minutes de plus (${S.minPrec} → ${S.min}). Belle progression !`, `${d} more minutes (${S.minPrec} → ${S.min}). Nice progress!`) : d < 0 ? L(`${-d} minutes de moins (${S.minPrec} → ${S.min}). Une semaine plus légère fait aussi partie de l’entraînement.`, `${-d} fewer minutes (${S.minPrec} → ${S.min}). A lighter week is part of training too.`) : L("Exactement le même volume : la régularité paie.", "Exactly the same volume: consistency pays off.")}${S.ef !== null ? " " + L(`Effort ressenti le plus haut : ${S.ef}/10.`, `Highest perceived effort: ${S.ef}/10.`) : ""}</p></div>
-     <div class="carte"><h2>${L("Défis de la semaine", "Weekly challenges")} · ${fait}/3</h2>${listeDefis(S.defis)}</div>${l === lundiDe() ? blocDuel(S) : ""}
+     ${carteDefis(S.defis)}${l === lundiDe() ? blocDuel(S) : ""}
      <button class="primary" id="bilanPartage">📸 ${L("Partager ma semaine", "Share my week")}</button><div id="shAide"></div>`, retourVers);
   if ($("duelGo")) $("duelGo").onclick = () => envoyerDuel($("duelGo"));
   if ($("bilanPartage")) $("bilanPartage").onclick = () => carteSemaine(S).toBlob(b => envoyer(b, "2work-semaine.jpg", "image/jpeg").then(r => { if (r === "telecharge") zoneAide().innerHTML = `<p class="sh-ok">${L("Image enregistrée dans tes téléchargements.", "Image saved to your downloads.")}</p>`; }), "image/jpeg", .92);
@@ -76,7 +70,7 @@ function ouvrirNiveau() {
      <div class="carte"><h2>${L("Ce que tu vas gagner", "What you will earn")}</h2><ul class="carnet ef-liste records">
        ${ligne(L("Échauffement ou étirements · 10 min", "Warm-up or stretching · 10 min"), gain(10, 1))}${ligne(L("Renfo, salle ou cardio · 20 min", "Strength, gym or cardio · 20 min"), gain(20, 2))}${ligne(L("Renfo, salle ou cardio · 30 min", "Strength, gym or cardio · 30 min"), gain(30, 2))}${ligne(L("Tabata · 8 min", "Tabata · 8 min"), gain(8, 3))}${ligne(L("Chaque défi de la semaine réussi", "Each weekly challenge completed"), 50)}${ligne(L("Bonus si les trois défis sont réussis", "Bonus when all three challenges are done"), 50)}</ul>
        <p class="sh-aide">${L("Règle : 10 XP par séance, plus ses minutes × 1 (échauffement, récupération), × 2 (renfo, salle, cardio) ou × 3 (Tabata).", "Rule: 10 XP per workout, plus its minutes × 1 (warm-up, recovery), × 2 (strength, gym, cardio) or × 3 (Tabata).")}</p></div>
-     <div class="carte"><h2>${L("Défis de la semaine", "Weekly challenges")} · ${D.filter(d => d.ok).length}/3</h2>${listeDefis(D)}</div>
+     ${carteDefis(D)}
      <h2 class="sec">${L("Récompenses de palier", "Milestone rewards")}</h2><div class="carte"><ul class="paliers">${R.map(x => { const n = -x[4], ok = N.n >= n, c = typeof x[5] === "string" && x[5][0] === "#" ? x[5] : x[6] && x[6][0] === "#" ? x[6] : "#F5B301";
        return `<li class="${ok ? "ok" : ""}"><b class="xp-rond${ok ? "" : " verrou"}">${n}</b><i style="--c:${c}"></i><span><strong>${L(x[2], x[3])}</strong><small>${L(...FAM[x[1]])} · ${ok ? L("débloqué, à retrouver dans Moi", "unlocked, find it in Me") : L("dans", "in") + " " + (n - N.n) + " " + L(n - N.n > 1 ? "niveaux" : "niveau", n - N.n > 1 ? "levels" : "level")}</small></span></li>`; }).join("")}</ul>
        <button class="toggle contour" id="nivMoi">${L("Ouvrir ma boutique", "Open my shop")}</button></div>`, () => ecran("menu"));
@@ -103,7 +97,7 @@ function blocsJeu() {
     [sr.best ? sr.best + L(" j", " d") : "", L("Meilleure série", "Best streak")], [h.some(x => x.fcMax) ? Math.max(...h.map(x => x.fcMax || 0)) + " bpm" : "", L("Fréquence cardiaque max", "Max heart rate")], [vma && vma.length ? Math.max(...vma.map(t => t.v)) + " km/h" : "", L("Meilleure VMA estimée", "Best estimated top aerobic speed")]].filter(r => r[0] !== "");
   return `<div id="jeuBloc" class="carte jeu-carte"><h2>${L("Niveau", "Level")} ${N.n} · ${N.nom}</h2>${barreXp(N)}<p class="sh-aide">${N.dans} / ${N.pour} XP · ${L("encore", "another")} ${N.pour - N.dans} XP ${L("pour le niveau", "to reach level")} ${N.n + 1}. ${L("Chaque séance rapporte 10 XP, plus ses minutes multipliées par son intensité.", "Each workout earns 10 XP, plus its minutes multiplied by its intensity.")}</p>
       <p class="joker">🛡️ ${sr.joker ? L("Joker de la semaine utilisé : ta série a survécu à un jour sans séance.", "This week’s joker is used: your streak survived a day without a workout.") : L("Joker de la semaine disponible : un jour sans séance ne cassera pas ta série.", "This week’s joker is available: one day without a workout will not break your streak.")}</p></div>
-    <div class="carte"><h2>${L("Défis de la semaine", "Weekly challenges")} · ${D.filter(d => d.ok).length}/3</h2>${listeDefis(D)}<button class="toggle contour" id="voirBilan">${L("Voir le bilan de ma semaine", "See my weekly summary")}</button></div>
+    ${carteDefis(D, `<button class="toggle contour" id="voirBilan">${L("Voir le bilan de ma semaine", "See my weekly summary")}</button>`)}
     <div class="carte"><h2>${L("Charge d’entraînement · 8 semaines", "Training load · 8 weeks")}</h2><div class="barres b8">${sems.map((s, k) => `<div class="${k === 7 ? "auj" : ""}"><b>${s.charge || ""}</b><i style="--h:${s.charge / mx * 100}%;--k:${k}"></i>${dateCourte(s.l).replace(/\D+$/, "").trim()}</div>`).join("")}</div>
       <p class="sh-aide">${L("Charge = minutes × intensité de la séance. Moyenne des 7 semaines précédentes : ", "Load = minutes × session intensity. Average of the 7 previous weeks: ")}${moy}. ${moy && sems[7].charge > moy * 1.5 ? L("Cette semaine est nettement au-dessus : prévois une journée de récupération.", "This week is well above it: plan a recovery day.") : ""}</p></div>
     ${ef.length > 1 ? `<div class="carte"><h2>${L("Effort ressenti · séances cardio", "Perceived effort · cardio sessions")}</h2><svg class="courbe" viewBox="0 0 300 100" role="img" aria-label="${L("Effort ressenti des dernières séances", "Perceived effort of recent sessions")} : ${ef.map(x => x.ef).join(", ")}">
@@ -127,7 +121,7 @@ function seanceDuJour(x) {
 }
 
 /* --- Duel de la semaine : on envoie son total d'XP de la semaine par lien (?duel=…), l'ami le retrouve dans son bilan (clé « duel ») --- */
-const lienDuel = () => location.origin + location.pathname + "?duel=" + btoa(unescape(encodeURIComponent(JSON.stringify({ n: lireProfil().nom || "", x: statsSemaine().xp, l: lundiDe() })))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const lienDuel = () => location.origin + location.pathname + "?duel=" + coderLien({ n: lireProfil().nom || "", x: statsSemaine().xp, l: lundiDe() });
 function blocDuel(S) {
   const d = lireJSON("duel", null), ok = d && d.l === S.l, e = ok ? S.xp - d.x : 0;
   return `<div class="carte"><h2>⚔️ ${L("Duel de la semaine", "Weekly duel")}</h2>${ok ? `<ul class="carnet ef-liste records"><li><span>${propre(d.n) || L("Ton ami", "Your friend")}</span><b>${d.x} XP</b></li><li><span>${L("Toi", "You")}</span><b>${S.xp} XP</b></li></ul><p>${e > 0 ? L(`Tu mènes de ${e} XP. Envoie ton score pour le lui montrer !`, `You lead by ${e} XP. Send your score to show them!`) : e < 0 ? L(`Il te manque ${-e} XP pour passer devant : une séance de 20 minutes en rapporte 50.`, `You need ${-e} XP to take the lead: a 20-minute workout earns 50.`) : L("Égalité parfaite : la prochaine séance fera la différence.", "A perfect tie: the next workout will decide.")}</p>`
@@ -135,10 +129,10 @@ function blocDuel(S) {
 }
 async function envoyerDuel(b) {
   const n = lireProfil().nom, url = lienDuel(), texte = L(`${n || "Ton ami"} a gagné ${statsSemaine().xp} XP cette semaine sur 2 WORK. Tu fais mieux ?`, `${n || "Your friend"} earned ${statsSemaine().xp} XP this week on 2 WORK. Can you beat it?`);
-  try { if (navigator.share) await navigator.share({ title: "2 WORK", text: texte, url }); else { await navigator.clipboard.writeText(texte + " " + url); b.textContent = L("✓ Lien copié", "✓ Link copied"); } } catch (e) {}
+  return partagerLien(texte, url, b);
 }
 addEventListener("DOMContentLoaded", () => { const c = new URLSearchParams(location.search).get("duel"); if (!c) return;
-  try { const d = JSON.parse(decodeURIComponent(escape(atob(c.replace(/-/g, "+").replace(/_/g, "/"))))); if (!(d.x >= 0 && d.x < 1e5) || !/^\d{4}-\d\d-\d\d$/.test(d.l)) return;
+  try { const d = decoderLien(c); if (!(d.x >= 0 && d.x < 1e5) || !/^\d{4}-\d\d-\d\d$/.test(d.l)) return;
     stocker("duel", JSON.stringify({ n: propre(d.n || "").slice(0, 20), x: Math.round(d.x), l: d.l })); history.replaceState(null, "", location.pathname); finBienvenue(); afficherEcran("menu"); ouvrirBilan(); } catch (e) {} });
 
 /* --- Programme sur mesure : 4 semaines assemblées à partir des journées des programmes existants, selon l'objectif, le rythme et l'intensité.

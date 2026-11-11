@@ -2,7 +2,6 @@
    Tous deux calés sur l'horloge du téléphone (justes même après un passage en arrière-plan) et arrêtés dès qu'on quitte l'écran (tMin).
    Test navette : allers-retours entre deux repères à 20 m, au rythme des bips ; palier 1 à 8,5 km/h, puis + 0,5 km/h chaque minute.
    La vitesse du dernier palier tenu en entier donne une estimation de la vitesse maximale aérobie (VMA), gardée dans « tests » (id « navette »). */
-const amorcerVoix = () => { try { if ("speechSynthesis" in window) { speechSynthesis.speak(new SpeechSynthesisUtterance("")); } } catch (e) {} };   // à appeler dans l'appui : sur téléphone, la voix ne peut parler plus tard que si elle a démarré pendant un geste
 const vNav = p => 8 + p * .5;
 const derniereVma = () => { const l = lireTests().filter(x => x.id === "navette"); return l.length ? l[l.length - 1].v : 0; };
 const alluresVma = (v = derniereVma()) => v ? L(`Tes allures d’après ton test (VMA ${v} km/h) : facile vers ${(v * .6).toFixed(1)} km/h, soutenu vers ${(v * .92).toFixed(1)} km/h, sprint au-dessus de ${(v * 1.1).toFixed(1)} km/h.`, `Your paces from your test (top aerobic speed ${v} km/h): easy around ${(v * .6).toFixed(1)} km/h, hard around ${(v * .92).toFixed(1)} km/h, sprint above ${(v * 1.1).toFixed(1)} km/h.`) : "";

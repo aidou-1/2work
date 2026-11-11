@@ -187,6 +187,7 @@ function choisirVoix() {
    un second essai part avec la voix par défaut du téléphone, puis l'annonce s'affiche en bandeau à l'écran. */
 let tSecours = null, tBandeau = null, prefixeVoix = "";   // prefixeVoix : dit juste avant la prochaine annonce (« C'est parti ! » au lancement)
 function bandeauVoix(texte) { const b = $("voixSecours"); b.textContent = "🔊 " + texte; b.classList.remove("hidden"); clearTimeout(tBandeau); tBandeau = setTimeout(() => b.classList.add("hidden"), 4500); }
+const amorcerVoix = () => { try { if ("speechSynthesis" in window) { speechSynthesis.speak(new SpeechSynthesisUtterance("")); } } catch (e) {} };   // à appeler dans l'appui : sur téléphone, la voix ne peut parler plus tard que si elle a démarré pendant un geste
 function parler(texte, delai = 700, vitesse = 0.95) {
   if (!voixActive || !texte) return;
   texte = prefixeVoix + texte; prefixeVoix = "";
@@ -531,7 +532,7 @@ function ouvrirApercu(cle) {
 function demarrer() {
   index = 0; enPause = false; enRepos = false;
   $("name").className = "name"; $("name").style.color = "";
-  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  amorcerVoix();
   $("bars").innerHTML = liste.map(() => "<i><b></b></i>").join("");
   ecran("session");
   sons.change();
@@ -658,7 +659,7 @@ let tab = { c: 0, r: 0, ph: "ex" };
 function demarrerTab() {
   tab = { c: 0, r: 0, ph: "ex" };
   enPause = false; enRepos = false;
-  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  amorcerVoix();
   $("bars").innerHTML = "<i><b></b></i>".repeat(cycles);
   ecran("session");
   sons.change();
@@ -751,7 +752,7 @@ function planSouf(r, minutes) {
 function demarrerSouf() {
   souf = { plan: planSouf(routine, dureeGlobale), i: 0 };
   enPause = false; enRepos = false;
-  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  amorcerVoix();
   $("bars").innerHTML = routine.blocs.map(() => "<i><b></b></i>").join("");
   ecran("session");
   sons.change();

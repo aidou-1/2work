@@ -8,7 +8,7 @@ function lancer() { clearInterval(tPret); fc.somme = fc.n = fc.max = 0; prefixeV
 function preparer(s) {   // s : séance à reprendre (sinon départ normal ; un clic passe son événement, ignoré)
   aReprendre = s && s.cle ? s : null;
   let n = PREP;
-  if ("speechSynthesis" in window) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  amorcerVoix();
   $("pretTime").textContent = n;
   ecran("pret");
   parler(PH("pret"));
