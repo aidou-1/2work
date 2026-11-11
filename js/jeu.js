@@ -113,6 +113,9 @@ function seanceDuJour(x) {
   const fatigue = moy >= 40 && S.charge > moy * 1.5 ? L("Ta charge de la semaine dépasse nettement ta moyenne : récupère aujourd’hui.", "Your weekly load is well above your average: recover today.")
     : h.slice(-2).length === 2 && h.slice(-2).every(y => dur(y) && y.j >= decaler(auj, -2)) ? L("Deux séances très dures de suite : place à la récupération.", "Two very hard sessions in a row: time to recover.") : "";
   if (fatigue) return { ...tpl("C:repos", niv), r: fatigue, ico: "🧘" };
+  const RP = REPRISES.find(R => repAvance(R[0]) > 0 && repAvance(R[0]) < NB_REP);   // reprise après blessure en cours : une séance un jour sur deux
+  if (RP) return h.some(y => y.b && y.j === decaler(auj, -1)) ? { ...tpl("C:repos", niv), r: L("Reprise après blessure : un jour sur deux. Aujourd’hui, récupération douce.", "Return after injury: every other day. Today, gentle recovery."), ico: "🧘" }
+    : { t: L("Reprise · ", "Return · ") + L(RP[1], RP[2]), s: L("Séance", "Session") + " " + (repAvance(RP[0]) + 1) + "/" + NB_REP, c: RP[3], ico: "🩹", go: () => ouvrirReprise(RP[0]) };
   const P = PROGRAMMES.map(p => [p, progAvance(p[0])]).filter(([, a]) => a > 0 && a < NB_PROG).sort((a, b) => b[1] - a[1])[0];
   if (P) return { t: L(P[0][1], P[0][2]), s: L("Programme · jour", "Programme · day") + " " + (P[1] + 1) + "/" + NB_PROG, c: P[0][5], go: () => ouvrirProg(P[0][0]) };
   if (x) return x.s;

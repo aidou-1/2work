@@ -16,6 +16,7 @@ $("otTitre").textContent = L("Outils", "Tools"); $("otSub").textContent = L("Tou
  ["Quick start", "Quick start", "15 min, sans matériel, focus cuisses, très intense… coche et c’est parti", "15 min, no equipment, leg focus, very intense… tick and go", "#0EA5E9", () => ouvrirExpress()],
  ["Minuteurs", "Timers", "Chrono, compte à rebours, EMOM et AMRAP", "Stopwatch, countdown, EMOM and AMRAP", "#D9480F", () => ouvrirMinuteur()],
  ["Mode combat", "Fight mode", "Rounds de boxe avec cloche, repos et enchaînements annoncés", "Boxing rounds with bell, rest and called combinations", "#DC2626", () => ouvrirCombat()],
+ ["Retour après blessure", "Back after injury", "Cheville, genou, dos, épaule… 12 séances progressives en 3 phases", "Ankle, knee, back, shoulder… 12 progressive sessions in 3 phases", "#0EA5E9", () => ouvrirProgs(false, "rep")],
  ["Tests de forme", "Fitness tests", "VMA, pompes, squats, gainage, souplesse : mesure tes progrès chaque mois", "Top aerobic speed, push-ups, squats, plank, flexibility: measure your progress every month", "#16A34A", () => ouvrirTests()],
  ["Suivi du corps", "Body tracking", "Poids et mensurations, avec leur courbe", "Weight and measurements, with their chart", "#DB2777", () => ouvrirCorps()],
  ["Calculateurs", "Calculators", "Charge maximale (1RM), pourcentages de charge, allures de course", "One-rep max (1RM), load percentages, running paces", "#7C3AED", () => ouvrirCalculs()]]
