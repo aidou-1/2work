@@ -109,7 +109,7 @@ background: color-mix(in srgb, var(--surface) 80%, transparent); border: 1px sol
 body:has(.nav:not(.hidden)) main { padding-bottom: 120px; }
 :is(#progres, #progs, #reglages) > .back { display: none; }   /* la barre remplace « ← Retour » sur ces écrans */
 .voix-secours { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 12px; right: 110px; z-index: 20; padding: 10px 14px; border-radius: 16px; font-weight: 600; font-size: .92rem; background: var(--ink); color: var(--bg); box-shadow: 0 12px 26px -10px rgba(0,0,0,.5); animation: frais .3s ease-out; }
-.chips.avis-choix { flex-wrap: wrap; overflow: visible; gap: 6px; margin-bottom: 4px; } .avis-choix .toggle { flex: none; font-size: .82rem; padding: 7px 11px; } #avisTxt { border-radius: 16px; width: 100%; margin-top: 10px; }
+.chips.avis-choix { flex-wrap: wrap; overflow: visible; gap: 6px; margin-bottom: 4px; } .avis-choix .toggle { flex: none; font-size: .82rem; padding: 7px 11px; } #avisTxt, .avis-zone { border-radius: 16px; width: 100%; margin-top: 10px; } .avis-zone { margin: 6px 0 4px; }
 .avis-etoiles { display: flex; justify-content: center; gap: 4px; } .avis-etoiles button { background: none; padding: 0 4px; font-size: 2.3rem; line-height: 1; color: var(--soft); } .avis-etoiles button.on { color: #F5B301; }
 textarea.choixVoix { width: 100%; resize: vertical; }
 /* outils : filtres en pastilles défilantes, courbes, grand affichage des minuteurs */

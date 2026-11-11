@@ -345,29 +345,29 @@ if (LANGUE === "en") document.querySelectorAll("[data-en]").forEach(e => { e.tex
    Note sur 5, ce qui plaît, ce qui gêne, message libre et contexte anonyme (aucun nom, aucune donnée de santé).
    Envoi par la page du formulaire Google, préremplie : ses réponses arrivent dans une feuille Google, prête à trier et analyser.
    AVIS_FORM = identifiant du formulaire publié (après /forms/d/e/) et numéros « entry. » de ses questions, tirés du lien prérempli.
-   Le contexte technique n'est envoyé que si le formulaire a une question pour lui (AVIS_FORM.contexte) : le commentaire reste celui de la personne.
+   Le contexte technique va dans sa propre question si le formulaire en a une (AVIS_FORM.contexte), sinon à la suite du commentaire.
    Sans formulaire renseigné, l'avis part par la feuille de partage du téléphone, comme avant. */
 const AVIS_FORM = { id: "1FAIpQLSftVfIv8XIvV0uDcGJi9fCrXXidM8E-PtThj7YDlqMEoZee6w", note: "1743096007", aime: "141393001", gene: "1201111177", message: "1354644341", pratique: "324741575" };
 const AVIS_THEMES = [["Séances guidées", "Guided workouts"], ["Voix et consignes", "Voice and cues"], ["Boxe et mode combat", "Boxing and fight mode"], ["Cardio", "Cardio"], ["Programmes", "Programmes"],
   ["Personnage et boutique", "Character and shop"], ["Progrès et niveaux", "Progress and levels"], ["Design", "Design"], ["Facilité d’utilisation", "Ease of use"], ["Bugs ou lenteurs", "Bugs or slowness"]];
 // L'avis s'ouvre sur la page Google du formulaire, déjà remplie : la personne n'a qu'à toucher « Envoyer ».
 // (Un envoi direct, sans passer par cette page, arrivait dans la feuille avec toutes les cases vides.)
-const lienAvis = r => `https://docs.google.com/forms/d/e/${AVIS_FORM.id}/viewform?usp=pp_url&` + new URLSearchParams(Object.entries(AVIS_FORM.contexte ? r : { ...r, contexte: "" })
+const lienAvis = r => `https://docs.google.com/forms/d/e/${AVIS_FORM.id}/viewform?usp=pp_url&` + new URLSearchParams(Object.entries(AVIS_FORM.contexte ? r : { ...r, message: [r.message, "— " + r.contexte].filter(Boolean).join("\n"), contexte: "" })
   .filter(([k, v]) => AVIS_FORM[k] && v !== "").map(([k, v]) => ["entry." + AVIS_FORM[k], String(v)]));
 function ouvrirAvis() {
-  let note = 0; const groupe = (k, l) => `<div class="chips avis-choix" data-g="${k}">${l.map(([f, e], i) => `<button class="toggle" data-i="${i}" aria-pressed="false">${L(f, e)}</button>`).join("")}</div>`;
+  let note = 0; const zone = (k, ph) => `<textarea id="avisTxt-${k}" class="choixVoix avis-zone" rows="2" maxlength="800" placeholder="${ph}"></textarea>`, groupe = (k, l) => `<div class="chips avis-choix" data-g="${k}">${l.map(([f, e], i) => `<button class="toggle" data-i="${i}" aria-pressed="false">${L(f, e)}</button>`).join("")}</div>`;
   ouvrirFeuilleInfo(L("Ton avis sur 2 WORK", "Your feedback on 2 WORK"), `<p class="sh-aide">${L("Deux minutes pour dire ce qui marche et ce qui coince : chaque avis est lu et sert à décider des prochaines améliorations.", "Two minutes to say what works and what does not: every review is read and decides the next improvements.")}</p>
     <div class="avis-etoiles">${[1, 2, 3, 4, 5].map(k => `<button data-n="${k}" aria-label="${k}/5">★</button>`).join("")}</div>
-    <span class="champ-titre">${L("Ce que tu as aimé", "What you liked")}</span>${groupe("aime", AVIS_THEMES.slice(0, -1))}
-    <span class="champ-titre">${L("Ce qui t’a gêné ou manqué", "What bothered you or was missing")}</span>${groupe("gene", AVIS_THEMES)}
+    <span class="champ-titre">${L("Ce que tu as aimé", "What you liked")}</span>${groupe("aime", AVIS_THEMES.slice(0, -1))}${zone("aime", L("Dis-nous ce qui t’a plu, avec un exemple si possible…", "Tell us what you liked, with an example if you can…"))}
+    <span class="champ-titre">${L("Ce qui t’a gêné ou manqué", "What bothered you or was missing")}</span>${groupe("gene", AVIS_THEMES)}${zone("gene", L("Dis-nous ce qui t’a gêné ou ce qui t’a manqué…", "Tell us what bothered you or what was missing…"))}
     <span class="champ-titre">${L("Penses-tu que cette appli peut t’être pratique ?", "Do you think this app can be useful to you?")}</span><div class="chips avis-choix" data-g="pratique">${[["Oui", "Yes"], ["Non", "No"]].map(([f, e]) => `<button class="toggle" data-v="${f}" aria-pressed="false">${L(f, e)}</button>`).join("")}</div>
-    <textarea id="avisTxt" class="choixVoix" rows="4" maxlength="1500" placeholder="${L("Raconte en quelques mots (facultatif) : un exemple aide beaucoup.", "Tell us in a few words (optional): an example helps a lot.")}"></textarea>
+    <textarea id="avisTxt" class="choixVoix" rows="4" maxlength="1500" placeholder="${L("Autre chose à nous dire ? (facultatif)", "Anything else to tell us? (optional)")}"></textarea>
     <p class="sh-aide">🔒 ${L("Avis anonyme : partent seulement ta note, tes choix, ton message et quelques infos techniques (nombre de séances, niveau, type de téléphone, langue).", "Anonymous feedback: only your rating, choices, message and a few technical details (number of workouts, level, phone type, language) are sent.")}</p>
     <button class="primary" id="avisOk">${L("Envoyer mon avis", "Send my feedback")}</button><p class="sh-ok" id="avisEtat"></p>`);
   const E = [...document.querySelectorAll(".avis-etoiles button")], etat = t => { $("avisEtat").textContent = t; };
   E.forEach(b => b.onclick = () => { note = +b.dataset.n; E.forEach(x => x.classList.toggle("on", +x.dataset.n <= note)); });
   document.querySelectorAll(".avis-choix .toggle").forEach(b => b.onclick = () => { if (b.dataset.v) b.parentNode.querySelectorAll(".toggle").forEach(x => x !== b && x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"); });   // « pratique » : un seul choix
-  const choisis = g => [...document.querySelectorAll(`[data-g="${g}"] [aria-pressed="true"]`)].map(b => AVIS_THEMES[+b.dataset.i][0]).join(", ");   // libellés français : la feuille reste homogène quelle que soit la langue
+  const choisis = g => [[...document.querySelectorAll(`[data-g="${g}"] [aria-pressed="true"]`)].map(b => AVIS_THEMES[+b.dataset.i][0]).join(", "), $("avisTxt-" + g).value.trim()].filter(Boolean).join("\n");   // thèmes cochés, puis le texte rédigé en dessous   // libellés français : la feuille reste homogène quelle que soit la langue
   $("avisOk").onclick = async () => {
     const P = document.querySelector('[data-g="pratique"] [aria-pressed="true"]'), r = { note: note || "", aime: choisis("aime"), gene: choisis("gene"), message: $("avisTxt").value.trim(), pratique: P ? P.dataset.v : "" };
     if (!note && !r.aime && !r.gene && !r.message && !r.pratique) return etat(L("Choisis une note, un thème ou écris un mot.", "Pick a rating, a topic or write a few words."));
