@@ -120,6 +120,11 @@ $("pList").onclick = ev => {
 let drag = null;
 const lignes = () => [...$("pList").children].filter(l => l.dataset.i !== undefined && !l.classList.contains("flottant"));
 $("pList").addEventListener("contextmenu", ev => ev.preventDefault());
+/* Séance : glisser vers la gauche passe à l'exercice suivant, vers la droite revient au précédent ; l'aperçu « Ensuite » fait de même */
+{ let gx = 0, gy = 0, gt = 0; const S = $("session");
+  S.addEventListener("touchstart", e => { const t = e.touches[0]; gx = t.clientX; gy = t.clientY; gt = Date.now(); }, { passive: true });
+  S.addEventListener("touchend", e => { const t = e.changedTouches[0], dx = t.clientX - gx; if (Math.abs(dx) > 80 && Math.abs(t.clientY - gy) < 50 && Date.now() - gt < 600 && !e.target.closest(".controls, input")) { vibrer(20); $(dx < 0 ? "next" : "prev").click(); } }, { passive: true });
+  $("ensuite").onclick = () => $("next").click(); }
 $("pList").addEventListener("pointerdown", ev => {
   const li = ev.target.closest("li");
   if (!li || li.dataset.i === undefined || ev.target.closest(".suppr")) return;

@@ -229,6 +229,15 @@ box-shadow: 0 14px 28px -16px var(--c); }
 .defis-sem i { position: absolute; left: 0; right: 0; bottom: 3px; height: 5px; border-radius: 5px; background: linear-gradient(90deg, #EA580C var(--p), var(--soft) var(--p)); } .defis-sem li.ok i { background: #10B981; }
 .barres.b8 { grid-template-columns: repeat(8, 1fr); gap: 5px; font-size: .72rem; } .joker { font-size: .86rem; margin: 8px 0 0; }
 .courbe { width: 100%; overflow: visible; } .courbe line { stroke: var(--ligne); stroke-width: 1; } .courbe text { font-size: 8px; fill: var(--muted); } .courbe polyline { fill: none; stroke: #EA580C; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; } .courbe circle { fill: #EA580C; stroke: var(--surface); stroke-width: 1.5; }
+.ensuite { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 14px; padding: 8px 12px; text-align: left; border-radius: 16px; background: var(--surface); border: 1px solid var(--ligne); color: inherit; } .ensuite:empty { display: none; }
+.ensuite .mini, .ensuite img { flex: none; width: 60px; height: 41px; border-radius: 8px; object-fit: cover; background: #EEF1F8; } .ensuite small { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); } .ensuite b { font-family: var(--titre); font-size: 1.1rem; } .ensuite span { flex: 1; min-width: 0; } .ensuite::after { content: "›"; font-size: 1.5rem; color: var(--muted); }
+/* Téléphone ou tablette posés à l'horizontale pendant la séance : illustration à gauche, chrono et commandes à droite */
+@media (orientation: landscape) and (max-height: 560px) {
+  main:has(#session:not(.hidden)), main:has(#outil:not(.hidden)) { max-width: none; padding-top: 12px; }
+  #session:not(.hidden) { display: grid; grid-template-columns: 1.15fr 1fr; column-gap: 22px; align-items: start; }
+  #session > * { grid-column: 2; } #session > .bars { grid-column: 1 / -1; margin-bottom: 8px; } #session > :is(#mediaBox, .desc, .zones) { grid-column: 1; }
+  #session > #mediaBox { grid-row: 2 / span 5; } #session > .desc { grid-row: 7 / span 2; } #session .media { margin: 0 0 8px; } #session .time { font-size: clamp(4.5rem, 30vh, 8rem); } #session .name { font-size: 1.6rem; } #session .controls { margin-top: 10px; align-self: end; }
+}
 .combo { min-height: 2.6em; margin: 4px 0 10px; text-align: center; font: 800 1.7rem/1.15 var(--titre); color: var(--accent); }
 .ef-choix { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; } .ef-choix .toggle { padding: 11px 0; min-width: 0; }
 .ef-liste { list-style: none; margin: 0; } .ef-liste li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; font-size: .92rem; } .ef-liste li + li { border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); }
@@ -719,6 +728,7 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <div id="mediaBox"></div>
 <p class="desc" id="desc"></p>
 <p class="zones" id="zones"></p>
+<button class="ensuite" id="ensuite" aria-label="Exercice suivant"></button>
 <div class="controls">
 <button id="prev">Précédent</button>
 <button id="pause" class="main">Pause</button>

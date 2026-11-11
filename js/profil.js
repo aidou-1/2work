@@ -496,6 +496,8 @@ function bienvenue(etape = 1) {
       <div class="choices">${[["debutant", "Je débute ou je reprends", "I am starting or getting back into it", "#16A34A"], ["inter", "Je fais du sport 1 à 2 fois par semaine", "I exercise 1 to 2 times a week", "#2563EB"], ["avance", "Je m’entraîne 3 fois par semaine ou plus", "I train 3 times a week or more", "#7C3AED"]]
         .map(([n, f, e, c]) => `<button class="choice" style="--c:${c}" data-n="${n}"><strong>${L(...NIV_RENFO.find(x => x[0] === n).slice(1, 3))}</strong><span>${L(f, e)}</span></button>`).join("")}</div>
       <label class="champ bv-sport"><span>${L("Ton sport principal (facultatif)", "Your main sport (optional)")}</span><select id="bvSport"><option value="">${L("Aucun en particulier", "None in particular")}</option>${sportsRenfo().map(k => `<option value="${k}"${p.sport === k ? " selected" : ""}>${T(CATS[k].titre)}</option>`).join("")}</select></label>`;
+    C.insertAdjacentHTML("beforeend", `<span class="champ-titre">${L("Ton matériel (facultatif)", "Your equipment (optional)")}</span><div class="chips">${FAMILLES_MAT.map(([k, f, e]) => `<button class="toggle" data-mat="${k}" aria-pressed="${(p.materiel || []).includes(k)}">${L(f, e)}</button>`).join("")}</div>`);
+    C.querySelectorAll("[data-mat]").forEach(b => b.onclick = () => { const l = lireProfil().materiel || [], k = b.dataset.mat, n = l.includes(k) ? l.filter(x => x !== k) : [...l, k]; ecrireProfil("materiel", n); b.setAttribute("aria-pressed", n.includes(k)); });
     $("bvSport").onchange = e => ecrireProfil("sport", e.target.value);
     C.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { ecrireProfil("niveau", b.dataset.n); bienvenue(3); });
   } else {

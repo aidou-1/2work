@@ -607,6 +607,8 @@ function afficher() {
   $("desc").innerHTML = etapesEx(e);
   $("zones").textContent = e.muscles;
   media(e);
+  const sv = liste.slice(index + 1).find(x => x.id !== e.id);   // aperçu du prochain mouvement différent ; un appui y passe
+  $("ensuite").innerHTML = sv ? `${vignette(sv.id)}<span><small>${L("Ensuite", "Up next")}</small><b>${sv.nom}</b></span>` : "";
   [...$("bars").children].forEach((el, i) => {
     el.classList.toggle("done", i < index);
     el.firstChild.style.width = i < index ? "100%" : "0";
@@ -660,7 +662,7 @@ function demarrerTab() {
   afficherTab();
 }
 
-function afficherTab() {
+function afficherTab() { $("ensuite").innerHTML = "";
   noterSeance(); fondu(); bandeauCote(""); typeEx();
   const P = { ex: [T("EXERCICE"), dureeGlobale, "#D9480F"], rep: [T("REPOS"), repos, "#2F7D3A"], rec: [T("RÉCUPÉRATION"), recup, "#3A6EA5"] }[tab.ph];
   reste = P[1];
@@ -753,7 +755,7 @@ function demarrerSouf() {
   afficherSouf();
 }
 
-function afficherSouf() {
+function afficherSouf() { $("ensuite").innerHTML = "";
   noterSeance(); bandeauCote(""); typeEx();
   const p = souf.plan[souf.i], b = routine.blocs[p.j], de = souf.i ? souf.plan[souf.i - 1].to : 0.45;
   const c = p.to > de ? "var(--accent)" : p.to < de ? "#2F7D3A" : "var(--muted)";
