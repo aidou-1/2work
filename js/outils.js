@@ -75,6 +75,13 @@ function composerExpress({ min = 10, z = "tout", m = "sans", int = "normal" }) {
   CONSEILLES.express = pool; ouvrirRoutine("express"); dureeGlobale = effort; repos = pause; ouvrirApercu("express");   // effort et repos de l'intensité choisie (toujours réglables dans l'aperçu)
   return true;
 }
+/* Accueil : « Tu ne sais pas quoi faire ? » — on choisit seulement son temps, la séance part tout de suite, avec son matériel s'il est enregistré */
+function majQuick() {
+  const Z = $("quickCarte"); if (!Z) return; const m = monMatos().length ? "mien" : "sans";
+  Z.innerHTML = `<div class="quick-corps"><strong>${ico("eclair")} ${L("Tu ne sais pas quoi faire ?", "Not sure what to do?")}</strong><small>${L("Choisis juste ton temps et fonce : l’appli compose une séance avec ce que tu as sous la main" + (m === "mien" ? " (ton matériel compris)." : ", sans matériel."), "Just pick your time and go: the app builds a workout with what you have at hand" + (m === "mien" ? " (including your equipment)." : ", no equipment."))}</small>
+    <div class="quick-temps">${[5, 10, 15, 20, 30].map(n => `<button class="toggle" data-qmin="${n}">${n} min</button>`).join("")}</div><button class="lien" id="quickPlus">${L("Plus de choix : zone, intensité, matériel ›", "More options: area, intensity, equipment ›")}</button></div>`;
+  Z.querySelectorAll("[data-qmin]").forEach(b => b.onclick = () => ouvrirExpress({ min: +b.dataset.qmin, m })); $("quickPlus").onclick = () => ouvrirExpress();
+}
 function ouvrirExpress(direct) {
   if (direct && composerExpress(direct)) return;
   const c = { min: 15, z: "tout", m: monMatos().length ? "mien" : "sans", int: "normal" };

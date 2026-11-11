@@ -335,7 +335,7 @@ function ouvrirPage(id) {
   R.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Informations", "Information")}</h2><div class="infos-liens">${Object.entries(PAGES).map(([k, [f, e]]) => `<button class="toggle contour" data-page="${k}">${L(f, e)}</button>`).join("")}</div>`);
   $("rgProfil").onclick = () => ouvrirProfil("reglages"); $("rgPlanning").onclick = () => ouvrirPlanning("reglages");
   R.querySelectorAll("[data-page]").forEach(b => b.onclick = () => ouvrirPage(b.dataset.page));
-  document.querySelector("#menu .tableau").insertAdjacentHTML("afterend", `<div class="semaine-carte vita" id="vitaCarte"></div><div class="semaine-carte jeu" id="jeuCarte"></div><div class="semaine-carte" id="repriseCarte"></div><div class="semaine-carte" id="semaineCarte"></div><div class="semaine-carte banniere" id="banniere"></div>`);
+  document.querySelector("#menu .tableau").insertAdjacentHTML("afterend", `<div class="semaine-carte vita" id="vitaCarte"></div><div class="semaine-carte jeu" id="jeuCarte"></div><div class="semaine-carte" id="repriseCarte"></div><div class="semaine-carte" id="semaineCarte"></div><div class="semaine-carte quick" id="quickCarte"></div><div class="semaine-carte banniere" id="banniere"></div>`);
   $("profilRetour").onclick = () => retour(() => profilRetourVers === "planning" ? ouvrirPlanning(planningRetourVers) : ecran(profilRetourVers));
   $("planningRetour").onclick = () => retour(() => planningRetourVers === "profil" ? ouvrirProfil(profilRetourVers === "planning" ? "reglages" : profilRetourVers) : ecran(planningRetourVers));
   $("pageRetour").onclick = () => retour(() => ecran("reglages"));

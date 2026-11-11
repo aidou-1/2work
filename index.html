@@ -161,6 +161,8 @@ box-shadow: 0 14px 28px -16px var(--c); }
 .embleme svg { width: 100%; height: 100%; filter: drop-shadow(0 8px 10px rgba(0,0,0,.28)); }
 /* carte « Aujourd'hui » et bannière */
 .semaine-carte { display: flex; gap: 8px; margin: 0 0 10px; } .semaine-carte:empty { display: none; }
+.quick-corps { flex: 1; padding: 12px 14px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--ligne); border-left: 4px solid #0EA5E9; box-shadow: var(--ombre); } .quick-corps strong { display: flex; align-items: center; gap: 6px; font-family: var(--titre); font-size: 1.1rem; } .quick-corps strong .ic { width: 20px; height: 20px; color: #0EA5E9; }
+.quick-corps small { display: block; margin: 3px 0 9px; font-size: .84rem; color: var(--muted); } .quick-temps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; } .quick-temps .toggle { min-width: 0; padding: 9px 0; font-weight: 700; } .quick-corps .lien { margin-top: 9px; font-size: .84rem; }
 .sc-corps { flex: 1; display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border-left: 4px solid var(--c, var(--brand)); color: inherit; font: inherit; cursor: pointer; }
 .semaine-carte strong { display: block; font-family: var(--titre); font-size: 1.05rem; line-height: 1.1; } .semaine-carte small { display: block; color: var(--muted); font-size: .78rem; } .sc-ico { font-size: 1.6rem; }
 .semaine-carte .sc-go { flex: none; width: 58px; border-radius: var(--r); color: #fff; font-size: 1.3rem; background: #16A34A; }
