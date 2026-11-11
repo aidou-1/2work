@@ -109,23 +109,18 @@ function avatarSvg(v = vitalite(), a = lireAvatar()) {   // buste : la tête du 
     ${dos}<path d="M22 130c0-26 16-36 38-36s38 10 38 36z" fill="${tee[5]}"/><path d="M50 92h20v8q-10 8-20 0z" fill="${PEAUX[a.peau] || PEAUX[1]}"/>${visage}</svg>`;
 }
 function majVitalite() {   // carte du menu : avatar, barre de vitalité, et un appui pour recharger en 5 minutes
-  const Z = $("vitaCarte"); if (!Z) return; const v = vitalite(), e = etatVita(v), fait = lireHist().some(x => x.j === jourCle());
+  const Z = $("vitaCarte"); if (!Z) return; const v = vitalite(), e = etatVita(v), fait = lireHist().some(x => x.j === jourCle()), sr = series(lireHist());
   Z.innerHTML = `<button class="vita-av" id="vitaAv" aria-label="${L("Modifier mon avatar", "Edit my avatar")}">${avatarSvg(v)}</button><div class="vita-txt"><strong>${L(e[1], e[2])}</strong><div class="vita-barre vb-${e[0]}" role="progressbar" aria-valuenow="${v}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.max(4, v)}%"></i></div>
-    <small>${L("Vitalité", "Vitality")} ${v} % · ${fait ? L("rechargée aujourd’hui, reviens demain", "recharged today, come back tomorrow") : v >= 80 ? L("garde le feu allumé", "keep the fire burning") : L("5 minutes suffisent pour la remonter", "5 minutes is enough to raise it")}</small></div>${fait ? "" : `<button class="sc-go" id="vitaGo" aria-label="${L("Séance de 5 minutes", "5-minute workout")}">${ico("eclair")}<small>5 min</small></button>`}`;
+    <small>${L("Vitalité", "Vitality")} ${v} % · 🔥 ${sr.cur} ${L(sr.cur > 1 ? "jours d’affilée" : "jour d’affilée", sr.cur > 1 ? "days in a row" : "day in a row")}${sr.joker ? " · 🛡️" : ""} · ${fait ? L("rechargée aujourd’hui, reviens demain", "recharged today, come back tomorrow") : v >= 80 ? L("garde le feu allumé", "keep the fire burning") : L("5 minutes suffisent pour la remonter", "5 minutes is enough to raise it")}</small></div>${fait ? "" : `<button class="sc-go" id="vitaGo" aria-label="${L("Séance de 5 minutes", "5-minute workout")}">${ico("eclair")}<small>5 min</small></button>`}`;
   $("vitaAv").onclick = () => ouvrirMoi(); if ($("vitaGo")) $("vitaGo").onclick = () => ouvrirExpress({ min: 5 });
 }
-function blocAvatar() {   // éditeur dans le profil
-  const a = lireAvatar(), v = vitalite(), rond = (attr, l, sel) => l.map((c, i) => `<button class="pastille" data-${attr}="${i}" aria-pressed="${i === sel}" style="--c:${c}" aria-label="${attr} ${i + 1}"></button>`).join("");
-  return `<div class="carnet avatar-edit"><div class="vita-av grand">${avatarSvg(v, a)}</div><div><strong>${L(etatVita(v)[1], etatVita(v)[2])} · ${v} %</strong><div class="vita-barre vb-${etatVita(v)[0]}"><i style="width:${Math.max(4, v)}%"></i></div>
+function blocAvatar() {   // profil : le personnage et sa vitalité ; l'apparence se règle dans l'onglet Moi
+  const v = vitalite(), e = etatVita(v);
+  return `<div class="carnet avatar-edit"><div class="vita-av grand">${avatarSvg(v)}</div><div><strong>${L(e[1], e[2])} · ${v} %</strong><div class="vita-barre vb-${e[0]}"><i style="width:${Math.max(4, v)}%"></i></div>
     <small class="sh-aide">${L("Sa vitalité monte à chaque séance (5 minutes suffisent) et redescend sans activité.", "Vitality rises with every workout (5 minutes is enough) and drops without activity.")}</small></div>
-    <div class="avatar-choix"><div class="stepper niv-choix">${[["g", "Garçon", "Boy"], ["f", "Fille", "Girl"]].map(([k, f, e]) => `<button class="toggle" data-ag="${k}" aria-pressed="${a.g === k}">${L(f, e)}</button>`).join("")}</div>
-      <span class="champ-titre">${L("Peau", "Skin")}</span><div class="pastilles-choix">${rond("ap", PEAUX, a.peau)}</div><span class="champ-titre">${L("Cheveux", "Hair")}</span><div class="pastilles-choix">${rond("ac", CHEVEUX, a.chev)}</div>
-      <div class="stepper niv-choix">${[["Courts", "Short"], ["Mi-longs", "Medium"], ["Longs", "Long"]].map(([f, e], i) => `<button class="toggle" data-al="${i}" aria-pressed="${a.lon === i}">${L(f, e)}</button>`).join("")}</div></div></div>`;
+    <button class="toggle contour" id="pfMoi" style="grid-column:1/-1">${L("Personnaliser mon personnage", "Customise my character")}</button></div>`;
 }
-function brancherAvatar() {
-  const Z = $("pfAvatar"), regler = (k, v) => { ecrireProfil("avatar", { ...lireAvatar(), [k]: v }); Z.innerHTML = blocAvatar(); brancherAvatar(); };
-  [["ag", "g", x => x], ["ap", "peau", Number], ["ac", "chev", Number], ["al", "lon", Number]].forEach(([attr, k, f]) => Z.querySelectorAll(`[data-${attr}]`).forEach(b => b.onclick = () => regler(k, f(b.dataset[attr]))));
-}
+const brancherAvatar = () => { $("pfMoi").onclick = () => { moiVue = "apparence"; essai = ""; ouvrirMoi(); }; };
 
 /* --- Minuteurs libres : chrono, compte à rebours, EMOM (un départ par minute), AMRAP (un maximum de tours dans le temps) ; calés sur l'heure réelle --- */
 let mn = { type: "chrono", min: 5, t0: 0, cumul: 0, marche: false, tours: 0, sec: -1 };

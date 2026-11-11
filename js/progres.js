@@ -208,8 +208,8 @@ function ouvrirProgres() {
   setTimeout(() => $("prCorps").querySelectorAll("[data-v]").forEach(b => compteur(b, +b.dataset.v)), 350);
 }
 function majTableau() {
-  const S = series(lireHist()), n = S.cur;
-  $("tSerie").textContent = n; $("tSerieTxt").textContent = L(n > 1 ? "jours d’affilée" : "jour d’affilée", n > 1 ? "days in a row" : "day in a row");
+  const n = statsSemaine().n;   // la série en cours est affichée une seule fois, sur la carte de vitalité ; cette tuile compte les séances de la semaine
+  $("tSerie").textContent = n; $("tSerieTxt").textContent = L(n > 1 ? "séances cette semaine" : "séance cette semaine", n > 1 ? "workouts this week" : "workout this week");
   $("tProgres").classList.toggle("eteint", n === 0);
   const prec = moisPrecedent(), aRecap = lireHist().some(x => x.j.startsWith(prec)) && localStorage.getItem("recapVu") !== prec;
   let pt = $("tProgres").querySelector(".nouveau"); if (aRecap && !pt) { pt = document.createElement("i"); pt.className = "nouveau"; $("tProgres").appendChild(pt); } else if (!aRecap && pt) pt.remove();
@@ -384,12 +384,13 @@ function progJour(P, i, choix) {   // construit la séance du jour i (0-27) : bl
     objectif: L(oFr, oEn), rpe: rpe[ww], conseil: L(...cs), semaine: w, nomProg: L(tFr, tEn), couleurProg: couleur, ty, ...regl };
 }
 const dureesProg = P => { const d = Array.from({ length: NB_PROG }, (_, i) => Math.round(progJour(P, i).plan.reduce((s, q) => s + q.d + q.r, 0) / 60)); return Math.min(...d) + "–" + Math.max(...d) + " min"; };
+const avecMat = P => P[10].some(d => d[3].some(e => EXERCICES[e] && EXERCICES[e].mat));   // vrai pour un programme sur mesure composé avec du matériel
 function progTerminer(id, i) { if (i === progAvance(id)) stocker("prog_" + id, i + 1); }
 function ouvrirProgs(sens) {
   $("pgTitre").textContent = L("Programmes", "Programmes");
   $("pgSub").textContent = L("4 semaines, une séance par jour, périodisées comme un vrai plan d’entraînement. Suis le chemin !", "4 weeks, one workout a day, periodised like a real training plan. Follow the path!");
   $("pgListe").innerHTML = PROGRAMMES.map(P => { const a = progAvance(P[0]), pc = a / NB_PROG;
-    return `<button class="prog-carte" style="--c:${P[5]}" data-p="${P[0]}"><svg class="rond" viewBox="0 0 62 62"><circle cx="31" cy="31" r="26" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="7"/><circle cx="31" cy="31" r="26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="${163.4 * pc} 200" transform="rotate(-90 31 31)"/><text x="31" y="38" text-anchor="middle">${a}/${NB_PROG}</text></svg><div><strong>${L(P[1], P[2])}</strong><span>${L(P[3], P[4])}</span><span class="prog-meta">${L(...P[6])} · ${dureesProg(P)} · ${L("sans matériel", "no equipment")}</span></div></button>`; }).join("");
+    return `<button class="prog-carte" style="--c:${P[5]}" data-p="${P[0]}"><svg class="rond" viewBox="0 0 62 62"><circle cx="31" cy="31" r="26" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="7"/><circle cx="31" cy="31" r="26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="${163.4 * pc} 200" transform="rotate(-90 31 31)"/><text x="31" y="38" text-anchor="middle">${a}/${NB_PROG}</text></svg><div><strong>${L(P[1], P[2])}</strong><span>${L(P[3], P[4])}</span><span class="prog-meta">${L(...P[6])} · ${dureesProg(P)} · ${avecMat(P) ? L("avec matériel", "with equipment") : L("sans matériel", "no equipment")}</span></div></button>`; }).join("");
   $("pgListe").insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Retour au sport après blessure", "Back to sport after injury")}</h2><p class="sub" style="margin:4px 0 10px">${L("Programmes de renforcement en 3 étapes pour reprendre le sport, une fois ta blessure prise en charge et avec l’accord de ton médecin ou kiné. Ce ne sont pas des soins.", "3-step strengthening programmes to get back to sport, once your injury has been looked after and with your doctor’s or physio’s agreement. They are not treatment.")}</p>`
     + REPRISES.map(R => { const a = repAvance(R[0]); return `<button class="prog-carte petite" style="--c:${R[3]}" data-r="${R[0]}"><svg class="rond" viewBox="0 0 62 62"><circle cx="31" cy="31" r="26" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="7"/><circle cx="31" cy="31" r="26" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="${163.4 * a / NB_REP} 200" transform="rotate(-90 31 31)"/><text x="31" y="38" text-anchor="middle">${a}/${NB_REP}</text></svg><div><strong>${L(R[1], R[2])}</strong><span class="prog-meta">${L("12 séances · 3 phases", "12 sessions · 3 phases")}</span></div></button>`; }).join(""));
   $("pgListe").insertAdjacentHTML("afterbegin", `<button class="toggle contour" id="pgPerso" style="width:100%;margin-bottom:12px">✨ ${PROGRAMMES[0][0] === "perso" ? L("Refaire mon programme sur mesure", "Rebuild my custom programme") : L("Créer mon programme sur mesure", "Create my custom programme")}</button>`); $("pgPerso").onclick = ouvrirProgPerso;
@@ -404,7 +405,7 @@ function ouvrirProg(id, sens) {
   $("pSubProg").textContent = a >= NB_PROG ? L("Programme terminé, bravo ! Tu peux refaire chaque séance.", "Programme complete, well done! You can replay any session.") : L("Jour {n} sur 28 · touche le rond qui rebondit", "Day {n} of 28 · tap the bouncing circle").replace("{n}", a + 1);
   const semType = P[10].map(([t, fFr, fEn], k) => `<li><b style="color:${PTYPES[t][0]}">${L("LMMJVSD", "MTWTFSS")[k]}</b><span>${L(PTYPES[t][1], PTYPES[t][2])}</span><small>${L(fFr, fEn)}</small></li>`).join("");
   let h = `<details class="prog-info" style="--c:${P[5]}"${a === 0 ? " open" : ""}><summary>${L("Le programme en détail", "Programme details")}</summary>
-    <div class="prog-chips"><span>${L(...P[6])}</span><span>⏱ ${dureesProg(P)}</span><span>📅 ${L("7 j / 7", "7 days / week")}</span><span>🏠 ${L("Sans matériel", "No equipment")}</span></div>
+    <div class="prog-chips"><span>${L(...P[6])}</span><span>⏱ ${dureesProg(P)}</span><span>📅 ${L("7 j / 7", "7 days / week")}</span><span>${avecMat(P) ? "🏋️ " + L("Avec matériel", "With equipment") : "🏠 " + L("Sans matériel", "No equipment")}</span></div>
     <h3>${L("Objectifs", "Goals")}</h3><ul class="prog-obj">${L(P[8], P[9]).map(o => `<li>${o}</li>`).join("")}</ul>
     <h3>${L("Ta semaine type", "Your typical week")}</h3><ul class="prog-semaine">${semType}</ul>
     <h3>${L("La progression", "Progression")}</h3><ul class="prog-obj">${SEMAINES.map(([f, e, d], k) => `<li><b>${L("Semaine", "Week")} ${k + 1} · ${L(f, e)}</b> — ${L(d, SEMAINES_EN[k])}</li>`).join("")}</ul>
