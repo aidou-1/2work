@@ -352,7 +352,7 @@ const AVIS_FORM = { id: "1FAIpQLSftVfIv8XIvV0uDcGJi9fCrXXidM8E-PtThj7YDlqMEoZee6
 const AVIS_THEMES = [["Séances guidées", "Guided workouts"], ["Voix et consignes", "Voice and cues"], ["Boxe et mode combat", "Boxing and fight mode"], ["Cardio", "Cardio"], ["Programmes", "Programmes"],
   ["Personnage et boutique", "Character and shop"], ["Progrès et niveaux", "Progress and levels"], ["Design", "Design"], ["Facilité d’utilisation", "Ease of use"], ["Bugs ou lenteurs", "Bugs or slowness"]];
 const envoyerFormulaire = r => fetch(`https://docs.google.com/forms/d/e/${AVIS_FORM.id}/formResponse`, { method: "POST", mode: "no-cors",
-  body: new URLSearchParams(Object.entries({ ...r, message: [r.message, r.contexte && "— " + r.contexte].filter(Boolean).join("\n") }).filter(([k, v]) => AVIS_FORM[k] && v !== "").map(([k, v]) => ["entry." + AVIS_FORM[k], v])) });
+  body: new URLSearchParams(Object.entries({ ...r, message: [r.message, r.contexte && "— " + r.contexte].filter(Boolean).join("\n") }).filter(([k, v]) => AVIS_FORM[k] && v !== "").map(([k, v]) => ["entry." + AVIS_FORM[k], String(v)]).concat([["fvv", "1"], ["pageHistory", "0"], ["submit", "Submit"]])) });   // les trois derniers champs : ceux qu'envoie la page du formulaire elle-même
 async function viderAttente() {
   const l = lireJSON("avisAttente", []); if (!l.length || !AVIS_FORM.id || !navigator.onLine) return; const reste = [];
   for (const r of l) { try { await envoyerFormulaire(r); } catch (e) { reste.push(r); } }
