@@ -3,10 +3,10 @@
    - Vidéos : cache séparé « 2work-videos », rempli à la demande depuis Réglages → « Vidéos hors ligne », conservé entre les versions.
    - Vignettes des listes (vignettes/*.webp) : cache « 2work-vignettes », rempli au fil de l'affichage, conservé entre les versions.
    Changer V à chaque mise en ligne d'une nouvelle version. */
-const V = "2work-v2026-11-11t", VIDEOS = "2work-videos", VIGNETTES = "2work-vignettes", ETAT = "2work-etat";
+const V = "2work-v2026-11-11u", VIDEOS = "2work-videos", VIGNETTES = "2work-vignettes", ETAT = "2work-etat";
 const COQUILLE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./icons/logo.png", "./icons/qr.png", "./consignes.js", "./js/donnees.js", "./js/seance.js", "./js/progres.js", "./js/catalogue.js", "./js/profil.js", "./js/anatomie.js", "./js/evenements.js", "./js/outils.js", "./js/cardio.js", "./js/chronos.js", "./js/jeu.js", "./js/moi.js", "./fonds/chaud.webp", "./fonds/vert.webp", "./fonds/bleu.webp",
   ...["barlow-latin-400", "barlow-latin-500", "barlow-latin-600", "barlow-latin-700", "barlow-condensed-latin-600", "barlow-condensed-latin-700", "barlow-condensed-latin-800"].map(f => `./fonts/${f}-normal.woff2`)];
-self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(COQUILLE)).then(() => self.skipWaiting())));
+self.addEventListener("install", e => e.waitUntil(caches.open(V).then(c => c.addAll(COQUILLE.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting())));   // « reload » : jamais la copie du cache HTTP, toujours le serveur
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(l => Promise.all(l.filter(n => ![V, VIDEOS, VIGNETTES, ETAT].includes(n)).map(n => caches.delete(n)))).then(() => self.clients.claim())));
 self.addEventListener("fetch", e => {
   const r = e.request, u = new URL(r.url);
@@ -15,7 +15,7 @@ self.addEventListener("fetch", e => {
   const cache = u.pathname.includes("/vignettes/") ? VIGNETTES : V;
   if (r.mode === "navigate" || u.pathname.endsWith("/index.html"))
     return e.respondWith(fetch(r).then(res => { if (res.ok) { const c = res.clone(); caches.open(V).then(x => x.put("./index.html", c)); } return res; }).catch(() => caches.match("./index.html")));
-  e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => { if (res.ok && res.type === "basic") { const c = res.clone(); caches.open(cache).then(x => x.put(r, c)); } return res; })));
+  e.respondWith(caches.match(r).then(m => m || fetch(r, { cache: "no-cache" }).then(res => { if (res.ok && res.type === "basic") { const c = res.clone(); caches.open(cache).then(x => x.put(r, c)); } return res; })));
 });
 async function video(r) {   // vidéo en cache : réponse partielle (206) pour Safari, qui lit les vidéos par morceaux
   const m = await (await caches.open(VIDEOS)).match(r.url);

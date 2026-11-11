@@ -394,6 +394,15 @@ function ouvrirAvis() {
 $("avisFin").onclick = ouvrirAvis;
 $("reglages").querySelector(".infos-liens").insertAdjacentHTML("afterbegin", `<button class="toggle" id="rgAvis">${ico("bulle")} ${L("Donner mon avis", "Give feedback")}</button>`);
 $("rgAvis").onclick = ouvrirAvis;
+/* Réglages → « Mettre à jour l'appli » : vide la copie hors ligne des pages et scripts (jamais les données, vidéos ni vignettes), puis recharge depuis le serveur */
+async function forcerMiseAJour() {
+  $("rgMaj").textContent = L("Mise à jour…", "Updating…");
+  try { const r = await navigator.serviceWorker.getRegistration(); if (r) await r.update(); await Promise.all((await caches.keys()).filter(n => /^2work-v/.test(n)).map(n => caches.delete(n))); } catch (e) {}
+  location.reload();
+}
+$("reglages").querySelector(".infos-liens").insertAdjacentHTML("beforeend", `<button class="toggle" id="rgMaj">🔄 ${L("Mettre à jour l’appli", "Update the app")}</button><small class="sh-aide" id="rgVersion"></small>`);
+$("rgMaj").onclick = forcerMiseAJour;
+if (window.caches) caches.keys().then(l => { const v = l.find(n => /^2work-v/.test(n)); if (v) $("rgVersion").textContent = L("Version ", "Version ") + v.replace("2work-v", ""); }).catch(() => {});
 
 /* ============ BOUTON « RETOUR » DU TÉLÉPHONE ============
    Hors du menu, une entrée d'historique est posée : le retour du téléphone (Android, geste iOS) la consomme et déclenche
