@@ -282,9 +282,11 @@ const PTYPES = {   // couleur, nom, objectif, RPE par semaine
   gainage: ["#8B5CF6", "Gainage & posture", "Core & posture", "Renforcer la sangle abdominale et le dos pour protéger la colonne et mieux transmettre la force.", "Strengthen your abs and back to protect the spine and transfer force better.", [6, 7, 8, 5]],
   mobilite: ["#10B981", "Mobilité", "Mobility", "Gagner en amplitude dans les hanches, le dos et les épaules : bouge lentement, respire, sans jamais forcer.", "Gain range in hips, back and shoulders: move slowly, breathe, never force.", [3, 3, 3, 3]],
   recup: ["#14B8A6", "Récupération active", "Active recovery", "Faire circuler le sang et relâcher les tensions pour récupérer de la semaine. Le repos fait partie de l’entraînement.", "Get the blood flowing and release tension to recover from the week. Rest is part of training.", [2, 2, 2, 2]],
-  fract: ["#DC2626", "Cardio boxe", "Boxing cardio", "Des efforts à très haute intensité avec une vraie récupération : tu construis le souffle qui te fait tenir tous les rounds.", "Very high-intensity efforts with real recovery: you build the fitness that carries you through every round.", [9, 9, 9, 8]],
+  fract: ["#DC2626", "Cardio intensif", "Intense cardio", "Des efforts à très haute intensité avec une vraie récupération : tu construis le souffle qui te fait tenir jusqu’au bout.", "Very high-intensity efforts with real recovery: you build the fitness that carries you to the end.", [9, 9, 9, 8]],
   test: ["#F59E0B", "Bilan", "Final test", "Refais la séance du jour 1 avec l’intensité de la semaine 3 : compare tes sensations, tu vas voir le chemin parcouru !", "Redo the day 1 workout at week 3 intensity: compare how it feels, you will see how far you’ve come!", [8, 8, 8, 8]]
 };
+const PHASES_FRACT = { boxe: [["Vitesse", "Speed"], ["Tolérance à l’effort", "Effort tolerance"], ["Rounds de combat", "Fight rounds"], ["Affûtage et bilan", "Taper and test"]],   // nom des semaines des journées de cardio intensif
+  defaut: [["Vitesse", "Speed"], ["Tolérance à l’effort", "Effort tolerance"], ["Spécifique au sport", "Sport-specific"], ["Affûtage et bilan", "Taper and test"]] };
 const SEMAINES = [["Adaptation", "Adaptation", "On installe les bons gestes et l’habitude : qualité avant quantité."],
   ["Développement", "Development", "Un tour de plus : le volume augmente pour faire progresser le corps."],
   ["Intensification", "Intensification", "Efforts plus longs, repos plus courts : c’est la semaine la plus exigeante."],
@@ -361,9 +363,9 @@ function progJour(P, i, choix) {   // construit la séance du jour i (0-27) : bl
   const [type, fFr, fEn, ex, rac] = test ? sem[0] : sem[i % 7], ty = test ? "test" : type, ww = test ? 2 : w;
   const ok = l => l.filter(e => EXERCICES[e]), blocs = []; let regl = {};
   if (type === "fract") {   // cardio par intervalles : séance de la semaine (suffixe « - » = volume allégé), au support et au niveau choisis
-    const k = ex[test ? 4 : w], S = seanceCardio("boxe", k.replace("-", ""), lireNiv(), k.endsWith("-")), cs = CONSEILS.fract[i % 4];
+    const k = ex[test ? 4 : w], S = seanceCardio(P[12] || "boxe", k.replace("-", ""), lireNiv(), k.endsWith("-")), cs = CONSEILS.fract[i % 4];
     return { ...S, prog: id, progI: i, titre: L("J", "D") + (i + 1) + " · " + S.titre, titreFr: tFr + " J" + (i + 1), semaine: w, nomProg: L(tFr, tEn), couleurProg: couleur, ty: test ? "test" : type, objectif: L(PTYPES.fract[3], PTYPES.fract[4]), conseil: L(...cs),
-      listeHtml: `<li class="etude prog-carte-jour"><div><small><b>${L("Semaine", "Week")} ${w + 1} · ${L(...[["Vitesse", "Speed"], ["Tolérance à l’effort", "Effort tolerance"], ["Rounds de combat", "Fight rounds"], ["Affûtage et bilan", "Taper and test"]][w])}</b></small><small>💡 ${L(...cs)}</small></div></li>` + S.listeHtml };
+      listeHtml: `<li class="etude prog-carte-jour"><div><small><b>${L("Semaine", "Week")} ${w + 1} · ${L(...(PHASES_FRACT[P[12] || "boxe"] || PHASES_FRACT.defaut)[w])}</b></small><small>💡 ${L(...cs)}</small></div></li>` + S.listeHtml };
   }
   if (type === "mobilite" || type === "recup") {
     if (type === "mobilite") blocs.push({ n: L("Réveil articulaire", "Joint warm-up"), t: 1, ex: ok(ECH.mob).map(e => [e, 30]), r: 5 });
