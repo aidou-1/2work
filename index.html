@@ -231,6 +231,19 @@ box-shadow: 0 14px 28px -16px var(--c); }
 .courbe { width: 100%; overflow: visible; } .courbe line { stroke: var(--ligne); stroke-width: 1; } .courbe text { font-size: 8px; fill: var(--muted); } .courbe polyline { fill: none; stroke: #EA580C; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; } .courbe circle { fill: #EA580C; stroke: var(--surface); stroke-width: 1.5; }
 .ensuite { display: flex; align-items: center; gap: 10px; width: 100%; margin: 4px 0 12px; padding: 8px 12px; text-align: left; border-radius: 16px; background: var(--surface); border: 1px solid var(--ligne); color: inherit; } .ensuite:empty { display: none; }
 .ensuite .mini, .ensuite img { flex: none; width: 60px; height: 41px; border-radius: 8px; object-fit: cover; background: #EEF1F8; } .ensuite small { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); } .ensuite b { font-family: var(--titre); font-size: 1.1rem; } .ensuite span { flex: 1; min-width: 0; } .ensuite::after { content: "›"; font-size: 1.5rem; color: var(--muted); }
+/* Séance, téléphone tenu droit : l'illustration en premier, bord à bord et entière ; le chrono en pastille sur son coin ; puis le nom, la suite et les consignes */
+@media (orientation: portrait) {
+  #session:has(#mediaBox > .media) { display: flex; flex-direction: column; }
+  #session:has(#mediaBox > .media) > :is(.bars, .count, .fc) { order: 0; } #session:has(#mediaBox > .media) > .count { margin-bottom: 8px; }
+  #session:has(#mediaBox > .media) > #mediaBox { order: 1; position: relative; margin: 0 -16px; }
+  #session:has(#mediaBox > .media) > #mediaBox > .media { margin: 0; border-radius: 0; box-shadow: none; object-fit: contain; } #session > #mediaBox > .media.allure { padding-right: 150px; border-width: 0 0 2px; }
+  #session:has(#mediaBox > .media) > .chrono { order: 2; align-self: flex-end; z-index: 2; gap: 8px; margin: -84px -6px 10px 0; padding: 6px 8px 6px 16px; border-radius: 40px; background: rgba(12,10,9,.78); backdrop-filter: blur(10px); box-shadow: 0 8px 22px -8px rgba(0,0,0,.6); }
+  #session:has(#mediaBox > .media) > .chrono .time { margin: 0; font-size: 3.4rem; line-height: 1; min-width: 1.6ch; text-align: right; color: #fff; text-shadow: none; }
+  #session:has(#mediaBox > .media) > .chrono svg { width: 58px; height: 58px; }
+  #session:has(#mediaBox > .media) > .plus-repos { order: 3; align-self: flex-start; } #session:has(#mediaBox > .media) > .name { order: 4; margin-top: 2px; }
+  #session:has(#mediaBox > .media) > :is(.type-ex, .cote) { order: 5; } #session:has(#mediaBox > .media) > .conseil { order: 6; } #session:has(#mediaBox > .media) > .zones { order: 7; }
+  #session:has(#mediaBox > .media) > .ensuite { order: 8; margin-top: 12px; } #session:has(#mediaBox > .media) > .desc { order: 9; } #session:has(#mediaBox > .media) > .controls { order: 10; }
+}
 /* Téléphone ou tablette posés à l'horizontale pendant la séance : illustration à gauche, chrono et commandes à droite */
 @media (orientation: landscape) and (max-height: 560px) {
   main:has(#session:not(.hidden)), main:has(#outil:not(.hidden)) { max-width: none; padding-top: 12px; }

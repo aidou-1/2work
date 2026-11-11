@@ -541,7 +541,7 @@ function demarrer() {
 
 /* Vidéos d'exercices : fichiers videos/<id>.mp4 déposés à côté de index.html.
    Pour en ajouter une, il suffit d'ajouter son identifiant à VIDEOS. Si le fichier manque, le dessin s'affiche. */
-const VIDEOS = ["inchworm", "squatBarre", "poulieTirage", "pecDeck", "rowPoulie", "shoulderMachine", "legExt", "wgs", "openbook", "thread",
+const VIDEOS = ["burpeeSprawl", "genouxMur", "chasseGarde", "rafaleSac", "traineau", "inchworm", "squatBarre", "poulieTirage", "pecDeck", "rowPoulie", "shoulderMachine", "legExt", "wgs", "openbook", "thread",
   "wipers", "catcow", "cossack", "shadow", "dogpedal", "scorpion", "hip9090", "rdl", "fente", "pont",
   "askip", "armcircles", "armcross", "scap", "twist", "tspin", "slips", "bird", "cobra", "footwork",
   "heelkick", "kneeup", "lateral", "legfwd", "legside", "lungetwist", "sumo", "ankles", "calfraise", "cascade",
