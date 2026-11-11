@@ -2,6 +2,7 @@
    Tous deux calés sur l'horloge du téléphone (justes même après un passage en arrière-plan) et arrêtés dès qu'on quitte l'écran (tMin).
    Test navette : allers-retours entre deux repères à 20 m, au rythme des bips ; palier 1 à 8,5 km/h, puis + 0,5 km/h chaque minute.
    La vitesse du dernier palier tenu en entier donne une estimation de la vitesse maximale aérobie (VMA), gardée dans « tests » (id « navette »). */
+const amorcerVoix = () => { try { if ("speechSynthesis" in window) { speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance("")); } } catch (e) {} };   // à appeler dans l'appui : sur téléphone, la voix ne peut parler plus tard que si elle a démarré pendant un geste
 const vNav = p => 8 + p * .5;
 const derniereVma = () => { const l = lireTests().filter(x => x.id === "navette"); return l.length ? l[l.length - 1].v : 0; };
 const alluresVma = (v = derniereVma()) => v ? L(`Tes allures d’après ton test (VMA ${v} km/h) : facile vers ${(v * .6).toFixed(1)} km/h, soutenu vers ${(v * .92).toFixed(1)} km/h, sprint au-dessus de ${(v * 1.1).toFixed(1)} km/h.`, `Your paces from your test (top aerobic speed ${v} km/h): easy around ${(v * .6).toFixed(1)} km/h, hard around ${(v * .92).toFixed(1)} km/h, sprint above ${(v * 1.1).toFixed(1)} km/h.`) : "";
@@ -26,7 +27,7 @@ function ouvrirNavette() {
     if (p !== pal) { pal = p; nav = 0; sons.change(); if (p > 1) parler(L("Palier ", "Stage ") + p, 0); if (p > 21) fin(); }
     else if (n !== nav) { nav = n; sons.alerte(); }
   };
-  $("nvGo").onclick = () => { if (t0) return fin(); t0 = Date.now(); pal = 0; nav = -1; $("nvRes").innerHTML = ""; $("nvGo").textContent = L("J’arrête : noter mon résultat", "I stop: save my result"); garderEcran(true); parler(L("Test navette. Palier un.", "Shuttle test. Stage one."), 0); clearInterval(tMin); tMin = setInterval(tic, 100); tic(); };
+  $("nvGo").onclick = () => { if (t0) return fin(); amorcerVoix(); t0 = Date.now(); pal = 0; nav = -1; $("nvRes").innerHTML = ""; $("nvGo").textContent = L("J’arrête : noter mon résultat", "I stop: save my result"); garderEcran(true); parler(L("Test navette. Palier un.", "Shuttle test. Stage one."), 0); clearInterval(tMin); tMin = setInterval(tic, 100); tic(); };
 }
 
 /* --- Mode combat : rounds avec cloche, alerte des 10 dernières secondes, repos, et combinaisons annoncées au hasard (réglages gardés : « combat ») --- */
@@ -68,7 +69,7 @@ function ouvrirCombat(retourVers) {
     else if (!combat && reste <= 3) sons.alerte();
     else if (combat && R.c && dans >= prochain) { const l = COMBOS.slice(0, R.c).flat(), c = l[Math.floor(Math.random() * l.length)]; $("cbCombo").textContent = L(...c); parler(c[langueVoix === "fr" ? 0 : 1], 0, 1.05); prochain = dans + 5 + Math.random() * 4; }
   };
-  $("cbGo").onclick = () => { if (t0) { cumul += Date.now() - t0; t0 = 0; clearInterval(tMin); $("cbGo").textContent = L("Reprendre", "Resume"); return; }
+  $("cbGo").onclick = () => { amorcerVoix(); if (t0) { cumul += Date.now() - t0; t0 = 0; clearInterval(tMin); $("cbGo").textContent = L("Reprendre", "Resume"); return; }
     if (!cumul) { $("cbRes").innerHTML = ""; $("cbRegl").classList.add("hidden"); } t0 = Date.now(); $("cbGo").textContent = L("Pause", "Pause"); garderEcran(true); sec = -99; clearInterval(tMin); tMin = setInterval(tic, 200); tic(); };
   $("cbStop").onclick = () => (t0 || cumul) && fin(false);
   aff();
