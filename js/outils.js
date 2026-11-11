@@ -343,22 +343,17 @@ if (LANGUE === "en") document.querySelectorAll("[data-en]").forEach(e => { e.tex
 
 /* ============ AVIS ============
    Note sur 5, ce qui plaît, ce qui gêne, message libre et contexte anonyme (aucun nom, aucune donnée de santé).
-   Envoi vers un formulaire Google : ses réponses arrivent dans une feuille Google, prête à trier et analyser.
+   Envoi par la page du formulaire Google, préremplie : ses réponses arrivent dans une feuille Google, prête à trier et analyser.
    AVIS_FORM = identifiant du formulaire publié (après /forms/d/e/) et numéros « entry. » de ses questions, tirés du lien prérempli.
    Le formulaire n'a pas de question « contexte » : le contexte technique est ajouté à la fin du commentaire.
-   Sans formulaire renseigné, l'avis part par la feuille de partage du téléphone, comme avant.
-   Hors connexion, il attend dans « avisAttente » et repart tout seul au retour du réseau. */
+   Sans formulaire renseigné, l'avis part par la feuille de partage du téléphone, comme avant. */
 const AVIS_FORM = { id: "1FAIpQLSftVfIv8XIvV0uDcGJi9fCrXXidM8E-PtThj7YDlqMEoZee6w", note: "1743096007", aime: "141393001", gene: "1201111177", message: "1354644341", pratique: "324741575" };
 const AVIS_THEMES = [["Séances guidées", "Guided workouts"], ["Voix et consignes", "Voice and cues"], ["Boxe et mode combat", "Boxing and fight mode"], ["Cardio", "Cardio"], ["Programmes", "Programmes"],
   ["Personnage et boutique", "Character and shop"], ["Progrès et niveaux", "Progress and levels"], ["Design", "Design"], ["Facilité d’utilisation", "Ease of use"], ["Bugs ou lenteurs", "Bugs or slowness"]];
-const envoyerFormulaire = r => fetch(`https://docs.google.com/forms/d/e/${AVIS_FORM.id}/formResponse`, { method: "POST", mode: "no-cors",
-  body: new URLSearchParams(Object.entries({ ...r, message: [r.message, r.contexte && "— " + r.contexte].filter(Boolean).join("\n") }).filter(([k, v]) => AVIS_FORM[k] && v !== "").map(([k, v]) => ["entry." + AVIS_FORM[k], String(v)]).concat([["fvv", "1"], ["pageHistory", "0"], ["submit", "Submit"]])) });   // les trois derniers champs : ceux qu'envoie la page du formulaire elle-même
-async function viderAttente() {
-  const l = lireJSON("avisAttente", []); if (!l.length || !AVIS_FORM.id || !navigator.onLine) return; const reste = [];
-  for (const r of l) { try { await envoyerFormulaire(r); } catch (e) { reste.push(r); } }
-  stocker("avisAttente", JSON.stringify(reste));
-}
-addEventListener("online", viderAttente); setTimeout(viderAttente, 5000);
+// L'avis s'ouvre sur la page Google du formulaire, déjà remplie : la personne n'a qu'à toucher « Envoyer ».
+// (Un envoi direct, sans passer par cette page, arrivait dans la feuille avec toutes les cases vides.)
+const lienAvis = r => `https://docs.google.com/forms/d/e/${AVIS_FORM.id}/viewform?usp=pp_url&` + new URLSearchParams(Object.entries({ ...r, message: [r.message, r.contexte && "— " + r.contexte].filter(Boolean).join("\n") })
+  .filter(([k, v]) => AVIS_FORM[k] && v !== "").map(([k, v]) => ["entry." + AVIS_FORM[k], String(v)]));
 function ouvrirAvis() {
   let note = 0; const groupe = (k, l) => `<div class="chips avis-choix" data-g="${k}">${l.map(([f, e], i) => `<button class="toggle" data-i="${i}" aria-pressed="false">${L(f, e)}</button>`).join("")}</div>`;
   ouvrirFeuilleInfo(L("Ton avis sur 2 WORK", "Your feedback on 2 WORK"), `<p class="sh-aide">${L("Deux minutes pour dire ce qui marche et ce qui coince : chaque avis est lu et sert à décider des prochaines améliorations.", "Two minutes to say what works and what does not: every review is read and decides the next improvements.")}</p>
@@ -378,17 +373,14 @@ function ouvrirAvis() {
     if (!note && !r.aime && !r.gene && !r.message && !r.pratique) return etat(L("Choisis une note, un thème ou écris un mot.", "Pick a rating, a topic or write a few words."));
     r.contexte = [`${lireHist().length} ${L("séances", "workouts")}`, `${L("niveau", "level")} ${niveauXp().n}`, installee() ? L("appli installée", "installed app") : L("navigateur", "browser"),
       iOS() ? "iOS" : /android/i.test(navigator.userAgent) ? "Android" : L("ordinateur", "computer"), LANGUE].filter(Boolean).join(" · ");
-    $("avisOk").disabled = true; stocker("avisDonnes", (+lire("avisDonnes") || 0) + 1);
-    if (AVIS_FORM.id) {
-      if (navigator.onLine) { try { await envoyerFormulaire(r); return etat(L("Merci, ton avis est bien parti ! 🙏", "Thanks, your feedback has been sent! 🙏")); } catch (e) {} }
-      stocker("avisAttente", JSON.stringify([...lireJSON("avisAttente", []), r])); return etat(L("Pas de réseau : ton avis partira tout seul à la prochaine connexion. Merci ! 🙏", "No network: your feedback will be sent automatically next time you are online. Thanks! 🙏"));
-    }
+    stocker("avisDonnes", (+lire("avisDonnes") || 0) + 1);
+    if (AVIS_FORM.id) { window.open(lienAvis(r), "_blank", "noopener"); return etat(L("Ton avis est prêt sur la page qui vient de s’ouvrir : touche « Envoyer » en bas pour le transmettre. Merci ! 🙏", "Your feedback is ready on the page that just opened: tap “Envoyer” (Submit) at the bottom to send it. Thanks! 🙏")); }
     const texte = `${L("Avis 2 WORK", "2 WORK feedback")} ${"★".repeat(note)}${"☆".repeat(5 - note)}\n${r.aime ? "👍 " + r.aime + "\n" : ""}${r.gene ? "👎 " + r.gene + "\n" : ""}${r.message}\n\n— ${r.contexte}`;
     try {
       if (navigator.share) await navigator.share({ title: L("Avis 2 WORK", "2 WORK feedback"), text: texte });
       else { await navigator.clipboard.writeText(texte); return etat(L("Avis copié : colle-le dans un message à la personne qui t’a partagé l’appli.", "Feedback copied: paste it in a message to the person who shared the app with you.")); }
       etat(L("Merci ! 🙏", "Thank you! 🙏"));
-    } catch (e) { $("avisOk").disabled = false; if (e.name !== "AbortError") etat(L("Envoi impossible ici : fais une capture d’écran de ton avis.", "Cannot send from here: take a screenshot of your feedback.")); }
+    } catch (e) { if (e.name !== "AbortError") etat(L("Envoi impossible ici : fais une capture d’écran de ton avis.", "Cannot send from here: take a screenshot of your feedback.")); }
   };
 }
 $("avisFin").onclick = ouvrirAvis;
