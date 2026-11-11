@@ -403,7 +403,7 @@ async function telechargerVideos(maj) {
 /* ============ SAUVEGARDE ET RESTAURATION ============
    Fichier JSON avec toutes les données de l'appli (et seulement elles). Avant une restauration, les données actuelles sont copiées
    dans « sauvegardeAvantRestauration » : rien n'est jamais perdu. */
-const CLE_APPLI = /^(tests|corps|cardioSupport|combat|boutique|progPerso|duel|rappelNotif|avatar|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
+const CLE_APPLI = /^(tests|corps|cardioSupport|combat|boutique|progPerso|duel|avisAttente|avisDonnes|rappelNotif|avatar|charges|coach|defiSerie|duree\w*|favoris|historique|langue|langueVoix|muscleVu|musclesLus|niveauRenfo|nomVoix|planning|profil|recapVu|recupTabata|repriseAccord|repsTabata|theme|trophees|veille|voix|repos\w*|series\w*|cycles\w*|ouvrirReglages|sauvegardeDate|bienvenue|santeSync|banniere\w*|sonsUI|vibrations|volumeSons|forceVib|conseils|musique)$|^(prog_|reprise_|routine_|minutes_)/;
 function donneesAppli() { const d = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (CLE_APPLI.test(k)) d[k] = localStorage.getItem(k); } } catch (e) {} return d; }
 async function sauvegarder() {
   const j = jourCle(), f = JSON.stringify({ app: "2WORK", version: 1, date: new Date().toISOString(), donnees: donneesAppli() });

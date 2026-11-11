@@ -341,27 +341,51 @@ $("nProgres").onclick = () => ecranCourant !== "progres" && ouvrirProgres();
 $("nProgs").onclick = () => ecranCourant !== "progs" && ouvrirProgs();
 if (LANGUE === "en") document.querySelectorAll("[data-en]").forEach(e => { e.textContent = e.dataset.en; });   // libellés fixes ajoutés hors du dictionnaire UI_EN
 
-/* ============ BOUTON D'AVIS ============
-   Note sur 5 et message libre. Sans adresse, l'avis part par la feuille de partage du téléphone (WhatsApp, SMS, e-mail…) vers la personne
-   qui a fait découvrir l'appli ; avec une adresse dans AVIS_EMAIL, il ouvre directement un e-mail. Rien n'est envoyé à un serveur. */
-const AVIS_EMAIL = "";
+/* ============ AVIS ============
+   Note sur 5, ce qui plaît, ce qui gêne, message libre et contexte anonyme (aucun nom, aucune donnée de santé).
+   Envoi vers un formulaire Google : ses réponses arrivent dans une feuille Google, prête à trier et analyser.
+   AVIS_FORM = identifiant du formulaire (le morceau après /forms/d/e/) et numéros « entry. » de ses 5 questions, dans cet ordre.
+   Sans formulaire renseigné, l'avis part par la feuille de partage du téléphone, comme avant.
+   Hors connexion, il attend dans « avisAttente » et repart tout seul au retour du réseau. */
+const AVIS_FORM = { id: "", note: "", aime: "", gene: "", message: "", contexte: "" };
+const AVIS_THEMES = [["Séances guidées", "Guided workouts"], ["Voix et consignes", "Voice and cues"], ["Boxe et mode combat", "Boxing and fight mode"], ["Cardio", "Cardio"], ["Programmes", "Programmes"],
+  ["Personnage et boutique", "Character and shop"], ["Progrès et niveaux", "Progress and levels"], ["Design", "Design"], ["Facilité d’utilisation", "Ease of use"], ["Bugs ou lenteurs", "Bugs or slowness"]];
+const envoyerFormulaire = r => fetch(`https://docs.google.com/forms/d/e/${AVIS_FORM.id}/formResponse`, { method: "POST", mode: "no-cors", body: new URLSearchParams(Object.entries(r).map(([k, v]) => ["entry." + AVIS_FORM[k], v])) });
+async function viderAttente() {
+  const l = lireJSON("avisAttente", []); if (!l.length || !AVIS_FORM.id || !navigator.onLine) return; const reste = [];
+  for (const r of l) { try { await envoyerFormulaire(r); } catch (e) { reste.push(r); } }
+  stocker("avisAttente", JSON.stringify(reste));
+}
+addEventListener("online", viderAttente); setTimeout(viderAttente, 5000);
 function ouvrirAvis() {
-  let note = 0;
-  ouvrirFeuilleInfo(L("Ton avis sur 2 WORK", "Your feedback on 2 WORK"), `<p class="sh-aide">${L("Ce qui te plaît, ce qui manque, ce qui bloque : tout aide à améliorer l’appli.", "What you like, what is missing, what gets in the way: it all helps improve the app.")}</p>
+  let note = 0; const groupe = (k, l) => `<div class="chips avis-choix" data-g="${k}">${l.map(([f, e], i) => `<button class="toggle" data-i="${i}" aria-pressed="false">${L(f, e)}</button>`).join("")}</div>`;
+  ouvrirFeuilleInfo(L("Ton avis sur 2 WORK", "Your feedback on 2 WORK"), `<p class="sh-aide">${L("Deux minutes pour dire ce qui marche et ce qui coince : chaque avis est lu et sert à décider des prochaines améliorations.", "Two minutes to say what works and what does not: every review is read and decides the next improvements.")}</p>
     <div class="avis-etoiles">${[1, 2, 3, 4, 5].map(k => `<button data-n="${k}" aria-label="${k}/5">★</button>`).join("")}</div>
-    <textarea id="avisTxt" class="choixVoix" rows="4" maxlength="1000" placeholder="${L("Ton message (facultatif)", "Your message (optional)")}"></textarea>
+    <span class="champ-titre">${L("Ce que tu as aimé", "What you liked")}</span>${groupe("aime", AVIS_THEMES.slice(0, -1))}
+    <span class="champ-titre">${L("Ce qui t’a gêné ou manqué", "What bothered you or was missing")}</span>${groupe("gene", AVIS_THEMES)}
+    <textarea id="avisTxt" class="choixVoix" rows="4" maxlength="1500" placeholder="${L("Raconte en quelques mots (facultatif) : un exemple aide beaucoup.", "Tell us in a few words (optional): an example helps a lot.")}"></textarea>
+    <p class="sh-aide">🔒 ${L("Avis anonyme : partent seulement ta note, tes choix, ton message et quelques infos techniques (nombre de séances, niveau, type de téléphone, langue).", "Anonymous feedback: only your rating, choices, message and a few technical details (number of workouts, level, phone type, language) are sent.")}</p>
     <button class="primary" id="avisOk">${L("Envoyer mon avis", "Send my feedback")}</button><p class="sh-ok" id="avisEtat"></p>`);
   const E = [...document.querySelectorAll(".avis-etoiles button")], etat = t => { $("avisEtat").textContent = t; };
   E.forEach(b => b.onclick = () => { note = +b.dataset.n; E.forEach(x => x.classList.toggle("on", +x.dataset.n <= note)); });
+  document.querySelectorAll(".avis-choix .toggle").forEach(b => b.onclick = () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"));
+  const choisis = g => [...document.querySelectorAll(`[data-g="${g}"] [aria-pressed="true"]`)].map(b => AVIS_THEMES[+b.dataset.i][0]).join(", ");   // libellés français : la feuille reste homogène quelle que soit la langue
   $("avisOk").onclick = async () => {
-    const msg = $("avisTxt").value.trim(); if (!note && !msg) return etat(L("Choisis une note ou écris un mot.", "Pick a rating or write a few words."));
-    const texte = `${L("Avis 2 WORK", "2 WORK feedback")} ${"★".repeat(note)}${"☆".repeat(5 - note)}\n${msg}\n\n— ${lireHist().length} ${L("séances", "workouts")} · ${installee() ? L("appli installée", "installed app") : L("navigateur", "browser")} · ${iOS() ? "iOS" : /android/i.test(navigator.userAgent) ? "Android" : L("ordinateur", "computer")} · ${LANGUE}`;
+    const r = { note: note || "", aime: choisis("aime"), gene: choisis("gene"), message: $("avisTxt").value.trim() };
+    if (!note && !r.aime && !r.gene && !r.message) return etat(L("Choisis une note, un thème ou écris un mot.", "Pick a rating, a topic or write a few words."));
+    r.contexte = [`${lireHist().length} ${L("séances", "workouts")}`, `${L("niveau", "level")} ${niveauXp().n}`, installee() ? L("appli installée", "installed app") : L("navigateur", "browser"),
+      iOS() ? "iOS" : /android/i.test(navigator.userAgent) ? "Android" : L("ordinateur", "computer"), LANGUE].filter(Boolean).join(" · ");
+    $("avisOk").disabled = true; stocker("avisDonnes", (+lire("avisDonnes") || 0) + 1);
+    if (AVIS_FORM.id) {
+      if (navigator.onLine) { try { await envoyerFormulaire(r); return etat(L("Merci, ton avis est bien parti ! 🙏", "Thanks, your feedback has been sent! 🙏")); } catch (e) {} }
+      stocker("avisAttente", JSON.stringify([...lireJSON("avisAttente", []), r])); return etat(L("Pas de réseau : ton avis partira tout seul à la prochaine connexion. Merci ! 🙏", "No network: your feedback will be sent automatically next time you are online. Thanks! 🙏"));
+    }
+    const texte = `${L("Avis 2 WORK", "2 WORK feedback")} ${"★".repeat(note)}${"☆".repeat(5 - note)}\n${r.aime ? "👍 " + r.aime + "\n" : ""}${r.gene ? "👎 " + r.gene + "\n" : ""}${r.message}\n\n— ${r.contexte}`;
     try {
-      if (AVIS_EMAIL) location.href = `mailto:${AVIS_EMAIL}?subject=${encodeURIComponent(L("Avis 2 WORK", "2 WORK feedback"))}&body=${encodeURIComponent(texte)}`;
-      else if (navigator.share) await navigator.share({ title: L("Avis 2 WORK", "2 WORK feedback"), text: texte });
+      if (navigator.share) await navigator.share({ title: L("Avis 2 WORK", "2 WORK feedback"), text: texte });
       else { await navigator.clipboard.writeText(texte); return etat(L("Avis copié : colle-le dans un message à la personne qui t’a partagé l’appli.", "Feedback copied: paste it in a message to the person who shared the app with you.")); }
       etat(L("Merci ! 🙏", "Thank you! 🙏"));
-    } catch (e) { if (e.name !== "AbortError") etat(L("Envoi impossible ici : fais une capture d’écran de ton avis.", "Cannot send from here: take a screenshot of your feedback.")); }
+    } catch (e) { $("avisOk").disabled = false; if (e.name !== "AbortError") etat(L("Envoi impossible ici : fais une capture d’écran de ton avis.", "Cannot send from here: take a screenshot of your feedback.")); }
   };
 }
 $("avisFin").onclick = ouvrirAvis;
