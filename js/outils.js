@@ -115,11 +115,11 @@ function avatarSvg(v = vitalite(), a = lireAvatar()) {   // buste : la tête du 
     ${e === "feu" ? `<g class="av-flammes"><path d="M60 2c6 14 34 22 34 56 0 10-4 18-8 24H34c-4-6-8-14-8-24C26 30 50 22 60 2z" fill="#F97316"/><path d="M60 16c4 10 22 16 22 40 0 8-3 14-6 18H44c-3-4-6-10-6-18 0-22 16-28 22-40z" fill="#FDE047"/></g>` : e === "forme" ? `<circle class="av-aura" cx="60" cy="58" r="50" fill="none" stroke="#FACC15" stroke-width="3" stroke-dasharray="6 9"/>` : ""}
     ${dos}<path d="M22 130c0-26 16-36 38-36s38 10 38 36z" fill="${tee[5]}"/><path d="M50 92h20v8q-10 8-20 0z" fill="${PEAUX[a.peau] || PEAUX[1]}"/>${visage}</svg>`;
 }
-function majVitalite() {   // carte du menu : avatar, barre de vitalité, et un appui pour recharger en 5 minutes
+function majVitalite() {   // carte du menu : avatar, barre de vitalité et série (les 5 minutes pour la recharger : carte Quick start juste en dessous)
   const Z = $("vitaCarte"); if (!Z) return; const v = vitalite(), e = etatVita(v), fait = lireHist().some(x => x.j === jourCle()), sr = series(lireHist());
   Z.innerHTML = `<button class="vita-av" id="vitaAv" aria-label="${L("Modifier mon avatar", "Edit my avatar")}">${avatarSvg(v)}</button><div class="vita-txt"><strong>${L(e[1], e[2])}</strong><div class="vita-barre vb-${e[0]}" role="progressbar" aria-valuenow="${v}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.max(4, v)}%"></i></div>
-    <small>${L("Vitalité", "Vitality")} ${v} % · 🔥 ${sr.cur} ${L(sr.cur > 1 ? "jours d’affilée" : "jour d’affilée", sr.cur > 1 ? "days in a row" : "day in a row")}${sr.joker ? " · 🛡️" : ""} · ${fait ? L("rechargée aujourd’hui, reviens demain", "recharged today, come back tomorrow") : v >= 80 ? L("garde le feu allumé", "keep the fire burning") : L("5 minutes suffisent pour la remonter", "5 minutes is enough to raise it")}</small></div>${fait ? "" : `<button class="sc-go" id="vitaGo" aria-label="${L("Séance de 5 minutes", "5-minute workout")}">${ico("eclair")}<small>5 min</small></button>`}`;
-  $("vitaAv").onclick = () => ouvrirMoi(); if ($("vitaGo")) $("vitaGo").onclick = () => ouvrirExpress({ min: 5 });
+    <small>${L("Vitalité", "Vitality")} ${v} % · 🔥 ${sr.cur} ${L(sr.cur > 1 ? "jours d’affilée" : "jour d’affilée", sr.cur > 1 ? "days in a row" : "day in a row")}${sr.joker ? " · 🛡️" : ""} · ${fait ? L("rechargée aujourd’hui, reviens demain", "recharged today, come back tomorrow") : v >= 80 ? L("garde le feu allumé", "keep the fire burning") : L("5 minutes suffisent pour la remonter", "5 minutes is enough to raise it")}</small></div>`;
+  $("vitaAv").onclick = () => ouvrirMoi();
 }
 function blocAvatar() {   // profil : le personnage et sa vitalité ; l'apparence se règle dans l'onglet Moi
   const v = vitalite(), e = etatVita(v);
