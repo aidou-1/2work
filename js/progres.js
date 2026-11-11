@@ -399,10 +399,13 @@ function ouvrirProgs(sens, onglet) {
   $("pgListe").querySelector(".prog-zone").insertAdjacentHTML("afterbegin", `<button class="toggle contour" id="pgPerso" style="width:100%;margin-bottom:12px">✨ ${PROGRAMMES[0][0] === "perso" ? L("Refaire mon programme sur mesure", "Rebuild my custom programme") : L("Créer mon programme sur mesure", "Create my custom programme")}</button>`); $("pgPerso").onclick = ouvrirProgPerso;
   // ordre : programmes en cours (les plus avancés d'abord), puis à découvrir (avec le programme sur mesure en tête), puis terminés ; reprises en cours en premier
   const Z = $("pgListe").querySelector(".prog-zone"), RZ = $("pgListe").querySelector(".rep-zone"), rang = a => a > 0 && a < NB_PROG ? 0 : a >= NB_PROG ? 2 : 1;
+  const F = sportsFrequents(Object.keys(SPORT_PLUS)), pref = id => { const k = F.findIndex(s => SPORT_PLUS[s][1] === id); return k < 0 ? 99 : k; };   // à découvrir : d'abord les programmes de tes sports les plus pratiqués
   [[0, "En cours", "In progress"], [1, "À découvrir", "To discover"], [2, "Terminés", "Completed"]].forEach(([g, f, e]) => {
-    const l = [...Z.querySelectorAll("[data-p]")].filter(b => rang(progAvance(b.dataset.p)) === g).sort((x, y) => g ? 0 : progAvance(y.dataset.p) - progAvance(x.dataset.p));
+    const l = [...Z.querySelectorAll("[data-p]")].filter(b => rang(progAvance(b.dataset.p)) === g).sort((x, y) => g === 0 ? progAvance(y.dataset.p) - progAvance(x.dataset.p) : g === 1 ? pref(x.dataset.p) - pref(y.dataset.p) : 0);
     if (!l.length && g !== 1) return; Z.insertAdjacentHTML("beforeend", `<h2 class="sec" data-g="${g}">${L(f, e)}</h2>`); if (g === 1) Z.appendChild($("pgPerso")); l.forEach(b => Z.appendChild(b)); });
-  [...RZ.querySelectorAll("[data-r]")].filter(b => repAvance(b.dataset.r) > 0 && repAvance(b.dataset.r) < NB_REP).reverse().forEach(b => RZ.querySelector("[data-r]").before(b));
+  const rr = a => a > 0 && a < NB_REP ? 0 : a >= NB_REP ? 2 : 1, cartes = [...RZ.querySelectorAll("[data-r]")];   // reprises : en cours, puis les autres zones, puis terminées (titres seulement s'il y a plusieurs groupes)
+  if (cartes.some(b => rr(repAvance(b.dataset.r)) !== 1)) [[0, "En cours", "In progress"], [1, "Autres zones", "Other areas"], [2, "Terminés", "Completed"]].forEach(([g, f, e]) => {
+    const l = cartes.filter(b => rr(repAvance(b.dataset.r)) === g); if (!l.length) return; RZ.insertAdjacentHTML("beforeend", `<h2 class="sec rep-groupe">${L(f, e)}</h2>`); l.forEach(b => RZ.appendChild(b)); });
   $("pgListe").querySelectorAll("[data-p]").forEach(b => b.onclick = () => ouvrirProg(b.dataset.p));
   $("pgListe").querySelectorAll("[data-r]").forEach(b => b.onclick = () => ouvrirReprise(b.dataset.r));
   // deux onglets : programmes de 4 semaines / retour après blessure ; une reprise en cours ouvre directement le second

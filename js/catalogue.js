@@ -355,9 +355,17 @@ function vueEch(cle) {
 const parCat = {}; [...$("choicesC").children].forEach(b => parCat[b.dataset.k] = b);
 const GROUPES_ECH = [["Sports collectifs", "Team sports", "foot basket handball volley"], ["Raquettes", "Racket sports", "tennis padel"], ["Endurance", "Endurance", "course cyclisme natation"],
   ["Combat et grimpe", "Combat and climbing", "boxe escalade"], ["Glisse", "Board sports", "ski surf"], ["Corps et esprit", "Mind and body", "yoga pilates"], ["Avant la musculation", "Before strength training", "renfo"]];
+/* Les sports pratiqués le plus souvent ces 90 derniers jours (toutes séances de l'historique confondues) passent en tête des listes, sous « Tes sports » */
+function sportsFrequents(dispo, max = 4) {
+  const depuis = jourCle(new Date(Date.now() - 90 * 864e5)), n = {};
+  lireHist().forEach(x => { if (x.j >= depuis && dispo.includes(x.c)) n[x.c] = (n[x.c] || 0) + 1; });
+  return Object.keys(n).sort((a, b) => n[b] - n[a]).slice(0, max);
+}
+const tesSports = (C, l, ajouter) => { if (!l.length) return; C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Tes sports", "Your sports")}</h2>`); l.forEach(ajouter); };
 function listeSports() {   // guide en tête, sports regroupés par famille (reconstruit à chaque ouverture pour suivre la langue)
   const C = $("choicesC"); C.innerHTML = ficheEch();
-  GROUPES_ECH.forEach(([fr, en, l]) => { C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L(fr, en)}</h2>`); l.split(" ").forEach(k => parCat[k] && C.appendChild(parCat[k])); });
+  const F = sportsFrequents(GROUPES_ECH.flatMap(g => g[2].split(" "))); tesSports(C, F, k => parCat[k] && C.appendChild(parCat[k]));
+  GROUPES_ECH.forEach(([fr, en, l]) => { const r = l.split(" ").filter(k => !F.includes(k)); if (!r.length) return; C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L(fr, en)}</h2>`); r.forEach(k => parCat[k] && C.appendChild(parCat[k])); });
   Object.values(parCat).forEach(b => !b.isConnected && C.appendChild(b));
 }
 
@@ -431,7 +439,8 @@ const GROUPES_RENFO = [["Sports collectifs", "Team sports", "foot basket handbal
   ["Combat et grimpe", "Combat and climbing", "boxe escalade"], ["Glisse", "Board sports", "ski surf"], ["Corps et esprit", "Mind and body", "pilates"]];
 function listeRenfo() {
   const C = $("choicesCS"); C.innerHTML = ficheRenfo();
-  GROUPES_RENFO.forEach(([fr, en, l]) => { C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L(fr, en)}</h2>`); l.split(" ").forEach(k => bouton(C, CATS[k].titre, L(RENFOS[k][0], RENFOS[k][1]), CATS[k].couleur, () => vueMode(k))); });
+  const F = sportsFrequents(GROUPES_RENFO.flatMap(g => g[2].split(" "))), ajout = k => bouton(C, CATS[k].titre, L(RENFOS[k][0], RENFOS[k][1]), CATS[k].couleur, () => vueMode(k)); tesSports(C, F, ajout);
+  GROUPES_RENFO.forEach(([fr, en, l]) => { const r = l.split(" ").filter(k => !F.includes(k)); if (!r.length) return; C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L(fr, en)}</h2>`); r.forEach(ajout); });
   C.insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Sans sport précis", "No specific sport")}</h2>`);
   bouton(C, "Renfo du corps", "Haut du corps, bas du corps ou tout le corps", CATS.renfo.couleur, () => vueZones());
 }
