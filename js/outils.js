@@ -344,13 +344,15 @@ if (LANGUE === "en") document.querySelectorAll("[data-en]").forEach(e => { e.tex
 /* ============ AVIS ============
    Note sur 5, ce qui plaît, ce qui gêne, message libre et contexte anonyme (aucun nom, aucune donnée de santé).
    Envoi vers un formulaire Google : ses réponses arrivent dans une feuille Google, prête à trier et analyser.
-   AVIS_FORM = identifiant du formulaire (le morceau après /forms/d/e/) et numéros « entry. » de ses 5 questions, dans cet ordre.
+   AVIS_FORM = identifiant du formulaire publié (après /forms/d/e/) et numéros « entry. » de ses questions, tirés du lien prérempli.
+   Le formulaire n'a pas de question « contexte » : le contexte technique est ajouté à la fin du commentaire.
    Sans formulaire renseigné, l'avis part par la feuille de partage du téléphone, comme avant.
    Hors connexion, il attend dans « avisAttente » et repart tout seul au retour du réseau. */
-const AVIS_FORM = { id: "", note: "", aime: "", gene: "", message: "", contexte: "" };
+const AVIS_FORM = { id: "1FAIpQLSftVfIv8XIvV0uDcGJi9fCrXXidM8E-PtThj7YDlqMEoZee6w", note: "1743096007", aime: "141393001", gene: "1201111177", message: "1354644341", pratique: "324741575" };
 const AVIS_THEMES = [["Séances guidées", "Guided workouts"], ["Voix et consignes", "Voice and cues"], ["Boxe et mode combat", "Boxing and fight mode"], ["Cardio", "Cardio"], ["Programmes", "Programmes"],
   ["Personnage et boutique", "Character and shop"], ["Progrès et niveaux", "Progress and levels"], ["Design", "Design"], ["Facilité d’utilisation", "Ease of use"], ["Bugs ou lenteurs", "Bugs or slowness"]];
-const envoyerFormulaire = r => fetch(`https://docs.google.com/forms/d/e/${AVIS_FORM.id}/formResponse`, { method: "POST", mode: "no-cors", body: new URLSearchParams(Object.entries(r).map(([k, v]) => ["entry." + AVIS_FORM[k], v])) });
+const envoyerFormulaire = r => fetch(`https://docs.google.com/forms/d/e/${AVIS_FORM.id}/formResponse`, { method: "POST", mode: "no-cors",
+  body: new URLSearchParams(Object.entries({ ...r, message: [r.message, r.contexte && "— " + r.contexte].filter(Boolean).join("\n") }).filter(([k, v]) => AVIS_FORM[k] && v !== "").map(([k, v]) => ["entry." + AVIS_FORM[k], v])) });
 async function viderAttente() {
   const l = lireJSON("avisAttente", []); if (!l.length || !AVIS_FORM.id || !navigator.onLine) return; const reste = [];
   for (const r of l) { try { await envoyerFormulaire(r); } catch (e) { reste.push(r); } }
@@ -363,16 +365,17 @@ function ouvrirAvis() {
     <div class="avis-etoiles">${[1, 2, 3, 4, 5].map(k => `<button data-n="${k}" aria-label="${k}/5">★</button>`).join("")}</div>
     <span class="champ-titre">${L("Ce que tu as aimé", "What you liked")}</span>${groupe("aime", AVIS_THEMES.slice(0, -1))}
     <span class="champ-titre">${L("Ce qui t’a gêné ou manqué", "What bothered you or was missing")}</span>${groupe("gene", AVIS_THEMES)}
+    <span class="champ-titre">${L("Penses-tu que cette appli peut t’être pratique ?", "Do you think this app can be useful to you?")}</span><div class="chips avis-choix" data-g="pratique">${[["Oui", "Yes"], ["Non", "No"]].map(([f, e]) => `<button class="toggle" data-v="${f}" aria-pressed="false">${L(f, e)}</button>`).join("")}</div>
     <textarea id="avisTxt" class="choixVoix" rows="4" maxlength="1500" placeholder="${L("Raconte en quelques mots (facultatif) : un exemple aide beaucoup.", "Tell us in a few words (optional): an example helps a lot.")}"></textarea>
     <p class="sh-aide">🔒 ${L("Avis anonyme : partent seulement ta note, tes choix, ton message et quelques infos techniques (nombre de séances, niveau, type de téléphone, langue).", "Anonymous feedback: only your rating, choices, message and a few technical details (number of workouts, level, phone type, language) are sent.")}</p>
     <button class="primary" id="avisOk">${L("Envoyer mon avis", "Send my feedback")}</button><p class="sh-ok" id="avisEtat"></p>`);
   const E = [...document.querySelectorAll(".avis-etoiles button")], etat = t => { $("avisEtat").textContent = t; };
   E.forEach(b => b.onclick = () => { note = +b.dataset.n; E.forEach(x => x.classList.toggle("on", +x.dataset.n <= note)); });
-  document.querySelectorAll(".avis-choix .toggle").forEach(b => b.onclick = () => b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"));
+  document.querySelectorAll(".avis-choix .toggle").forEach(b => b.onclick = () => { if (b.dataset.v) b.parentNode.querySelectorAll(".toggle").forEach(x => x !== b && x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") !== "true"); });   // « pratique » : un seul choix
   const choisis = g => [...document.querySelectorAll(`[data-g="${g}"] [aria-pressed="true"]`)].map(b => AVIS_THEMES[+b.dataset.i][0]).join(", ");   // libellés français : la feuille reste homogène quelle que soit la langue
   $("avisOk").onclick = async () => {
-    const r = { note: note || "", aime: choisis("aime"), gene: choisis("gene"), message: $("avisTxt").value.trim() };
-    if (!note && !r.aime && !r.gene && !r.message) return etat(L("Choisis une note, un thème ou écris un mot.", "Pick a rating, a topic or write a few words."));
+    const P = document.querySelector('[data-g="pratique"] [aria-pressed="true"]'), r = { note: note || "", aime: choisis("aime"), gene: choisis("gene"), message: $("avisTxt").value.trim(), pratique: P ? P.dataset.v : "" };
+    if (!note && !r.aime && !r.gene && !r.message && !r.pratique) return etat(L("Choisis une note, un thème ou écris un mot.", "Pick a rating, a topic or write a few words."));
     r.contexte = [`${lireHist().length} ${L("séances", "workouts")}`, `${L("niveau", "level")} ${niveauXp().n}`, installee() ? L("appli installée", "installed app") : L("navigateur", "browser"),
       iOS() ? "iOS" : /android/i.test(navigator.userAgent) ? "Android" : L("ordinateur", "computer"), LANGUE].filter(Boolean).join(" · ");
     $("avisOk").disabled = true; stocker("avisDonnes", (+lire("avisDonnes") || 0) + 1);
