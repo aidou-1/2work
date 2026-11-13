@@ -50,6 +50,28 @@ html[data-theme="dark"] { color-scheme: dark;
 --ok: #4ADE80; --rose: #FB7185; --or: #FCD34D; --or-fond: #2E2508; --or-bord: #5C4610;
 --ombre: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 28px -16px rgba(0,0,0,.7); }
 
+/* ----- Guide : bouton Infos, visite guidée, installation au 1er lancement, écran Infos ----- */
+.info-btn { margin-left: auto; flex: none; width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; color: var(--ink); background: var(--surface); border: 1px solid var(--ligne); }
+.info-btn svg { width: 24px; height: 24px; }
+.tour { position: fixed; inset: 0; z-index: 90; }
+.tour-trou { position: fixed; pointer-events: none; box-shadow: 0 0 0 200vmax rgba(8,6,5,.74), 0 0 0 3px var(--brand), 0 0 26px 6px color-mix(in srgb, var(--brand) 55%, transparent); transition: all .38s var(--doux); }
+.tour-bulle { position: fixed; left: max(12px, calc(50% - 210px)); right: max(12px, calc(50% - 210px)); padding: 16px 16px 12px; border-radius: 22px; background: var(--surface); color: var(--ink); border: 1px solid var(--ligne); box-shadow: 0 20px 50px -12px rgba(0,0,0,.6); transition: top .38s var(--doux); }
+.tour-bulle.vu { animation: bulle .3s var(--doux); } @keyframes bulle { from { opacity: 0; transform: translateY(6px); } }
+.tour-bulle small { color: var(--brand); font-weight: 700; font-size: .8rem; letter-spacing: .04em; }
+.tour-bulle b { display: block; font-family: var(--titre); font-size: 1.45rem; line-height: 1.1; margin: 2px 0 6px; }
+.tour-bulle p { color: var(--muted); font-size: .97rem; } .tour-bulle p b { display: inline; font: inherit; font-weight: 700; color: var(--ink); margin: 0; }
+.tour-bulle.centre { text-align: center; } .tour-bulle.centre .tour-btns { justify-content: center; }
+.tour-btns { display: flex; align-items: center; gap: 8px; margin-top: 12px; } .tour-btns .lien-discret { margin: 0 auto 0 0; padding: 10px 4px; }
+.tour-btns .toggle { min-width: 0; } #tvPrec { width: 46px; padding: 10px 0; font-size: 1.3rem; line-height: 1; }
+.gi-detecte { margin: 4px 0 2px; color: var(--muted); font-size: .92rem; } .gi-detecte b { color: var(--ink); }
+.gi-etapes { padding: 14px 16px; display: grid; gap: 10px; text-align: left; }
+.i-haut { margin-top: 14px; } .i-liste { padding: 0; overflow: hidden; } .i-vide { margin-top: 18px; }
+.i-fiche { border-bottom: 1px solid var(--ligne); } .i-fiche:last-child { border-bottom: 0; }
+.i-fiche summary { display: flex; align-items: center; gap: 12px; padding: 13px 14px; cursor: pointer; list-style: none; } .i-fiche summary::-webkit-details-marker { display: none; }
+.i-fiche summary b { flex: 1; font-weight: 600; line-height: 1.25; } .i-fiche summary::after { content: "›"; color: var(--muted); font-size: 1.3rem; transition: transform .2s; } .i-fiche[open] summary::after { transform: rotate(90deg); }
+.i-fiche p { padding: 0 16px 12px 54px; color: var(--muted); font-size: .95rem; } .i-fiche p b { color: var(--ink); }
+.i-fiche .toggle { margin: 0 16px 14px 54px; }
+.i-ico { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: var(--soft); font-size: 1rem; }
 /* ----- Base ----- */
 * { box-sizing: border-box; margin: 0; }
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -637,7 +659,7 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 </section>
 
 <section id="menu" class="hidden">
-<div class="entete"><h1>On s’y met ?</h1></div>
+<div class="entete"><h1>On s’y met ?</h1><button class="info-btn" id="infoBtn" aria-label="Infos et aide"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/></svg></button></div>
 <p class="sub">Échauffe-toi, entraîne-toi, puis récupère.</p>
 <div class="tableau">
 <button class="tuile feu" id="tProgres" aria-label="Mes progrès"><span class="flamme"><svg viewBox="0 0 24 32" aria-hidden="true"><defs><linearGradient id="flG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#F43F5E"/><stop offset=".55" stop-color="#F97316"/><stop offset="1" stop-color="#FACC15"/></linearGradient></defs><path class="fl1" d="M12 1C13 7 20 10 20 19a8 8 0 0 1-16 0c0-4 2-6 3-8 .5 3 2 4 3 4-1-5 1-10 2-14z" fill="url(#flG)"/><path class="fl2" d="M12 14c.6 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-2 1-3 1.6-4 .3 1.4 1 2 1.6 2-.4-2.4.3-4.6.8-6.5z" fill="#FFF3C4"/></svg></span><b id="tSerie">0</b><span><strong id="tSerieTxt">jour d’affilée</strong><small>Mes progrès · trophées</small></span></button>
@@ -844,6 +866,13 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 
 <section id="outils" class="hidden"><h1 id="otTitre"></h1><p class="sub" id="otSub"></p><div class="choices" id="otListe"></div></section>
 <section id="outil" class="hidden"><button class="back" id="outilRetour">← Retour</button><h1 id="oTitre"></h1><p class="sub" id="oSub"></p><div id="oCorps"></div></section>
+<section id="infos" class="hidden">
+<button class="back" id="infosRetour">← Retour</button>
+<h1 id="iTitre">Infos</h1>
+<p class="sub" id="iSub"></p>
+<label class="recherche"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="iRecherche" type="search" autocomplete="off" enterkeyhint="search"></label>
+<div id="iCorps"></div>
+</section>
 <section id="bienvenue" class="hidden"><button class="lien-discret bv-passer" id="bvPasser">Passer</button><div id="bvCorps"></div></section>
 <section id="moi" class="hidden"><div class="entete"><h1 id="moiTitre">Moi</h1></div><div id="moiCorps"></div></section>
 <section id="profil" class="hidden"><button class="back" id="profilRetour">← Retour</button><h1 id="pfTitre"></h1><p class="sub" id="pfSub"></p><div id="pfCorps"></div></section>
@@ -921,5 +950,6 @@ try { const t = localStorage.getItem("theme") || "sombre"; document.documentElem
 <script src="js/sports.js"></script>
 <script src="js/jeu.js"></script>
 <script src="js/moi.js"></script>
+<script src="js/guide.js"></script>
 </body>
 </html>

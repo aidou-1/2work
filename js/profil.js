@@ -366,7 +366,10 @@ const ICO_AJOUT = `<svg class="ico-etape" viewBox="0 0 24 24" fill="none" stroke
 const ICO_MENU = `<svg class="ico-etape" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
 async function installer() {
   if (installee()) return ouvrirFeuilleInfo(L("2 WORK est installée", "2 WORK is installed"), `<p>${L("Tu utilises déjà l’appli installée : plein écran, hors ligne et données protégées. ✅", "You are already using the installed app: full screen, offline and protected data. ✅")}</p>`);
-  if (invitInstall && !iOS()) { invitInstall.prompt(); const r = await invitInstall.userChoice; invitInstall = null; if (r.outcome === "accepted") protegerDonnees(); renduAppli(); majBanniere(); return; }
+  if (invitInstall && !iOS()) { invitInstall.prompt(); const r = await invitInstall.userChoice; invitInstall = null; if (r.outcome === "accepted") protegerDonnees(); renduAppli(); majBanniere(); return r.outcome === "accepted"; }
+  ouvrirFeuilleInfo(L("Installer 2 WORK", "Install 2 WORK"), htmlInstall()); brancherInstall();
+}
+function htmlInstall() {   // étapes d'installation propres au téléphone et au navigateur (feuille « Installer » et guide du premier lancement)
   const atouts = `<p class="inst-atouts">${L("Gratuit · sans compte · fonctionne hors ligne · moins de 1 Mo", "Free · no account · works offline · under 1 MB")}</p>`;
   const etapes = l => `<ol class="etapes-inst">${l.map(x => `<li>${x}</li>`).join("")}</ol>`;
   let html;
@@ -374,17 +377,21 @@ async function installer() {
     + etapes([L(`Touche ${ICO_MENU} ou <b>⋯</b> en haut de l’écran.`, `Tap ${ICO_MENU} or <b>⋯</b> at the top of the screen.`), L(`Choisis <b>« Ouvrir dans le navigateur »</b> (Safari sur iPhone, Chrome sur Android).`, `Choose <b>“Open in browser”</b> (Safari on iPhone, Chrome on Android).`), L("Touche à nouveau « Installer l’appli ».", "Tap “Install the app” again.")])
     + `<button class="toggle" id="instCopier">🔗 ${L("Copier le lien", "Copy the link")}</button>`;
   else if (iOS()) {
-    const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(UA), ipad = /ipad/i.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1), n = lireHist().length;
+    const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(UA), ios26 = +((/Version\/(\d+)/.exec(UA) || /OS (\d+)_/.exec(UA) || [])[1]) >= 26, ipad = /ipad/i.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1), n = lireHist().length;
     html = atouts + (n ? `<div class="inst-avant"><b>💾 ${L("D’abord, sauvegarde ton suivi", "First, back up your progress")}</b><p>${L(`Sur iPhone, l’appli installée ne reprend pas les données de Safari. Sauvegarde ${n > 1 ? `tes ${n} séances` : "ta séance"} maintenant, puis dans l’appli : Réglages → Restaurer.`, `On iPhone, the installed app does not take over Safari’s data. Back up ${n > 1 ? `your ${n} workouts` : "your workout"} now, then in the app: Settings → Restore.`)}</p><button class="toggle" id="instSauver">💾 ${L("Sauvegarder", "Back up")}</button></div>` : "")
-      + etapes(safari ? [L(`Touche le bouton <b>Partager</b> ${ICO_PARTAGE} ${ipad ? "en haut à droite" : "en bas de l’écran"}.`, `Tap the <b>Share</b> button ${ICO_PARTAGE} ${ipad ? "at the top right" : "at the bottom of the screen"}.`),
-          L(`Fais défiler et choisis <b>« Sur l’écran d’accueil »</b> ${ICO_AJOUT}.`, `Scroll down and choose <b>“Add to Home Screen”</b> ${ICO_AJOUT}.`), L("Touche <b>Ajouter</b> : l’icône 2 WORK apparaît sur ton écran d’accueil.", "Tap <b>Add</b>: the 2 WORK icon appears on your home screen.")]
+      + etapes(safari ? [ios26 ? L(`Touche <b>⋯</b> à côté de la barre d’adresse, puis <b>Partager</b> ${ICO_PARTAGE} (si la barre affiche déjà ${ICO_PARTAGE}, touche-le directement).`, `Tap <b>⋯</b> next to the address bar, then <b>Share</b> ${ICO_PARTAGE} (if the bar already shows ${ICO_PARTAGE}, tap it directly).`)
+          : L(`Touche le bouton <b>Partager</b> ${ICO_PARTAGE} ${ipad ? "en haut à droite" : "en bas de l’écran"}.`, `Tap the <b>Share</b> button ${ICO_PARTAGE} ${ipad ? "at the top right" : "at the bottom of the screen"}.`),
+          L(`Fais défiler et choisis <b>« Sur l’écran d’accueil »</b> ${ICO_AJOUT}. Absent ? Tout en bas, « Modifier les actions » permet de l’ajouter.`, `Scroll down and choose <b>“Add to Home Screen”</b> ${ICO_AJOUT}. Missing? At the very bottom, “Edit Actions” lets you add it.`),
+          L(`${ios26 ? "Laisse <b>« Ouvrir en tant qu’app web »</b> activé, puis t" : "T"}ouche <b>Ajouter</b> : l’icône 2 WORK apparaît sur ton écran d’accueil.`, `${ios26 ? "Leave <b>“Open as Web App”</b> on, then t" : "T"}ap <b>Add</b>: the 2 WORK icon appears on your home screen.`)]
         : [L(`Touche le bouton <b>Partager</b> ${ICO_PARTAGE} dans la barre d’adresse.`, `Tap the <b>Share</b> button ${ICO_PARTAGE} in the address bar.`), L(`Choisis <b>« Ajouter à l’écran d’accueil »</b> ${ICO_AJOUT}.`, `Choose <b>“Add to Home Screen”</b> ${ICO_AJOUT}.`), L("Si l’option n’apparaît pas, ouvre cette page dans <b>Safari</b> et recommence.", "If the option does not appear, open this page in <b>Safari</b> and try again.")])
       + `<p class="sh-aide">${L("Ensuite, ouvre 2 WORK depuis son icône : plein écran, hors ligne, et tes données sont protégées.", "Then open 2 WORK from its icon: full screen, offline, and your data is protected.")}</p>`;
   } else if (android()) html = atouts + etapes([L(`Touche ${ICO_MENU} en haut à droite de Chrome.`, `Tap ${ICO_MENU} at the top right of Chrome.`), L("Choisis <b>« Installer l’application »</b> ou <b>« Ajouter à l’écran d’accueil »</b>.", "Choose <b>“Install app”</b> or <b>“Add to Home screen”</b>."), L("Confirme : l’icône 2 WORK apparaît avec tes autres applis.", "Confirm: the 2 WORK icon appears with your other apps.")])
     + `<p class="sh-aide">${L("Samsung Internet : menu ☰ puis « Ajouter la page à » → « Écran d’accueil ». Firefox : ⋮ puis « Installer ».", "Samsung Internet: menu ☰ then “Add page to” → “Home screen”. Firefox: ⋮ then “Install”.")}</p>`;
   else html = `<div class="inst-qr"><img src="icons/qr.png" width="180" height="180" alt="QR code"><p>${L("Scanne ce code avec l’appareil photo de ton téléphone pour ouvrir 2 WORK, puis touche « Installer l’appli ».", "Scan this code with your phone’s camera to open 2 WORK, then tap “Install the app”.")}</p></div>`
     + `<p class="sh-aide">${L("Sur ordinateur, avec Chrome ou Edge : icône d’installation à droite de la barre d’adresse.", "On a computer, with Chrome or Edge: install icon on the right of the address bar.")}</p>`;
-  ouvrirFeuilleInfo(L("Installer 2 WORK", "Install 2 WORK"), html);
+  return html;
+}
+function brancherInstall() {
   if ($("instSauver")) $("instSauver").onclick = sauvegarder;
   if ($("instCopier")) $("instCopier").onclick = async () => { try { await navigator.clipboard.writeText(location.href.split("?")[0]); $("instCopier").textContent = "✓ " + L("Lien copié", "Link copied"); } catch (e) { $("instCopier").textContent = location.href.split("?")[0]; } };
 }
