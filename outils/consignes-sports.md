@@ -1,4 +1,4 @@
-# Chantier « sports un par un » : consignes pour Jules (Gemini) ou Codex
+# Chantier « sports un par un » : consignes pour Codex (ChatGPT) ou tout agent de code
 
 Une tâche = un sport = une branche = une pull request. Suivre `AGENTS.md`.
 
@@ -35,5 +35,5 @@ Une tâche = un sport = une branche = une pull request. Suivre `AGENTS.md`.
 foot, course, basket, handball, tennis, volley, natation, cyclisme, padel, escalade, ski, surf, pilates, cardio.
 La boxe est le modèle : on n'y touche pas.
 
-## Texte à coller dans Jules (remplacer FOOT par le sport)
-> Lis AGENTS.md et outils/consignes-jules.md, puis applique la procédure au sport FOOT (fichier js/foot.js). Une seule pull request, en français, avec le rapport d'audit et les sources.
+## Texte à donner à l'agent (remplacer FOOT par le sport)
+> Lis AGENTS.md et outils/consignes-sports.md, puis applique la procédure au sport FOOT (fichier js/foot.js). Une seule pull request, en français, avec le rapport d'audit et les sources.

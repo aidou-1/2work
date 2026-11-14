@@ -1,4 +1,4 @@
-# 2 WORK : règles pour les agents de code (Claude, Codex, Gemini / Jules)
+# 2 WORK : règles pour les agents de code (Claude, Codex, Gemini / Antigravity)
 
 Fichier unique et partagé : `CLAUDE.md` et `GEMINI.md` l'importent. Toute règle commune se change **ici**.
 
