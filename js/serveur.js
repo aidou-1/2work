@@ -18,7 +18,7 @@ export const PSEUDO_OK = /^[A-Za-z0-9_.-]{3,20}$/;
 /* --- Compte --- */
 export const langue = l => { auth.languageCode = l; };
 export function surCompte(cb) { return F.onAuthStateChanged(auth, async u => cb(u ? { uid: u.uid, email: u.email, ...(await lireDoc("profils", u.uid)) } : null)); }
-export async function pseudoLibre(p) { return !/a[i1l]d[o0]u/i.test(p) && !(await lireDoc("pseudos", p.toLowerCase())); }   // « aidou » et ses variantes : réservé à l'éditeur (firestore.rules)
+export async function pseudoLibre(p) { return (!/[a4][i1l]d[o0]u/.test(p.toLowerCase().replace(/[._-]/g, "")) || moi() === "30YnJqhA5NX6vSOy6TbDC6hza9r2") && !(await lireDoc("pseudos", p.toLowerCase())); }   // « aidou » et ses variantes : réservé à l'éditeur (firestore.rules)
 export async function inscription({ email, mdp, pseudo, naissance, parental }) {
   if (!PSEUDO_OK.test(pseudo)) throw { code: "2work/pseudo-format" };
   if (!(await pseudoLibre(pseudo))) throw { code: "2work/pseudo-pris" };
@@ -52,7 +52,7 @@ export const changerAccordSauvegarde = b => X.updateDoc(d("comptes", moi()), { s
 // âge à la date du jour (date de naissance AAAA-MM-JJ) : mêmes seuils que les règles Firestore (10 ans pour un compte, 15 ans sans accord parental, 18 ans pour être coach ou co-coach)
 const moins15 = n => !!n && ageDe(n) < 15;   // ageDe : js/clubs.js (jour UTC, comme les règles)
 export async function mesClubs() {
-  const uid = moi(), c = await lireDoc("comptes", uid); if (!c) return { clubs: [], attente: [], retraits: [], nais: "", sansFiche: true };
+  const uid = moi(), c = await lireDoc("comptes", uid); if (!c) { const cr = Date.parse((auth.currentUser && auth.currentUser.metadata.creationTime) || 0); return { clubs: [], attente: [], retraits: [], nais: "", sansFiche: Date.now() - cr > 120e3 }; }   // compte tout neuf : sa fiche est en cours d'écriture
   let { clubs = [], attente = [] } = c; const nc = [], na = [], nr = [], m15 = moins15(c.naissance);
   for (const id of attente) {   // acceptée ? refusée ? toujours en attente ?
     if (await lireDoc("clubs", id, "membres", uid)) { clubs.includes(id) || clubs.push(id); continue; }
@@ -90,7 +90,7 @@ export async function purgerAnciens(c, estCoach) {
   for (const [k, j] of [["signalements", DUREES.signalements], ["demandes", DUREES.demandes], ["exclus", DUREES.exclus]]) for (const x of await vieux(["clubs", c, k], "t", avant(j))) await X.deleteDoc(x.ref).catch(() => {});
   const cl = await lireDoc("clubs", c), sals = ["", ...((cl && cl.sections) || []).map(x => x.id)];
   const mi = (await X.getDocs(col("clubs", c, "mineurs")).catch(() => null)) || { docs: [] };   // fiches « -15 » restées après un départ (anciennes versions)
-  if (mi.docs.length) { const mb = new Set((await X.getDocs(col("clubs", c, "membres"))).docs.map(x => x.id)); for (const x of mi.docs) if (!mb.has(x.id)) await X.deleteDoc(x.ref).catch(() => {}); }
+  if (mi.docs.length) { const mbs = await X.getDocs(col("clubs", c, "membres")).catch(() => null), mb = mbs && new Set(mbs.docs.map(x => x.id)); if (mb) for (const x of mi.docs) if (!mb.has(x.id)) await X.deleteDoc(x.ref).catch(() => {}); }
   for (const sal of sals) {
     for (const x of await vieux([...B(c, sal), "seances"], "date", jourAvant(DUREES.faits), 30))   // coches des séances de plus de 3 mois
       for (const f of ((await X.getDocs(col(...B(c, sal), "seances", x.id, "faits")).catch(() => null)) || { docs: [] }).docs) await X.deleteDoc(f.ref).catch(() => {});

@@ -33,7 +33,7 @@ function stop() { desab.forEach(f => f()); desab = []; }
 
 async function chargerServeur() {
   if (!SV) { SV = await import("./serveur.js?v=" + VER); SV.langue(LANGUE === "en" ? "en" : "fr");
-    SV.surCompte(async u => { CL.u = u; if (u) { stocker("clubCompte", "1"); await rafraichir(); proposerRestauration(); sauvegardeAuto(); } else { CL.clubs = []; CL.attente = []; } if (ecranCourant === "clubs") rendu(); majCarteClubs(); }); }
+    SV.surCompte(async u => { CL.u = u; if (u) { stocker("clubCompte", "1"); await rafraichir(); proposerRestauration(); sauvegardeAuto(); } else { CL.clubs = []; CL.attente = []; CL.sansFiche = false; CL.nais = ""; } if (ecranCourant === "clubs") rendu(); majCarteClubs(); }); }
   return SV;
 }
 async function rafraichir() { try { Object.assign(CL, await SV.mesClubs()); } catch (e) {} syncAccordSauvegarde(); }
@@ -172,7 +172,7 @@ function renduCompte(C, mode, apres) {   // apres : suite éventuelle, une fois 
       if (!$("cfAccord").checked) return err(L("Coche la case d’accord pour continuer.", "Tick the consent box to continue.")); }
     $("cfOk").disabled = true;
     try { ins ? await SV.inscription({ email: v("cfEmail"), mdp: $("cfMdp").value, pseudo: v("cfPseudo"), naissance: v("cfNais"), parental: ageDe(v("cfNais")) < 15 }) : await SV.connexion(v("cfEmail"), $("cfMdp").value);
-      if (ins && !lireProfil().naissance) ecrireProfil("naissance", v("cfNais")); if (apres) apres(); }
+      if (ins && !lireProfil().naissance) ecrireProfil("naissance", v("cfNais")); if (ins) { await rafraichir(); if (ecranCourant === "clubs") rendu(); } if (apres) apres(); }
     catch (x) { err(msgErr(x)); $("cfOk").disabled = false; }
   };
   if ($("cfOubli")) $("cfOubli").onclick = async () => { if (!v("cfEmail")) return err(L("Écris d’abord ton email ci-dessus.", "Type your email above first."));
