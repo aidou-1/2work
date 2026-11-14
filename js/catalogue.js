@@ -410,7 +410,7 @@ function seanceBlocs({ blocs, couleur, titre, intro, rpe = "3–6", cat = "", ..
   const plan = [], aff = [];
   blocs.forEach(([n, desc, l, r]) => { l = l.filter(([x]) => EXERCICES[x]); if (!l.length) return;
     l.forEach(([x, d], k) => plan.push({ id: x, d, r, bn: n, lab: `${n} · ${k + 1}/${l.length}` })); aff.push([n, l.map(([x, d]) => [x, unilat(x) ? `2 × ${Math.round(d / 2)} s` : d + " s"]), desc]); });
-  plan[plan.length - 1].r = 0;
+  if (plan.length) plan[plan.length - 1].r = 0;
   return { type: "seance", fixe: true, couleur, plan, exercices: plan.map(q => q.id), total: Math.round(plan.reduce((t, q) => t + q.d + q.r, 0) / 60), rpe, titre, titreFr: titre, detail: "", cat,
     listeHtml: `<li class="etude prog-carte-jour" style="--accent:${couleur}"><div><small>${intro}</small></div></li>` + aff.map(blocHtml).join(""), ...plus };
 }
