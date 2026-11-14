@@ -464,7 +464,7 @@ async function installer() {
   if (invitInstall && !iOS()) { invitInstall.prompt(); const r = await invitInstall.userChoice; invitInstall = null; if (r.outcome === "accepted") protegerDonnees(); renduAppli(); majBanniere(); return r.outcome === "accepted"; }
   ouvrirFeuilleInfo(L("Installer 2 WORK", "Install 2 WORK"), htmlInstall()); brancherInstall();
 }
-function htmlInstall() {   // étapes d'installation propres au téléphone et au navigateur (feuille « Installer » et guide du premier lancement)
+function htmlInstall() {   // étapes d'installation propres au téléphone et au navigateur (feuille « Installer » et guide d’installation)
   const atouts = `<p class="inst-atouts">${L("Gratuit · sans compte · fonctionne hors ligne · moins de 1 Mo", "Free · no account · works offline · under 1 MB")}</p>`;
   const etapes = l => `<ol class="etapes-inst">${l.map(x => `<li>${x}</li>`).join("")}</ol>`;
   let html;

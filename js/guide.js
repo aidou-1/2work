@@ -91,8 +91,8 @@ function guideAuto() {
    « Plus tard » vaut pour cette visite seulement --- */
 const plusTardSession = () => { try { return sessionStorage.getItem("guideInstall"); } catch (e) { return null; } };
 const besoinInstallGuide = () => !installee() && !plusTardSession() && /^https?:/.test(location.protocol) && lireHist().length > 0;   // à chaque ouverture dans le navigateur, une fois la 1re séance faite, tant que l'appli n'est pas installée
-function guideInstall() {
-  bienvenue.etape = 0;   // écran d’installation : le geste retour n’y fait rien (js/outils.js)
+function guideInstall(apres) {   // apres : où revenir (écran de fin de séance) ; sinon la suite du lancement
+  bienvenue.etape = 0; guideInstall.apres = apres;   // écran d’installation : le geste retour n’y fait rien (js/outils.js)
   const C = $("bvCorps"), natif = invitInstall && !iOS(),
     app = iOS() ? (/ipad/i.test(UA) || navigator.maxTouchPoints > 1 && !/iphone/i.test(UA) ? "iPad" : "iPhone") : android() ? "Android" : L("Ordinateur", "Computer"),
     nav = navIntegre() ? L("navigateur d’une autre appli", "another app’s browser") : /SamsungBrowser/.test(UA) ? "Samsung Internet" : /EdgiOS|Edg\//.test(UA) ? "Edge" : /FxiOS|Firefox/.test(UA) ? "Firefox" : /CriOS|Chrome/.test(UA) ? "Chrome" : "Safari";
@@ -102,12 +102,12 @@ function guideInstall() {
     ${natif ? `<button class="primary" id="giNatif">📲 ${L("Installer maintenant", "Install now")}</button>` : `<div class="carnet gi-etapes">${htmlInstall()}</div><button class="primary" id="giFait">✓ ${L("C’est fait", "Done")}</button>`}
     <button class="lien-discret" id="giPlusTard">${L("Plus tard, continuer dans le navigateur", "Later, continue in the browser")}</button>`;
   $("bvPasser").classList.add("hidden"); brancherInstall();
-  const suite = () => { try { sessionStorage.setItem("guideInstall", "1"); } catch (e) {} suiteBienvenue(); };
+  const suite = () => { try { sessionStorage.setItem("guideInstall", "1"); } catch (e) {} typeof apres === "function" ? apres() : suiteBienvenue(); };
   $("giPlusTard").onclick = suite;
   if (natif) $("giNatif").onclick = async () => { if (await installer()) suite(); };
   else $("giFait").onclick = suite;
 }
-addEventListener("beforeinstallprompt", () => setTimeout(() => { if (ecranCourant === "bienvenue" && $("giFait")) guideInstall(); }, 0));
+addEventListener("beforeinstallprompt", () => setTimeout(() => { if (ecranCourant === "bienvenue" && $("giFait")) guideInstall(guideInstall.apres); }, 0));
 
 /* --- Infos : une fiche par fonctionnalité, rangées par rubrique, et recherche par mots-clés dans les fiches, les exercices,
    les séances et les programmes. [rubrique, icône, titre fr, titre en, texte fr, texte en, mots-clés, action] --- */
