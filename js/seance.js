@@ -339,9 +339,17 @@ new MutationObserver(majVerrou).observe($("name"), { childList: true, characterD
 let anneauTotal = 1, anneauPrec = 0;
 new MutationObserver(() => {
   const v = parseInt($("time").textContent, 10) || 0, A = $("anneau"), C = 276.5, neuf = v > anneauPrec;
-  if (neuf) { anneauTotal = Math.max(1, v); A.style.transition = "none"; A.style.strokeDashoffset = 0; void A.getBoundingClientRect(); A.style.transition = ""; }
-  anneauPrec = v; A.style.strokeDashoffset = -C * (1 - Math.max(0, v - 1) / anneauTotal);   // décalage négatif : l'anneau se vide dans le sens des aiguilles d'une montre
+  const R = $("coureur");   // style « Anneau » : le coureur lumineux en tête de l'arc restant
+  if (neuf) { anneauTotal = Math.max(1, v); [A, R].forEach(x => x.style.transition = "none"); A.style.strokeDashoffset = 0; R.style.transform = "rotate(0deg)"; void A.getBoundingClientRect(); [A, R].forEach(x => x.style.transition = ""); }
+  const f = 1 - Math.max(0, v - 1) / anneauTotal;
+  anneauPrec = v; A.style.strokeDashoffset = -C * f; R.style.transform = `rotate(${360 * f}deg)`;   // décalage négatif : l'anneau se vide dans le sens des aiguilles d'une montre
   $("anneauBox").classList.toggle("fin", v <= 3 && v > 0);
+}).observe($("time"), { childList: true, characterData: true, subtree: true });
+// style « Volets » : chaque chiffre est une plaquette qui bascule quand il change (le texte reste lisible tel quel par le reste du code)
+new MutationObserver(() => {
+  const t = $("time"), s = t.textContent; if (document.documentElement.dataset.minuteur !== "volets" || t.dataset.v === s) return;
+  const avant = t.dataset.v || ""; t.dataset.v = s;
+  t.innerHTML = [...s].map((c, i) => /\d/.test(c) ? `<span class="volet${c !== avant[i] && avant ? " bascule" : ""}">${c}</span>` : c).join("");
 }).observe($("time"), { childList: true, characterData: true, subtree: true });
 
 /* ============ REPRISE D'UNE SÉANCE INTERROMPUE ============
