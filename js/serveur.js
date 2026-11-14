@@ -172,7 +172,7 @@ export async function exporterCompte() {
 }
 
 /* --- Lecture en direct : membres, demandes, séances, messages --- */
-export async function mineurs(c) { const q = await X.getDocs(col("clubs", c, "mineurs")).catch(() => null); return new Set(q ? q.docs.map(x => x.id) : []); }   // staff seul
+export const ecouterMineurs = (c, cb) => X.onSnapshot(col("clubs", c, "mineurs"), s => cb(new Set(s.docs.map(x => x.id))), () => cb(new Set()));   // staff seul
 const vers = s => s.docs.map(x => ({ id: x.id, ...x.data({ serverTimestamps: "estimate" }) }));
 export const ecouterMembres = (c, cb) => X.onSnapshot(col("clubs", c, "membres"), s => cb(vers(s)), () => cb([]));
 export const ecouterDemandes = (c, cb) => X.onSnapshot(col("clubs", c, "demandes"), s => cb(vers(s)), () => cb([]));
