@@ -29,7 +29,7 @@ export async function inscription({ email, mdp, pseudo, naissance, parental }) {
     b.set(d("profils", user.uid), { pseudo });
     b.set(d("comptes", user.uid), { naissance, parental: !!parental, cree: X.serverTimestamp(), clubs: [], attente: [] });
     await b.commit();
-  } catch (e) { await user.delete().catch(() => {}); throw e.code === "permission-denied" ? { code: "2work/pseudo-pris" } : e; }   // pseudo réservé entre-temps
+  } catch (e) { await user.delete().catch(() => {}); throw e.code === "permission-denied" && !(await pseudoLibre(pseudo).catch(() => true)) ? { code: "2work/pseudo-pris" } : e; }   // pseudo réservé entre-temps
   return user.uid;
 }
 export const connexion = (email, mdp) => F.signInWithEmailAndPassword(auth, email, mdp);
@@ -49,10 +49,9 @@ export const changerAccordSauvegarde = b => X.updateDoc(d("comptes", moi()), { s
 
 /* --- Mes clubs : liste tenue dans mon compte (clubs, et demandes en attente vérifiées à chaque ouverture) --- */
 // âge à la date du jour (date de naissance AAAA-MM-JJ) : mêmes seuils que les règles Firestore (10 ans pour un compte, 15 ans sans accord parental, 18 ans pour être coach ou co-coach)
-export const ageDe = n => { const a = new Date(n), j = new Date(); return j.getFullYear() - a.getFullYear() - (j < new Date(j.getFullYear(), a.getMonth(), a.getDate()) ? 1 : 0); };
-const moins15 = n => !!n && ageDe(n) < 15;
+const moins15 = n => !!n && ageDe(n) < 15;   // ageDe : js/clubs.js (jour UTC, comme les règles)
 export async function mesClubs() {
-  const uid = moi(), c = await lireDoc("comptes", uid); if (!c) return { clubs: [], attente: [], retraits: [] };
+  const uid = moi(), c = await lireDoc("comptes", uid); if (!c) return { clubs: [], attente: [], retraits: [], nais: "" };
   let { clubs = [], attente = [] } = c; const nc = [], na = [], nr = [], m15 = moins15(c.naissance);
   for (const id of attente) {   // acceptée ? refusée ? toujours en attente ?
     if (await lireDoc("clubs", id, "membres", uid)) { clubs.includes(id) || clubs.push(id); continue; }
@@ -155,11 +154,12 @@ export async function quitter(c, anonyme) { await mesTracesEffacer(c, anonyme); 
 export async function exporterCompte() {
   const uid = moi(), u = auth.currentUser, cpt = await lireDoc("comptes", uid), pr = await lireDoc("profils", uid), sv = await lireDoc("sauvegardes", uid).catch(() => null), clubs = [];
   for (const c of (cpt && [...new Set([...(cpt.clubs || []), ...(cpt.attente || [])])]) || []) {
-    const cl = await lireDoc("clubs", c).catch(() => null), m = cl && await lireDoc("clubs", c, "membres", uid).catch(() => null), x = { id: c, nom: cl ? cl.nom : "", membre: m, demande: await lireDoc("clubs", c, "demandes", uid).catch(() => null) };
+    const cl = await lireDoc("clubs", c).catch(() => null), m = cl && await lireDoc("clubs", c, "membres", uid).catch(() => null), dm = await lireDoc("clubs", c, "demandes", uid).catch(() => null),
+      x = { id: c, nom: cl ? cl.nom : (dm && dm.nom) || "", membre: m, demande: dm, exclusion: m ? null : await lireDoc("clubs", c, "exclus", uid).catch(() => null) };
     if (m) { x.sanction = await lireDoc("clubs", c, "sanctions", uid).catch(() => null); x.messages = []; x.seancesFaites = [];
       for (const sal of ["", ...((cl.sections || []).map(s => s.id))]) {
         const q = await X.getDocs(X.query(col(...B(c, sal), "messages"), X.where("uid", "==", uid))).catch(() => null);
-        x.messages.push(...(q ? vers(q) : []).map(v => ({ section: sal, ...v })));
+        x.messages.push(...(q ? vers(q) : []).map(({ reac, rep, ...v }) => ({ section: sal, ...v, mesReactions: Object.keys(reac || {}).filter(e => (reac[e] || []).includes(uid)), ...(rep && { reponseA: rep.m }) })));   // sans les données des autres (leurs réactions, le texte cité)
         for (const s of ((await X.getDocs(col(...B(c, sal), "seances")).catch(() => null)) || { docs: [] }).docs) { const f = await lireDoc(...B(c, sal), "seances", s.id, "faits", uid).catch(() => null); if (f) x.seancesFaites.push({ section: sal, seance: s.data().titre, date: s.data().date, ...f }); }
       }
       const p = await X.getDocs(X.query(col("clubs", c, "prev"), X.where("uid", "==", uid))).catch(() => null); x.prevention = p ? vers(p) : []; }

@@ -62,6 +62,7 @@ service cloud.firestore {
     match /comptes/{uid} {
       allow read, delete: if connecte() && moi() == uid;
       allow create: if connecte() && moi() == uid && champs(['naissance', 'parental', 'cree', 'clubs', 'attente'], ['naissance', 'parental', 'cree', 'clubs', 'attente'])
+        && !exists(/databases/$(db)/documents/profils/$(uid)) && existsAfter(/databases/$(db)/documents/profils/$(uid))   // seulement à l'inscription (date de naissance non modifiable ensuite)
         && jour(D().naissance) && ageOk(D().naissance, 10) && D().parental == !ageOk(D().naissance, 15) && maintenant(D().cree) && D().clubs == [] && D().attente == [];
       allow update: if connecte() && moi() == uid && ((seulement(['clubs', 'attente'])
         && D().clubs is list && D().clubs.size() <= 50 && D().attente is list && D().attente.size() <= 50)
@@ -120,7 +121,7 @@ service cloud.firestore {
         allow create: if champs(['uid', 'pseudo', 'role', 'muet', 'depuis'], ['uid', 'pseudo', 'role', 'muet', 'depuis', 'm15']) && D().uid == uid && D().muet == false && maintenant(D().depuis)
           && ((connecte() && moi() == uid && D().role == 'coach' && D().pseudo == monPseudo() && getAfter(/databases/$(db)/documents/clubs/$(c)).data.coach == uid)
             || (staff(c) && D().role == 'membre' && D().pseudo == get(/databases/$(db)/documents/clubs/$(c)/demandes/$(uid)).data.pseudo
-              && D().get('m15', false) == get(/databases/$(db)/documents/clubs/$(c)/demandes/$(uid)).data.get('m15', false)));
+              && (!('m15' in D()) || D().m15 == get(/databases/$(db)/documents/clubs/$(c)/demandes/$(uid)).data.get('m15', false))));   // sans m15 (staff sur une ancienne version) : le membre le corrige lui-même
         // le coach nomme ou retire les co-coachs ; le staff rend muet ; personne ne touche au rôle du coach ni ne se modifie soi-même
         allow update: if (connecte() && moi() == uid && seulement(['dernier']) && maintenant(D().dernier))   // horodatage anti-spam, écrit avec chaque message
           || (connecte() && moi() == uid && seulement(['m15']) && D().m15 == !ageOk(naissanceDe(moi()), 15))   // badge « -15 » tenu à jour (membres d'avant, 15 ans passés)
