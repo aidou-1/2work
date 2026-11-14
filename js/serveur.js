@@ -183,7 +183,7 @@ export const ecouterMineurs = (c, cb) => X.onSnapshot(col("clubs", c, "mineurs")
 const vers = s => s.docs.map(x => ({ id: x.id, ...x.data({ serverTimestamps: "estimate" }) }));
 export const ecouterMembres = (c, cb) => X.onSnapshot(col("clubs", c, "membres"), s => cb(vers(s)), () => cb([]));
 export const ecouterDemandes = (c, cb) => X.onSnapshot(col("clubs", c, "demandes"), s => cb(vers(s)), () => cb([]));
-export const ecouterSeances = (c, cb, sal) => X.onSnapshot(X.query(col(...B(c, sal), "seances"), X.orderBy("date", "desc"), X.limit(60)), s => cb(vers(s).map(x => ({ ...x, sec: sal || "" }))), () => cb([]));
+export const ecouterSeances = (c, cb, sal) => X.onSnapshot(X.query(col(...B(c, sal), "seances"), X.orderBy("date", "desc"), X.limit(/^u_/.test(sal || "") ? 12 : 60)), s => cb(vers(s).map(x => ({ ...x, sec: sal || "" }))), () => cb([]));
 export const ecouterFaits = (c, s, cb, sal) => X.onSnapshot(col(...B(c, sal), "seances", s, "faits"), q => cb(vers(q)), () => cb([]));
 export const ecouterMessages = (c, cb, sal) => X.onSnapshot(X.query(col(...B(c, sal), "messages"), X.orderBy("t", "desc"), X.limit(150)), s => cb(vers(s).reverse()), () => cb([]));
 export const ecouterSignalements = (c, cb) => X.onSnapshot(col("clubs", c, "signalements"), s => cb(vers(s)), () => cb([]));

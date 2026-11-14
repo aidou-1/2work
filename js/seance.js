@@ -325,7 +325,7 @@ function pisteSilence() {
    On enregistre donc à l'avance, dans un fichier, les bips de toute la suite de la séance (3 bips avant chaque changement, puis
    2 notes montantes pour l'effort, une note grave pour le repos, 3 notes à la fin) : le fractionné s'entend même écran éteint.
    Refaite à chaque départ, pause, reprise, passage ou retour ; à défaut (séries aux répétitions), la piste muette. */
-let guide = null, guideFin = 0;
+let guide = null;
 function etapesRestantes() {
   const l = [];
   if (mode === "tabata") {
@@ -346,16 +346,15 @@ function etapesRestantes() {
 }
 function pisteGuide() {
   const et = etapesRestantes(); if (!et.length || !volSons) return null;
-  const SR = 8000, tot = Math.min(3600, et.reduce((s, [d]) => s + d, 0) + 3), n = Math.round(SR * tot), o = new Uint8Array(44 + n), d = new DataView(o.buffer), son = new Float32Array(n);
+  const SR = 8000, tot = Math.min(3600, et.reduce((s, [d]) => s + d, 0) + 3), n = Math.round(SR * tot), o = new Uint8Array(44 + n).fill(128, 44), d = new DataView(o.buffer);   // 8 Ko par seconde
   [[0, 0x52494646], [8, 0x57415645], [12, 0x666d7420], [36, 0x64617461]].forEach(([p, v]) => d.setUint32(p, v));
   [[4, 36 + n], [16, 16], [24, SR], [28, SR], [40, n]].forEach(([p, v]) => d.setUint32(p, v, true));
   [[20, 1], [22, 1], [32, 1], [34, 8]].forEach(([p, v]) => d.setUint16(p, v, true));
-  const note = (t, f, dur, v = .5) => { const a = Math.round(t * SR), b = Math.min(n, a + Math.round(dur * SR)); for (let i = Math.max(0, a); i < b; i++) { const x = (i - a) / SR; son[i] += v * Math.sin(2 * Math.PI * f * x) * Math.min(1, x / .01, (dur - x) / .04); } };
+  const note = (t, f, dur, v = .5) => { const a = Math.round(t * SR), b = Math.min(n, a + Math.round(dur * SR)); v *= Math.min(1, volSons) * 127;
+    for (let i = Math.max(0, a); i < b; i++) { const x = (i - a) / SR; o[44 + i] = Math.max(1, Math.min(255, o[44 + i] + Math.round(v * Math.sin(2 * Math.PI * f * x) * Math.min(1, x / .01, (dur - x) / .04)))); } };
   let t = 0;
   et.forEach(([dur], k) => { t += dur; if (t > tot - 3) return; if (dur > 4) [3, 2, 1].forEach(s => note(t - s, 1320, .18, .45));
     const suite = et[k + 1]; if (!suite) [660, 880, 1320].forEach((f, j) => note(t + j * .22, f, .2)); else if (suite[1] === "ex") { note(t, 880, .22); note(t + .24, 1320, .4); } else note(t, 440, .7, .6); });
-  for (let i = 0; i < n; i++) o[44 + i] = 128 + Math.max(-127, Math.min(127, Math.round(son[i] * volSons * 127)));
-  guideFin = Date.now() + tot * 1000;
   return new Audio(URL.createObjectURL(new Blob([o], { type: "audio/wav" })));
 }
 const guideJoue = () => guide && !guide.paused;
@@ -365,7 +364,8 @@ function majVerrou() {
   const actif = ["pret", "session"].includes(ecranCourant) && !avecMusique;
   try {
     if (!actif || enPause || ecranCourant === "pret") arreterGuide();
-    else if (!guide) { guide = pisteGuide(); if (guide) guide.play().catch(() => { guide = null; }); }
+    else if (!guide) { const g = guide = pisteGuide();   // une piste qui échoue ou se termine (séries aux répétitions, plafond d'une heure) laisse place à la suivante ou à la piste muette
+      if (g) { const fin = () => { if (guide === g) { arreterGuide(); majVerrou(); } }; g.onended = fin; g.play().catch(() => { if (guide === g) { URL.revokeObjectURL(g.src); guide = null; pisteSilence().play().catch(() => {}); } }); } }
     if (actif && !enPause && !guide) pisteSilence().play().catch(() => {}); else if (silence) silence.pause();
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.metadata = actif ? new MediaMetadata({ title: $(ecranCourant === "pret" ? "pretNom" : "name").textContent, artist: "2 WORK" + (routine ? " · " + routine.titre : ""), artwork: [{ src: "icons/icon-512.png", sizes: "512x512", type: "image/png" }] }) : null;
@@ -421,6 +421,7 @@ function rejouer() {   // après le décompte : la séance repart à l'exercice 
   if (s.mode === "tabata") { demarrerTab(); tab = s.tab; afficherTab(); }
   else if (s.mode === "souffle") { demarrerSouf(); souf.i = Math.min(s.i, souf.plan.length - 1); afficherSouf(); }
   else { demarrer(); index = Math.min(s.index, liste.length - 1); afficher(); }
+  majGuide();
 }
 
 /* Les 3 sons de la séance, assez aigus et présents pour s'entendre sur un haut-parleur de téléphone */
@@ -872,7 +873,7 @@ function afficherRepos() {
   parler(PH("repos") + annonce(e, liste[index], true) + (c0 ? ". " + c0 : "")); if (c0) conseilDejaDit = index + 1;
   $("plusRepos").classList.remove("hidden");
 }
-$("plusRepos").onclick = () => { if (enRepos) { reste += 15; $("time").textContent = reste; } };
+$("plusRepos").onclick = () => { if (enRepos) { reste += 15; $("time").textContent = reste; majGuide(); } };
 
 function terminer() {
   clearInterval(timer); horlogeActive++; oublierSeance();

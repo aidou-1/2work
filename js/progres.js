@@ -569,7 +569,7 @@ const choixRg = (id, cle, attr, def, data) => { const maj = () => { let v = def;
 choixRg("rgStyle", "style", "style", "fonderie", "st"); choixRg("rgMinuteur", "minuteur", "minuteur", "chiffres", "mn");
 // inclinaison 3D au doigt des cartes (thèmes Fonderie et Atelier papier), sauf « réduire les animations »
 { const calme = matchMedia("(prefers-reduced-motion: reduce)"), CARTES = ".choice, .tuile, .kpi, .carte, .prog-carte, .sc-corps, .quick-corps, .semaine-carte";
-  let el = null, f = 0; const remettre = () => { if (el) { el.style.removeProperty("--rx"); el.style.removeProperty("--ry"); el.classList.remove("incline"); el = null; } };
+  let el = null, f = 0; const remettre = () => { cancelAnimationFrame(f); if (el) { el.style.removeProperty("--rx"); el.style.removeProperty("--ry"); el.classList.remove("incline"); el = null; } };
   addEventListener("pointermove", e => { if (calme.matches || !document.documentElement.dataset.style || (e.pointerType !== "mouse" && !e.buttons && e.pointerType !== "touch")) return;
     const c = e.target.closest && e.target.closest(CARTES); if (c !== el) remettre(); if (!c) return; el = c; cancelAnimationFrame(f);
     f = requestAnimationFrame(() => { const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5, m = Math.min(8, 900 / Math.max(r.width, 120));
