@@ -56,7 +56,7 @@ const s1Sport = () => { const p = lireProfil(); return [...(p.sportsPratiques ||
 function s1Jour(n) {   // séance du jour n (1 à 7) : { t, s, c, d, go } ; une semaine de reprise : renfo et Tabata un cran en dessous (6 à 21 min, 34 au plus pour les avancés)
   const p = lireProfil(), nv = p.niveau || lireNiv(), deb = nv === "debutant", fort = nv === "avance", m = (p.materiel || []).length ? "mien" : "sans", sp = s1Sport(), sr = RENFOS[sp] ? sp : "complet";
   const quick = min => ({ t: L(`Renfo express · ${min} min`, `Express strength · ${min} min`), s: L(m === "mien" ? "Tout le corps, avec ton matériel" : "Tout le corps, sans matériel", m === "mien" ? "Full body, with your equipment" : "Full body, no equipment"), c: "#0EA5E9", d: min, go: () => composerExpress({ min, m, z: "tout", int: deb ? "calme" : "normal" }) || composerExpress({ min, m: "sans", z: "tout", int: "normal" }) });
-  return [() => TPL.E(sp, "express"), () => quick(8), () => TPL.C("repos"), () => TPL.R(sr, fort ? "inter" : "debutant"), () => quick(12), () => TPL.T(fort ? "cardio" : "decouverte"), () => TPL.C("soir")][n - 1]();
+  return [() => TPL.E(sp, "express"), () => quick(8), () => TPL.C("repos"), () => deb ? quick(10) : TPL.R(sr, fort ? "inter" : "debutant"), () => quick(12), () => TPL.T(fort ? "cardio" : "decouverte"), () => TPL.C("soir")][n - 1]();
 }
 const S1_BUT = [["Échauffe-toi pour ton sport", "Warm up for your sport"], ["Ton premier renfo", "Your first strength session"], ["Récupère en douceur", "Recover gently"], ["Renforce-toi pour ton sport", "Get stronger for your sport"],
   ["Un peu plus long", "A bit longer"], ["Fais monter le cardio", "Raise your heart rate"], ["Étirements du soir, et bilan", "Evening stretches, and review"]];
