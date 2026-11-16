@@ -214,11 +214,12 @@ function ouvrirProgres() {
     <div class="carte"><h2>${L("4 derniers mois", "Last 4 months")}</h2><div class="chaleur">${cases}</div>
       <div class="legende-ch">${L("Moins", "Less")} <i style="background:var(--soft)"></i><i style="background:#C7D2FE"></i><i style="background:#818CF8"></i><i style="background:#4F46E5"></i><i style="background:#312E81"></i> ${L("Plus", "More")}</div></div>
     ${blocsJeu()}
+    ${blocsForme()}
     ${sectionCharges()}
     <h2 class="sec">${L("Trophées", "Trophies")} · ${nbT}/${TROPHEES.length}</h2>
     <div class="carte"><div class="trophees">${TROPHEES.map((t, k) => `<div class="trophee${deja[t[0]] ? "" : " verrou"}" style="--k:${k}">${medaille(t, "p")}<b>${L(t[1], t[2])}</b>${L(t[3], t[4])}</div>`).join("")}</div></div>
     ${dernieres ? `<h2 class="sec">${L("Dernières séances", "Recent workouts")}</h2><ul class="list historique">${dernieres}</ul>` : `<p class="vide">${L("Termine ta première séance pour allumer la flamme !", "Finish your first workout to light the flame!")}</p>`}`;
-  $("prCorps").querySelectorAll("[data-m]").forEach(b => b.onclick = () => ouvrirRecap(b.dataset.m)); $("voirBilan").onclick = () => ouvrirBilan(lundiDe(), ouvrirProgres);
+  $("prCorps").querySelectorAll("[data-m]").forEach(b => b.onclick = () => ouvrirRecap(b.dataset.m)); $("voirBilan").onclick = () => ouvrirBilan(lundiDe(), ouvrirProgres); brancherForme();
   document.documentElement.style.setProperty("--accent", "#F97316");
   ecran("progres");
   setTimeout(() => $("prCorps").querySelectorAll("[data-v]").forEach(b => compteur(b, +b.dataset.v)), 350);
@@ -434,6 +435,7 @@ function ouvrirProgs(sens, onglet) {
   sens ? retour(() => ecran("progs")) : ecran("progs");
 }
 function ouvrirProg(id, sens) {
+  if (!sens) progRetourVers = null;   // ouvert depuis ailleurs que le club (ou retour d'une séance du programme : sens vrai, on garde)
   const P = PROGRAMMES.find(x => x[0] === id), a = progAvance(id), X = [0, 64, 96, 64, 0, -64, -96];
   $("pTitreProg").textContent = L(P[1], P[2]);
   $("pSubProg").textContent = a >= NB_PROG ? L("Programme terminé, bravo ! Tu peux refaire chaque séance.", "Programme complete, well done! You can replay any session.") : L("Jour {n} sur 28 · touche le rond qui rebondit", "Day {n} of 28 · tap the bouncing circle").replace("{n}", a + 1);
@@ -547,7 +549,60 @@ function ouvrirReprise(id, sens) {
 }
 $("tProgs").onclick = () => ouvrirProgs();
 $("progsRetour").onclick = () => retour(() => ecran("menu"));
-$("progRetour").onclick = () => ouvrirProgs(true);
+// programme ouvert depuis un club : « Retour » y ramène (progRetourVers, js/clubs.js), sinon à la liste des programmes
+let progRetourVers = null;
+$("progRetour").onclick = () => { const f = progRetourVers; progRetourVers = null; f ? retour(f) : ouvrirProgs(true); };
+
+/* ============ STYLE « SOCLE » : objets en volume (js/volume.js, chargé seulement quand ce style est choisi) ============
+   volEcran(nom) est appelé à chaque changement d'écran : kettlebell à l'accueil, mini-personnage pendant un exercice sans vidéo,
+   médaille à la fin. Un seul objet vivant à la fois, détruit en quittant l'écran. Sans WebGL, ou si le script ne charge pas,
+   rien n'est ajouté : l'écran garde son affichage habituel. */
+// groupes du personnage : [nom fr, nom en, rôle fr, rôle en], et les mots (sans accents, fr et en) qui y mènent depuis le champ « muscles » des exercices
+const VOL_NOMS = { quad: ["Quadriceps", "Quadriceps", "Tend le genou et freine la descente : c’est lui qui te relève d’un squat.", "Straightens the knee and controls the way down: it stands you up from a squat."],
+  fessiers: ["Fessiers", "Glutes", "Tendent la hanche : moteur de la course, du saut et de la montée d’escalier.", "Extend the hip: the engine of running, jumping and stair climbing."],
+  ischios: ["Ischio-jambiers", "Hamstrings", "Plient le genou et tendent la hanche ; ils freinent la jambe à chaque foulée.", "Bend the knee and extend the hip; they brake the leg on every stride."],
+  mollets: ["Mollets", "Calves", "Poussent le pied et amortissent chaque appui ; ils stabilisent la cheville.", "Push off the foot and cushion every landing; they steady the ankle."],
+  abdos: ["Abdominaux", "Abs", "Relient le haut et le bas du corps et protègent le dos quand les jambes poussent.", "Link upper and lower body and protect the back when the legs push."],
+  obliques: ["Obliques", "Obliques", "Font tourner et pencher le buste, et résistent aux rotations subies.", "Rotate and side-bend the trunk, and resist unwanted rotation."],
+  pecs: ["Pectoraux", "Chest", "Poussent et ramènent les bras vers l’avant.", "Push and bring the arms forward."],
+  epaules: ["Épaules", "Shoulders", "Lèvent le bras dans toutes les directions et stabilisent l’articulation.", "Lift the arm in every direction and stabilise the joint."],
+  biceps: ["Biceps", "Biceps", "Plie le coude et tourne la paume vers le haut.", "Bends the elbow and turns the palm up."],
+  triceps: ["Triceps", "Triceps", "Tend le coude : il termine chaque poussée.", "Straightens the elbow: it finishes every push."],
+  dos: ["Dos", "Back", "Tire les bras vers l’arrière, tient les omoplates et redresse la colonne.", "Pulls the arms back, holds the shoulder blades and keeps the spine upright."],
+  adducteurs: ["Adducteurs", "Adductors", "Ramènent la cuisse vers l’intérieur et stabilisent le bassin sur un appui.", "Bring the thigh inward and steady the pelvis on one leg."],
+  avantbras: ["Avant-bras", "Forearms", "Serrent la main et tiennent le poignet : la force de ta prise.", "Close the hand and hold the wrist: your grip strength."] };
+const VOL_RX = { quad: /quadri|droit fem|vaste|cuisse|jambes|corps entier|thigh|legs|full body/, fessiers: /fessier|hanche|piriforme|glute|hip/, ischios: /ischio|biceps fem|semi-?[tm]|hamstring/, mollets: /mollet|cheville|achille|sural|soleaire|gastroc|tibial|fibul|calf|calves|ankle/,
+  abdos: /abdo|gainage|tronc|transverse|corps entier|core|\babs\b|full body/, obliques: /oblique|rotation/, pecs: /pector|dentele|chest/, epaules: /epaule|delto|epineux|coiffe|omoplate|shoulder/, biceps: /biceps(?! fem)|brachial\b/, triceps: /triceps(?! sur)/,
+  dos: /\bdos\b|dorsa|trapez|rhombo|lombaire|lombes|erecteur|colonne|\bback\b|\blats\b|spine/, adducteurs: /adduct|gracile|pectine/, avantbras: /avant-bras|poignet|doigts|brachio|forearm|wrist|grip/ };
+let vol = null, volHote = null, volCharge = null, volTour = 0;
+const enSocle = () => document.documentElement.dataset.style === "socle";
+// « Quadriceps, fessiers, gainage » → { quad: 1, fessiers: .6, abdos: .6 } : le premier muscle cité compte le plus
+function volMuscles(txt) {
+  const o = {};
+  String(txt || "").split(/[,·;]/).forEach((m, i) => { const t = m.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/flechisseurs? de hanche|hip flexors?|ilio-?psoas|psoas/g, "quadri"); for (const g in VOL_RX) if (VOL_RX[g].test(t)) o[g] = Math.max(o[g] || 0, i ? .6 : 1); });
+  return o;
+}
+function volFin() { window.volPresse = false; volTour++; if (vol) vol.detruire(); vol = null; if (volHote) volHote.remove(); volHote = null; }
+function volPoser(type, placer, opt = {}) {
+  volFin(); if (!enSocle()) return;
+  const tour = volTour;
+  volCharge ||= new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "js/volume.js?v=" + VER; s.onload = ok; s.onerror = ko; document.head.append(s); });
+  volCharge.then(() => { if (tour !== volTour || !enSocle()) return; const h = document.createElement("div"); placer(h); vol = volume(h, type, { ...opt, echec: () => tour === volTour && volFin() }); if (vol) volHote = h; else h.remove(); }, () => { volCharge = null; });
+}
+// pendant la séance : mini-personnage dans le cadre du dessin, seulement quand l'exercice n'a pas de vidéo ; il suit les muscles de l'exercice
+function volExo(e) {
+  const m = e && !e.video && enSocle() && ecranCourant === "session" ? volMuscles(e.muscles) : {}, mini = vol && volHote.classList.contains("vol-mini");
+  if (!Object.keys(m).length) { if (mini && ecranCourant === "session") volHote.hidden = true; else volFin(); return; }   // exercice avec vidéo : le mini-personnage attend, caché
+  window.volPresse = true;
+  if (mini) { volHote.hidden = false; $("mediaBox").append(volHote); return vol.maj({ muscles: m }); }
+  volPoser("perso", h => $("mediaBox").append(h), { mini: true, mode: "muscles", muscles: m });
+}
+function volEcran(nom) {
+  if (nom === "session") return volExo(liste[index]);
+  volFin(); if (!enSocle()) return;
+  if (nom === "menu") volPoser("kettlebell", h => $("menu").querySelector(".entete h1").after(h), { aria: L("Kettlebell en volume : glisse pour le faire tourner", "3D kettlebell: drag to spin it") });
+  else if (nom === "end") volPoser("medaille", h => $("end").prepend(h), { aria: L("Médaille en volume : glisse pour la faire tourner", "3D medal: drag to spin it") });
+}
 
 /* ============ THÈME (clair / sombre / auto) ============ */
 let theme = "clair";   // par défaut : clair (Fonderie clair)
@@ -558,6 +613,7 @@ function appliquerTheme() {
   document.documentElement.dataset.theme = d ? "dark" : "light";
   document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || (d ? "#0C0A09" : "#FBF6F1");   // barre du téléphone à la couleur du fond du style
   [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).setAttribute("aria-pressed", theme === t));
+  if (vol) vol.maj();   // l'objet en volume reprend les teintes du thème
 }
 [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).onclick = () => { theme = t; stocker("theme", t); appliquerTheme(); });
 sombreSys.addEventListener && sombreSys.addEventListener("change", () => theme === "auto" && appliquerTheme());
@@ -565,16 +621,39 @@ appliquerTheme();
 // style de l'appli (Fonderie par défaut, Atelier papier, Classique = d'origine) et style du minuteur ; appliqués aussi avant l'affichage (index.html)
 const choixRg = (id, cle, attr, def, data) => { const maj = () => { let v = def; try { v = localStorage.getItem(cle) || def; } catch (e) {} v === def && attr === "minuteur" || v === "actuel" ? delete document.documentElement.dataset[attr] : document.documentElement.dataset[attr] = v;
     $(id).querySelectorAll(`[data-${data}]`).forEach(b => b.setAttribute("aria-pressed", b.dataset[data] === v)); };
-  $(id).onclick = e => { const b = e.target.closest(`[data-${data}]`); if (b) { stocker(cle, b.dataset[data]); maj(); if (cle === "minuteur") delete $("time").dataset.v; else appliquerTheme(); } }; maj(); };
-choixRg("rgStyle", "style", "style", "fonderie", "st"); choixRg("rgMinuteur", "minuteur", "minuteur", "chiffres", "mn");
+  $(id).onclick = e => { const b = e.target.closest(`[data-${data}]`); if (b) { stocker(cle, b.dataset[data]); maj(); if (cle === "minuteur") delete $("time").dataset.v; else { appliquerTheme(); if (!enSocle()) { volFin(); window.volLiberer?.(); } } } }; maj(); };
+choixRg("rgStyle", "style", "style", "socle", "st");
+// effet verre : activé par défaut, appliqué aussi avant l'affichage (index.html)
+const majVerre = () => { const v = "verre" in document.documentElement.dataset; $("verreBtn").textContent = T(v ? "Activé" : "Coupé"); $("verreBtn").setAttribute("aria-pressed", v); };
+$("verreBtn").onclick = () => { const v = !("verre" in document.documentElement.dataset); v ? document.documentElement.dataset.verre = "" : delete document.documentElement.dataset.verre; stocker("verre", v ? "1" : "0"); majVerre(); };
+majVerre(); choixRg("rgMinuteur", "minuteur", "minuteur", "chiffres", "mn");
 // inclinaison 3D au doigt des cartes (thèmes Fonderie et Atelier papier), sauf « réduire les animations »
 { const calme = matchMedia("(prefers-reduced-motion: reduce)"), CARTES = ".choice, .tuile, .kpi, .carte, .prog-carte, .sc-corps, .quick-corps, .semaine-carte";
-  let el = null, f = 0; const remettre = () => { cancelAnimationFrame(f); if (el) { el.style.removeProperty("--rx"); el.style.removeProperty("--ry"); el.classList.remove("incline"); el = null; } };
+  let el = null, f = 0; const remettre = () => { cancelAnimationFrame(f); if (el) { el.style.removeProperty("--rx"); el.style.removeProperty("--ry"); el.style.removeProperty("--gx"); el.style.removeProperty("--gy"); el.classList.remove("incline"); el = null; } };
   addEventListener("pointermove", e => { if (calme.matches || !document.documentElement.dataset.style || (e.pointerType !== "mouse" && !e.buttons && e.pointerType !== "touch")) return;
     const c = e.target.closest && e.target.closest(CARTES); if (c !== el) remettre(); if (!c) return; el = c; cancelAnimationFrame(f);
     f = requestAnimationFrame(() => { const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5, m = Math.min(8, 900 / Math.max(r.width, 120));
-      c.classList.add("incline"); c.style.setProperty("--ry", (x * m).toFixed(2) + "deg"); c.style.setProperty("--rx", (-y * m).toFixed(2) + "deg"); }); }, { passive: true });
+      c.classList.add("incline"); c.style.setProperty("--ry", (x * m).toFixed(2) + "deg"); c.style.setProperty("--rx", (-y * m).toFixed(2) + "deg"); c.style.setProperty("--gx", (x + .5) * 100 + "%"); c.style.setProperty("--gy", (y + .5) * 100 + "%"); }); }, { passive: true });
   ["pointerup", "pointercancel", "scroll"].forEach(t => addEventListener(t, remettre, { passive: true, capture: true })); document.addEventListener("pointerleave", remettre); }
+
+/* Mouvement du téléphone : en l'inclinant, le fond, les cartes et les objets en volume suivent le geste (effet de profondeur).
+   L'orientation est lue sur place, lissée, jamais enregistrée ni envoyée. L'iPhone demande l'accord au premier toucher. */
+window.MVT = { x: 0, y: 0 };
+{ const calme = matchMedia("(prefers-reduced-motion: reduce)"), R = document.documentElement, borne = v => Math.max(-1, Math.min(1, v));
+  let actif = true, g0 = null;
+  try { actif = localStorage.getItem("mouvement") !== "0"; } catch (e) {}
+  let b0 = null, f = 0;
+  const poser = () => { f = 0; R.style.setProperty("--mx", MVT.x.toFixed(3)); R.style.setProperty("--my", MVT.y.toFixed(3)); };
+  const lu = e => { if (!actif || calme.matches || e.gamma == null) return;
+    // la position de repos suit lentement la façon dont on tient le téléphone : seul le geste compte
+    g0 = g0 == null ? e.gamma : g0 + (e.gamma - g0) * .02; b0 = b0 == null ? e.beta : b0 + (e.beta - b0) * .02;
+    MVT.x += (borne((e.gamma - g0) / 22) - MVT.x) * .25; MVT.y += (borne((e.beta - b0) / 22) - MVT.y) * .25; f ||= requestAnimationFrame(poser); };
+  const brancher = () => addEventListener("deviceorientation", lu, { passive: true });
+  const demander = () => { const D = window.DeviceOrientationEvent; if (actif && D && typeof D.requestPermission === "function") D.requestPermission().then(r => r === "granted" && brancher(), () => {}); };
+  if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== "function") brancher(); else document.addEventListener("click", demander, { once: true });
+  const maj = () => { $("mvtBtn").textContent = T(actif ? "Activé" : "Coupé"); $("mvtBtn").setAttribute("aria-pressed", actif); if (!actif) { MVT.x = MVT.y = 0; poser(); } };
+  $("mvtBtn").onclick = () => { actif = !actif; stocker("mouvement", actif ? "1" : "0"); maj(); if (actif) { demander(); g0 = b0 = null; } };
+  maj(); }
 
 /* ============ RÉCAPITULATIF MENSUEL : « Ton mois en sport », en stories ============ */
 const nomMois = m => { const [a, mo] = m.split("-"); const t = new Date(a, mo - 1, 1).toLocaleDateString(L("fr-FR", "en-GB"), { month: "long", year: "numeric" }); return t[0].toUpperCase() + t.slice(1); };
