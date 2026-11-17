@@ -22,7 +22,7 @@ with sync_playwright() as p:
             page.route('**/*', lambda r: r.fulfill(status=200, content_type='text/javascript', body='') if any(x in r.request.url for x in ['googleapis.com', 'gstatic.com']) else r.continue_())
             url = f'http://127.0.0.1:{srv.server_port}/'
             page.goto(url)
-            page.evaluate('''([lang, theme]) => { localStorage.clear(); localStorage.setItem('langue', lang); localStorage.setItem('theme', theme); sessionStorage.setItem('guideInstall', '1'); }''', [lang, theme])
+            page.evaluate('''([lang, theme]) => { localStorage.clear(); localStorage.setItem('langue', lang); localStorage.setItem('theme', theme === 'dark' ? 'sombre' : 'clair'); sessionStorage.setItem('guideInstall', '1'); }''', [lang, theme])
             page.reload()
             page.wait_for_timeout(500)
             results = page.evaluate('''() => {
@@ -75,6 +75,7 @@ with sync_playwright() as p:
               vueSCats(); ok($('choicesCS').textContent.includes('Trail'),'trail dans liste Sports');
               ouvrirSport('trail','parcours'); return {count, width:innerWidth, theme:document.documentElement.dataset.theme};
             }''')
+            assert results['theme'] == theme, f"Thème réellement appliqué : {results['theme']} au lieu de {theme}"
             # Réglages réels et saisies de tests, avec leurs gestionnaires DOM.
             page.locator('#trDp').fill('1500'); page.locator('#trDp').dispatch_event('change')
             assert page.evaluate('spPref("trail").dp') == 1500
