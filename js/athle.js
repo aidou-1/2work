@@ -113,3 +113,5 @@ ROUTINES.athle = { type: "ech", titre: L("Athlétisme", "Athletics"), titreFr: "
 CONSEILLES.athle = ROUTINES.athle.exercices;
 // Les entrées libres servent aussi aux sélecteurs de renforcement existants.
 ["", "Mat"].forEach(s => { const k = "renfoAthle" + s; ROUTINES[k] = { type: "seance", titre: L("Renfo athlétisme", "Athletics strength"), titreFr: "Renfo athlétisme", detail: L("Jambes, ischios, équilibre et gainage", "Legs, hamstrings, balance and core"), couleur: SP.athle.c, grp: "athle", mat: !!s, exercices: ["squat", "rdl", "pont", "mollet1", "equilibre", "bird", "planchelat", "rotEpaule"] }; CONSEILLES[k] = ROUTINES[k].exercices; });
+// types de séance de club propres à l'athlétisme (Ma semaine, batterie) : [FR, EN, effort habituel /10, dur, contenu par défaut]
+TYPES_CLUB.athle = { tech: ["Technique / gammes", "Technique / drills", 6, 0, []], series: ["Séries / vitesse", "Reps / speed", 8, 1, ["cardio", "jambes"]], comp: ["Compétition", "Competition", 9, 1, ["cardio", "jambes"]], phys: ["Physique / PPG", "Conditioning", 8, 1, ["cardio", "jambes", "gainage"]] };
