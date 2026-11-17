@@ -50,7 +50,7 @@ exosSp([
   if (R) R.exercices = R.exercices.map(id => ({ squatsaute: "squat", skater: "fentesalt", burpees: "pontuni" })[id] || id); });
 // Les plafonds ne montent pas avec le minuteur ; reprise progressive puis affûtage en semaine 6.
 const niveauHb = x => x.niv === "debutant" ? 0 : x.niv === "compet" ? 2 : 1;
-const chargeHb = x => { const P = x.P; if (P.match >= 0 && !P.treve) return Math.min(1, x.f); const w = Math.max(0, Math.floor((lundi() - lundi(new Date(P.debut + "T12:00"))) / 6048e5)); return Math.min(x.f, [0.5, 0.75, 1, 1, 1, 0.5][w] || 1); };
+const chargeHb = chargeEquipe;
 const toursHb = (k, x, limites) => Math.min(k, Math.max(1, Math.floor(limites[niveauHb(x)] * chargeHb(x))));
 const facileHb = k => ["Technique facile", "Easy technique", "Reste sans douleur. Arrête si la qualité baisse.", "Stay pain-free. Stop if quality drops.", k, 15, [["footwork", 60, 15, L("Petits pas en marchant, sans saut ni sprint, effort 3/10", "Small walking steps, no jumps or sprints, effort 3/10"), "60 s"]]];
 const HBS = {
