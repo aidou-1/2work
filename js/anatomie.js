@@ -157,17 +157,26 @@ function exosCharges() {   // exercices de travail de la séance (hors échauffe
   if (routine.salle) return [...new Set(ids)];
   return [];
 }
+// charge conseillée pour la prochaine fois : +2,5 kg (1 kg sous 20 kg) si le haut de la fourchette de répétitions a été atteint, sinon la même
+function chargeConseillee(id) {
+  const d = lireCharges().filter(x => x.id === id).pop(); if (!d) return null;
+  const rc = repsCible((routine && routine.plan || []).find(q => q.id === id && q.serie)), plus = d.kg < 20 ? 1 : 2.5, monte = !!rc && d.r >= rc[1];
+  return { kg: monte ? d.kg + plus : d.kg, monte, d };
+}
+const kgTxt = v => String(v).replace(".", L(",", "."));
 function formCharges() {
   const ex = exosCharges(); if (!ex.length) return "";
   const h = lireCharges();
-  return `<div class="carnet"><h3>🏋️ ${L("Note tes charges", "Log your weights")}</h3><p>${L("Charge et répétitions de ta dernière série : l’appli suit ta progression et estime ta force maximale.", "Weight and reps of your last set: the app tracks your progress and estimates your max strength.")}</p>
-    ${ex.map(id => { const d = h.filter(x => x.id === id).pop(), q = (routine.plan || []).find(x => x.id === id && x.presc && x.serie);
-      const reps = q ? parseInt(q.presc, 10) || "" : ""; return `<div class="carnet-ligne" data-id="${id}"><span>${EXERCICES[id].nom}${d ? `<small>${L("Dernière fois", "Last time")} : ${d.kg} kg × ${d.r}</small>` : ""}</span>
-      <label><input type="number" inputmode="decimal" min="0" max="500" step="0.5" placeholder="${d ? d.kg : "kg"}" class="ck"><i>kg</i></label><label><input type="number" inputmode="numeric" min="1" max="100" value="${reps}" class="cr"><i>reps</i></label></div>`; }).join("")}
+  return `<div class="carnet"><h3>🏋️ ${L("Note tes charges", "Log your weights")}</h3><p>${L("Charge et répétitions de ta dernière série : l’appli suit ta progression et estime ta force maximale. Touche une case kg : la charge conseillée s’y inscrit, corrige-la si tu as fait autrement. Une ligne vide n’est pas enregistrée.", "Weight and reps of your last set: the app tracks your progress and estimates your max strength. Tap a kg box: the advised weight fills in, correct it if you did otherwise. An empty row is not saved.")}</p>
+    ${ex.map(id => { const d = h.filter(x => x.id === id).pop(), q = (routine.plan || []).find(x => x.id === id && x.presc && x.serie), C = chargeConseillee(id);
+      // charge conseillée en indication : un appui dans la case la recopie ; une ligne laissée vide n'est pas enregistrée (exercice sauté)
+      const reps = q ? parseInt(q.presc, 10) || "" : d ? d.r : ""; return `<div class="carnet-ligne" data-id="${id}"><span>${EXERCICES[id].nom}${d ? `<small>${L("Dernière fois", "Last time")} : ${kgTxt(d.kg)} kg × ${d.r}${C && C.monte ? " · 📈 " + L("conseillé", "advised") + " " + kgTxt(C.kg) + " kg" : ""}</small>` : ""}</span>
+      <label><input type="number" inputmode="decimal" min="0" max="500" step="0.5" placeholder="${C ? kgTxt(C.kg) : "kg"}" data-conseil="${C ? C.kg : ""}" class="ck"><i>kg</i></label><label><input type="number" inputmode="numeric" min="1" max="100" value="${reps}" class="cr"><i>reps</i></label></div>`; }).join("")}
     <button class="primary" id="ckOk">${L("Enregistrer mes charges", "Save my weights")}</button><div id="ckRes"></div></div>`;
 }
 function brancherCharges() {
   if (!$("ckOk")) return;
+  document.querySelectorAll(".ck[data-conseil]").forEach(i => i.onfocus = () => { if (!i.value && i.dataset.conseil) { i.value = i.dataset.conseil; i.select(); } });
   $("ckOk").onclick = () => {
     const h = lireCharges(), res = [];
     document.querySelectorAll(".carnet-ligne").forEach(l => { const id = l.dataset.id, kg = parseFloat(l.querySelector(".ck").value), r = parseInt(l.querySelector(".cr").value, 10);
