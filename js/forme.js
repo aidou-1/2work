@@ -278,7 +278,7 @@ function majForme() {
   Z.classList.add("forme-bloc");
   Z.innerHTML = `<div class="fb-tete"><strong>${L("Ma forme", "My fitness")}</strong>${cr ? `<button class="toggle" id="fmPt">📍 ${L("Faire le point", "Check in")}</button>` : ""}</div><div class="fb-tuiles">
     <button class="fb-t" id="fmOuvrir" style="--c:${B ? P0[6] : "var(--brand)"}">${B ? icoBatterie(B.v) : `<span class="fb-i">🔋</span>`}<b>${B ? B.v + " %" : L("À remplir", "To fill in")}</b><small>${B ? L(P0[2], P0[3]) : L("30 s le matin", "30 s each morning")}</small></button>
-    <button class="fb-t" id="fbDl" style="--c:${r.dl === 2 ? "#DC2626" : r.dl ? "#F59E0B" : "#16A34A"}"><span class="fb-i">${r.dl ? "🩹" : "💚"}</span><b>${!B ? L("Douleur", "Pain") : r.dl === 2 ? L("Douleur", "Pain") : r.dl ? L("Gêne", "Discomfort") : L("Aucune", "None")}</b><small>${zs.length ? zs.map(nomZone).join(", ") : B ? L("carte du corps", "body map") : L("au questionnaire", "in the check-in")}</small></button>
+    <button class="fb-t" id="fbDl" style="--c:${r.dl === 2 ? "var(--rouge)" : r.dl ? "var(--ambre)" : "var(--feu-vert)"}"><span class="fb-i">${r.dl ? "🩹" : "💚"}</span><b>${!B ? L("Douleur", "Pain") : r.dl === 2 ? L("Douleur", "Pain") : r.dl ? L("Gêne", "Discomfort") : L("Aucune", "None")}</b><small>${zs.length ? zs.map(nomZone).join(", ") : B ? L("carte du corps", "body map") : L("au questionnaire", "in the check-in")}</small></button>
     <button class="fb-t" id="fbSem"><span class="fb-i">📅</span><b id="fbSemV">${L("Ma semaine", "My week")}</b><small id="fbSemS"></small></button></div>`;
   $("fmOuvrir").onclick = () => B ? detailForme() : questionnaire();
   $("fbDl").onclick = () => B ? feuilleDouleur() : questionnaire();
@@ -289,7 +289,7 @@ function detailForme() {
   const N = batterieMaintenant(), B = N.B, P = palier(N.conseil), c = conseilsForme(B), auj = jourCle();
   ouvrirFeuilleInfo(L("Ta batterie du jour", "Today’s battery"), `<div class="batt-grand">${icoBatterie(N.v)}<b>${N.v} %</b></div>${courbeJour(auj, minutesMaintenant())}
     <p class="fm-legende"><i class="fm-l-ligne"></i>${L("calcul", "estimate")} <i class="fm-l-pt"></i>${L("tes points", "your check-ins")}</p>
-    <button class="primary" id="fmPoint">📍 ${L("Faire le point maintenant (20 s)", "Check in now (20 s)")}</button><p class="sh-aide">${L(`${B.v} % au réveil, maintenant ${N.v} % : elle se vide au fil de la journée (éveil, stress, séances) et une sieste la recharge.`, `${B.v} % on waking, now ${N.v} %: it drains through the day (being awake, stress, workouts) and a nap recharges it.`)} ${L("Le conseil d’effort, lui, suit ta récupération et tes séances du jour, pas la baisse normale due à l’éveil.", "The effort advice follows your recovery and today’s workouts, not the normal drop from being awake.")}</p>
+    <button class="primary" id="fmPoint">📍 ${L("Faire le point maintenant (20 s)", "Check in now (20 s)")}</button><p class="sh-aide">${L(`${B.v} % au réveil, maintenant ${N.v} % : elle se vide au fil de la journée (éveil, stress, séances) et une sieste la recharge.`, `${B.v}% on waking, now ${N.v}%: it drains through the day (being awake, stress, workouts) and a nap recharges it.`)} ${L("Le conseil d’effort, lui, suit ta récupération et tes séances du jour, pas la baisse normale due à l’éveil.", "The effort advice follows your recovery and today’s workouts, not the normal drop from being awake.")}</p>
     <p><b>${P[1]} ${L(P[2], P[3])}</b> · ${L(P[4], P[5])}</p>
     ${c.length ? `<ul class="prog-obj">${c.map(t => `<li>${t}</li>`).join("")}</ul>` : ""}
     ${N.parts.length ? `<h3>${L("Depuis ton réveil", "Since you woke up")}</h3><ul class="carnet ef-liste">${N.parts.map(([n, v]) => `<li><span>${n}</span><b>${v > 0 ? "+" : ""}${Math.round(v)}</b></li>`).join("")}</ul>` : ""}
@@ -304,7 +304,7 @@ function detailForme() {
     <p class="sh-aide">${L("Un repère, pas un diagnostic : si tu te sens mal, écoute ton corps avant le chiffre.", "A guide, not a diagnosis: if you feel unwell, listen to your body before the number.")}</p>
     <button class="toggle" id="fmModif">${L("Modifier mes réponses", "Edit my answers")}</button>`);
   $("fmModif").onclick = () => questionnaire(); $("fmPoint").onclick = () => pointJour();
-  brancherFm("fmSieste", d => { const G = lireForme(); G[auj] = { ...G[auj], si: [...(G[auj].si || []), { t: minutesMaintenant(), d: +d }] }; stockerForme(G); majForme(); detailForme(); bulleMs(L(`Sieste notée : +${RECHARGE_SIESTE(+d)} %`, `Nap logged: +${RECHARGE_SIESTE(+d)} %`)); });
+  brancherFm("fmSieste", d => { const G = lireForme(); G[auj] = { ...G[auj], si: [...(G[auj].si || []), { t: minutesMaintenant(), d: +d }] }; stockerForme(G); majForme(); detailForme(); bulleMs(L(`Sieste notée : +${RECHARGE_SIESTE(+d)} %`, `Nap logged: +${RECHARGE_SIESTE(+d)}%`)); });
 }
 function questionnaire() {
   const F = lireForme(), auj = jourCle(), r = { h: 7.5, q: 3, e: 3, c: 2, st: 2, dl: 0, z: [], ...(F[auj] || F[decaler(auj, -1)] || {}) };   // on part des réponses de la veille : souvent proches
@@ -335,7 +335,7 @@ function pointJour() {
     ${QP.map(([k, fr, en, em, [bf, be], [hf, he]]) => `<div class="fm-q"><b>${L(fr, en)}</b><div class="fm-notes" role="radiogroup" aria-label="${L(fr, en)}">${em.map((e, i) => `<button class="toggle" role="radio" data-k="${k}" data-v="${i + 1}" aria-pressed="${r[k] === i + 1}" aria-checked="${r[k] === i + 1}" aria-label="${i + 1} / 5">${e}</button>`).join("")}</div><small><span>${L(bf, be)}</span><span>${L(hf, he)}</span></small></div>`).join("")}
     <button class="primary" id="fmPtOk">${L("Enregistrer mon point", "Save my check-in")}</button>`);
   document.querySelectorAll(".fm-notes [data-k]").forEach(b => b.onclick = () => { r[b.dataset.k] = +b.dataset.v; b.parentNode.querySelectorAll("button").forEach(x => { const on = x === b; x.setAttribute("aria-pressed", on); x.setAttribute("aria-checked", on); }); });
-  $("fmPtOk").onclick = () => { const G = lireForme(), t = minutesMaintenant(); G[auj] = { ...G[auj], p: [...(G[auj].p || []).filter(p => Math.abs(p.t - t) >= 30), { t, ...r }] }; stockerForme(G); majForme(); detailForme(); bulleMs(L(`Point noté : ressenti ${ressentiPoint(r)} %`, `Check-in saved: felt ${ressentiPoint(r)} %`)); };
+  $("fmPtOk").onclick = () => { const G = lireForme(), t = minutesMaintenant(); G[auj] = { ...G[auj], p: [...(G[auj].p || []).filter(p => Math.abs(p.t - t) >= 30), { t, ...r }] }; stockerForme(G); majForme(); detailForme(); bulleMs(L(`Point noté : ressenti ${ressentiPoint(r)} %`, `Check-in saved: felt ${ressentiPoint(r)}%`)); };
 }
 
 /* --- Statistiques de Mes progrès : chaque carte explique le phénomène qu'elle montre --- */
