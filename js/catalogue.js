@@ -214,7 +214,7 @@ function ficheRecup() {
     <h3>${L("Les 3 phases d’une séance", "The 3 phases of a session")}</h3><ul class="prog-obj">
       <li><b>${L("Retour progressif", "Gradual cool-down")}</b> — ${L("2 à 3 minutes de mobilité douce, le cœur redescend.", "2 to 3 minutes of gentle mobility as your heart rate drops.")}</li>
       <li><b>${L("Étirements statiques", "Static stretches")}</b> — ${L("30 secondes par muscle et par côté, sans à-coups.", "30 seconds per muscle and per side, no bouncing.")}</li>
-      <li><b>${L("Respiration lente", "Slow breathing")}</b> — ${L("1 à 3 minutes allongé, l’expiration plus longue que l’inspiration.", "1 to 3 minutes lying down, breathing out longer than in.")}</li></ul>
+      <li><b>${L("Respiration lente", "Slow breathing")}</b> — ${L("1 à 3 minutes allongé, l’expiration plus longue que l’inspiration, rythmée à la voix : ferme les yeux.", "1 to 3 minutes lying down, breathing out longer than in, paced by the voice: close your eyes.")}</li></ul>
     <h3>${L("Les règles d’or de l’étirement", "Golden rules of stretching")}</h3><ul class="prog-obj">
       <li>${L("Une tension légère, jamais de douleur.", "Mild tension, never pain.")}</li><li>${L("Pas de rebonds : on tient la position et on respire.", "No bouncing: hold the position and breathe.")}</li>
       <li>${L("Expire en allant un peu plus loin, le muscle se relâche mieux.", "Breathe out as you go a little further: the muscle relaxes better.")}</li><li>${L("Évite d’étirer fort un muscle qui vient d’être blessé.", "Avoid strongly stretching a freshly injured muscle.")}</li></ul>
@@ -225,11 +225,78 @@ function ficheRecup() {
       <li>${L("Repos : au moins 1 à 2 jours plus calmes par semaine.", "Rest: at least 1 to 2 easier days a week.")}</li></ul>
     <h3>${L("Ce que dit la science", "What the science says")}</h3><p>${L("Pour gagner en souplesse, on recommande de tenir chaque étirement 10 à 30 secondes, 2 à 4 fois. En revanche, s’étirer ne réduit presque pas les courbatures : les étirements servent surtout la souplesse et la détente. La respiration lente avec expiration allongée active le système nerveux parasympathique, celui du repos.", "To improve flexibility, holding each stretch for 10 to 30 seconds, 2 to 4 times, is recommended. However, stretching barely reduces muscle soreness: stretching mainly serves flexibility and relaxation. Slow breathing with a longer exhale activates the parasympathetic “rest” nervous system.")}</p></details>`;
 }
+/* ============ APNÉE EN COHÉRENCE CARDIAQUE ============
+   Apnées à sec, poumons pleins après une inspiration normale, jamais d'hyperventilation avant (risque de perte de connaissance).
+   Entre deux apnées, la récupération se fait en cohérence 5-5 guidée. Les temps sont calculés sur le dernier « Apnée à sec »
+   (test commun avec le surf, noté ici ou dans Tests) : table CO₂ = même apnée (50 %), récupérations de plus en plus courtes ;
+   table O₂ = récupération fixe, apnées de 40 à 65 %. Plafonds volontairement prudents : on s'entraîne seul. */
+const APNEE_DEF = 45;
+const recordApnee = () => { const l = lireTests().filter(x => x.id === "sfApneeMax" && x.v > 0); return l.length ? Math.min(360, l[l.length - 1].v) : 0; };
+const phA = (label, sec, to, x) => ({ label, sec, to, ...x });
+const cohA = s => Array.from({ length: Math.max(0, s / 10 - 1) }, () => [phA("INSPIRE", 5, 1), phA("EXPIRE", 5, .45)]).flat();
+const sommeA = b => ({ ...b, duree: (b.phases || []).reduce((t, p) => t + (p.est ?? p.sec), 0) || b.duree });
+const libreA = d => ({ titre: L("Respiration libre", "Free breathing"), titreFr: "Respiration libre", voix: "Free breathing", cycle: [["RESPIRE LIBREMENT", 10, .7]], duree: d,
+  consigne: L("Respire naturellement par le nez, sans forcer. Laisse le souffle revenir tout seul.", "Breathe naturally through your nose, without forcing. Let your breath settle on its own."),
+  resume: L("Respiration naturelle : on pose le souffle avant et on le laisse revenir après.", "Natural breathing: settle the breath before, let it recover after.") });
+const cohB = d => ({ titre: L("Cohérence cardiaque 5-5", "Coherent breathing 5-5"), titreFr: "Cohérence cardiaque 5-5", voix: "Coherent breathing", cycle: [["INSPIRE", 5, 1], ["EXPIRE", 5, .45]], duree: d,
+  consigne: L("Inspire 5 s, expire 5 s par le nez, sans forcer : surtout pas de grandes respirations rapides avant l’apnée.", "Breathe in 5 s, out 5 s through your nose, without forcing: no big fast breaths before the hold."),
+  resume: L("Préparation calme : le cœur ralentit, le corps se détend. Ne « charge » pas d’air.", "Calm preparation: heart rate slows, the body relaxes. Do not “load up” on air.") });
+// une apnée : dernière inspiration normale, apnée, puis récupération en cohérence jusqu'à la suivante (rec secondes)
+const apneeA = (i, n, h, rec) => sommeA({ titre: L(`Apnée ${i} sur ${n} · ${h} s`, `Hold ${i} of ${n} · ${h} s`), titreFr: `Apnée ${i} sur ${n}`, voix: `Hold ${i} of ${n}`,
+  consigne: L("Poumons pleins, sans forcer. Relâche la mâchoire, les épaules et le ventre. Envie de respirer : c’est normal, reste calme ; vertige : respire tout de suite.", "Lungs full, without forcing. Relax your jaw, shoulders and belly. The urge to breathe is normal, stay calm; if dizzy, breathe right away."),
+  resume: rec ? L(`${h} s d’apnée, puis ${rec} s de récupération en cohérence 5-5.`, `${h} s hold, then ${rec} s of 5-5 coherent recovery.`) : L(`${h} s d’apnée, la dernière.`, `${h} s hold, the last one.`),
+  phases: [phA("DERNIÈRE INSPIRATION", 5, 1), phA("RETIENS", h, 1, { hold: 1 }), phA("EXPIRE", 5, .45), ...cohA(rec)] });
+const borneA = (v, a, b) => Math.max(a, Math.min(b, Math.round(v)));
+const APNEES = [
+  ["coherApneeDouce", "Cohérence et apnée douce", "Gentle breath-hold breathing", "Cohérence 5-5 avec une courte pause poumons pleins", "5-5 breathing with a short pause, lungs full", 0, R => {
+    const h = borneA(R * .1, 3, 8);
+    return [libreA(60), cohB(120), { titre: L(`Cohérence avec pause de ${h} s`, `Breathing with a ${h} s pause`), titreFr: `Cohérence avec pause de ${h} s`, voix: "Breathing with a pause", duree: 240,
+      cycle: [["INSPIRE", 5, 1], ["RETIENS", h, 1], ["EXPIRE", 5, .45]],
+      consigne: L("Inspire 5 s, garde l’air sans bloquer la gorge, puis expire 5 s. La pause doit rester confortable.", "Breathe in 5 s, keep the air without locking your throat, then out 5 s. The pause must stay comfortable."),
+      resume: L(`Une pause de ${h} s (environ 10 % de ton record) entre l’inspiration et l’expiration : elle allonge le cycle et calme encore plus.`, `A ${h} s pause (about 10% of your record) between breathing in and out: it lengthens the cycle and calms you further.`) }, cohB(60), libreA(60)];
+  }],
+  ["coherApneeCO2", "Table d’apnée CO₂", "CO₂ breath-hold table", "8 apnées à 50 % de ton record, récupérations en cohérence de plus en plus courtes", "8 holds at 50% of your record, shorter and shorter coherent recoveries", 1, R => {
+    const h = borneA(R * .5, 10, 150), rec = [120, 110, 100, 90, 80, 70, 60, 0];
+    return [libreA(60), cohB(120), ...rec.map((r, k) => apneeA(k + 1, rec.length, h, r)), libreA(120)];
+  }],
+  ["coherApneeO2", "Table d’apnée O₂", "O₂ breath-hold table", "6 apnées de plus en plus longues (40 à 65 % de ton record), 2 min de cohérence entre deux", "6 longer and longer holds (40 to 65% of your record), 2 min of coherent breathing between", 1, R => {
+    const p = [.4, .45, .5, .55, .6, .65];
+    return [libreA(60), cohB(120), ...p.map((x, k) => apneeA(k + 1, p.length, borneA(R * x, 10, 200), k < p.length - 1 ? 120 : 0)), libreA(120)];
+  }],
+  ["coherApneeTest", "Mesurer mon apnée", "Measure my breath-hold", "2 min de cohérence puis une apnée max chronométrée : elle règle les tables", "2 min of coherent breathing then a timed max hold: it sets the tables", 1, R => [libreA(60), cohB(120),
+    sommeA({ titre: L("Apnée maximale", "Max breath-hold"), titreFr: "Apnée maximale", voix: "Max breath-hold", consigne: "",
+      resume: L("Inspiration normale, puis retiens sans forcer. Arrête au premier inconfort net : ce n’est pas une compétition.", "Normal breath in, then hold without straining. Stop at the first clear discomfort: it is not a competition."),
+      phases: [phA("DERNIÈRE INSPIRATION", 5, 1), phA("RETIENS", 420, 1, { hold: 1, max: 1, est: R || 60 }), phA("EXPIRE", 5, .45)] }), libreA(90)]]
+];
+const SECU_APNEE = ["⚠️ Apnée uniquement à sec, assis ou allongé : jamais dans l’eau ni dans le bain, jamais debout ou en conduisant. Pas de respirations rapides et fortes avant une apnée : l’hyperventilation peut faire perdre connaissance sans prévenir. Arrête dès que la tête tourne, que ça picote ou que la vue se trouble. Grossesse, problème cardiaque, épilepsie ou tension mal contrôlée : demande d’abord l’avis d’un médecin.",
+  "⚠️ Dry breath-holds only, seated or lying down: never in water or the bath, never standing or driving. No fast, forceful breathing before a hold: hyperventilation can make you black out without warning. Stop as soon as you feel dizzy, tingling or your vision blurs. Pregnancy, heart problems, epilepsy or poorly controlled blood pressure: ask a doctor first."];
+// garde le meilleur temps du jour (un essai raté ne remplace pas un bon) ; renvoie le message de fin de séance
+function noterApnee(v) {
+  if (v < 5) return L("Apnée trop courte : rien n’a été enregistré.", "Hold too short: nothing was saved.");
+  const l = lireTests(), auj = l.find(x => x.id === "sfApneeMax" && x.j === jourCle()), avant = recordApnee();
+  if (!auj || auj.v < v) stocker("tests", JSON.stringify([...l.filter(x => x !== auj), { j: jourCle(), id: "sfApneeMax", v }]));
+  return L(`Apnée : ${v} s${avant && v > avant ? " · nouveau record !" : ""} Tes tables d’apnée sont maintenant calculées sur ce temps.`, `Breath-hold: ${v} s${avant && v > avant ? " · new record!" : ""} Your breath-hold tables now use this time.`);
+}
+APNEES.forEach(([k, tFr, tEn, dFr, dEn, fixe, f]) => {
+  const r = ROUTINES[k] = { type: "calme", cat: "coherence", souffle: true, apnee: 1, fixeSouf: !!fixe, titre: L(tFr, tEn), titreFr: tFr, couleur: "#6D28D9", exercices: [], detail: L(dFr, dEn),
+    construire() {
+      const R = recordApnee(), P = lireProfil(), j = (lireTests().filter(x => x.id === "sfApneeMax").pop() || {}).j;
+      r.blocs = f(R || APNEE_DEF).map(sommeA); r.minutes = Math.max(1, Math.round(r.blocs.reduce((t, b) => t + b.duree, 0) / 60));
+      r.etude = `<b>${R ? L(`Calculé sur ton record : ${R} s (${dateCourte(j)}).`, `Based on your record: ${R} s (${dateCourte(j)}).`) : k === "coherApneeTest" ? L("Pas encore de record : c’est le moment de le mesurer.", "No record yet: time to measure it.") : L(`Pas encore de record : base prudente de ${APNEE_DEF} s. Fais d’abord « Mesurer mon apnée ».`, `No record yet: a cautious ${APNEE_DEF} s base. Do “Measure my breath-hold” first.`)}</b><br>${L(...SECU_APNEE)}${P.age && P.age < 18 ? "<br><b>" + L("Moins de 18 ans : fais-le avec un adulte à côté de toi.", "Under 18: do it with an adult next to you.") + "</b>" : ""}`;
+    } };
+  // valeurs de départ : le vrai calcul (record, âge) se fait à l'ouverture, quand Tests et Profil sont chargés
+  r.blocs = f(APNEE_DEF).map(sommeA); r.minutes = Math.round(r.blocs.reduce((t, x) => t + x.duree, 0) / 60);
+  const b = document.createElement("button");
+  b.className = "choice"; b.style.setProperty("--c", r.couleur); b.dataset.cle = k; b.dataset.cat = "coherence";
+  b.innerHTML = `<strong>🫁 ${r.titre}</strong><span>${r.detail}</span>`; b.onclick = () => ouvrirRoutine(k);
+  $("choicesK").appendChild(b);
+});
+
 function vueCalme() {
   vue("choicesR", "calme", "Retour au calme", L("Récupère après ta séance : mobilité douce, étirements ciblés et respiration.", "Recover after your workout: gentle mobility, targeted stretches and breathing."), () => {
     $("choicesR").innerHTML = `<h2 class="sec">${L("À la carte", "À la carte")}</h2>`;
     bouton($("choicesR"), "Étirements par zone", "10 séances réglables, une par zone du corps", "#2A9D8F", () => vueK("etir", "Étirements", "Choisis la zone du corps à étirer."));
-    bouton($("choicesR"), "Cohérence cardiaque", "Respiration guidée : express, classique, récupération", "#3B82C4", () => vueK("coherence", "Cohérence cardiaque", "Choisis ta séance de respiration."));
+    bouton($("choicesR"), "Cohérence cardiaque", "Respiration guidée et apnée : 13 séances, du calme express aux tables d’apnée", "#3B82C4", () => vueK("coherence", "Cohérence cardiaque", "Choisis ta séance de respiration."));
     $("choicesR").insertAdjacentHTML("beforeend", `<h2 class="sec">${L("Après quoi ?", "After what?")}</h2>` + ficheRecup());
     RECUPS.forEach(([id, tFr, tEn, mFr, mEn, c]) => { const r = seanceRecup(id);
       bouton($("choicesR"), L(tFr, tEn), L(mFr, mEn) + " · " + r.total + " min", c, () => { ROUTINES.recup = seanceRecup(id); CONSEILLES.recup = ROUTINES.recup.exercices; ouvrirRoutine("recup"); }); });

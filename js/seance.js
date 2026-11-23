@@ -578,6 +578,8 @@ document.addEventListener("click", ev => {
 /* ============ ACCUEIL ============ */
 const modeDe = r => r.tabata ? "tabata" : r.souffle ? "souffle" : r.salle ? "salle" : r.type === "seance" ? "seance" : r.type === "calme" ? "calme" : "echauffement";
 function ouvrirRoutine(cle) {
+  // tables d'apnée : recalculées à chaque ouverture sur le dernier record
+  if (ROUTINES[cle].construire) ROUTINES[cle].construire();
   mode = modeDe(ROUTINES[cle]); chargerDuree(cle); ids = chargerIds(cle); fermerAjout(); ouvrirApercu(cle);
 }
 Object.entries(ROUTINES).forEach(([cle, r]) => {
@@ -730,7 +732,7 @@ function ouvrirApercu(cle) {
   lr.querySelector("small").textContent = tb ? T("Pause entre deux répétitions") : rProp != null ? L("Proposé pour cette séance : ", "Suggested for this session: ") + reposTxt(rProp) + (routine.gym && !routine.circuit ? L(" · accessoires ajustés en proportion", " · accessories scaled to match") : routine.plan ? L(" · récupération entre les tours ajustée en proportion", " · recovery between rounds scaled to match") : "") : T("Pause avant l’exercice suivant");
     document.documentElement.style.setProperty("--accent", routine.couleur);
   const plan = so ? planSouf(routine, dureeGlobale) : [];
-  const total = so ? plan.reduce((t, q) => t + q.sec, 0) : mode === "tabata"
+  const total = so ? plan.reduce((t, q) => t + secSouf(q), 0) : mode === "tabata"
     ? cycles * (reps * dureeGlobale + (reps - 1) * repos) + (cycles - 1) * recup
     : liste.reduce((s, e) => s + e.duree, 0) + (routine.plan ? liste.reduce((s, e) => s + e.r, 0) : mode === "seance" || sa ? repos * Math.max(0, liste.length - 1) : 0);
   totalPrevu = total; dejaFait = 0; debutSeance = 0;
@@ -738,14 +740,14 @@ function ouvrirApercu(cle) {
   const nb = (n, un, plus, v) => T(n > 1 ? plus : un, { n, ...v });
   const min = String(Math.round(total / 60 * 10) / 10).replace(".", LANGUE === "en" ? "." : ",");
   $("pInfo").textContent = (tb ? nb(cycles, "{n} cycle", "{n} cycles") : so ? nb(routine.blocs.length, "{n} exercice", "{n} exercices") : sa ? T(cycles > 1 ? "{n} exercices × {s} séries" : "{n} exercices × {s} série", { n: ids.length, s: cycles }) : T("{n} exercices", { n: liste.length })) + " · " + T("environ {m} min", { m: min });
-  $("dureeVal").closest(".reglage").classList.toggle("hidden", !!routine.plan); if (routine.plan && !rr) $("reposRow").classList.add("hidden");
+  $("dureeVal").closest(".reglage").classList.toggle("hidden", !!routine.plan || !!routine.fixeSouf); if (routine.plan && !rr) $("reposRow").classList.add("hidden");
   if (routine.plan) $("pInfo").textContent = L("environ {m} min · effort visé {r}/10", "about {m} min · target effort {r}/10").replace("{m}", Math.round(total / 60)).replace("{r}", routine.rpe);
   const resumeAj = () => (routine.listeHtml.match(/^[\s\S]*?<\/li>/) || [""])[0] + blocsRepetes(planAjuste(routine.plan, choixAj)).map(g => blocHtml([g.k, g.l.slice(0, g.p).map(q => [q.id, (g.n > 1 ? g.n + " × " : "") + duTxt(q.d)]), ""])).join("");
   $("pList").innerHTML = routine.listeHtml ? (routine.plan && Object.keys(choixAj).length ? resumeAj() : routine.listeHtml) : routine.blocsProg ? `<li class="etude prog-carte-jour"><div><small><b>${L("Semaine", "Week")} ${routine.semaine + 1} · ${L(SEMAINES[routine.semaine][0], SEMAINES[routine.semaine][1])}</b></small><small>🎯 ${routine.objectif}</small><small>💡 ${routine.conseil}</small></div></li>`
       + routine.blocsProg.map(b => `<li class="bloc-titre"><div><b>${b.n}</b><small>${b.t > 1 ? L("{t} tours", "{t} rounds").replace("{t}", b.t) + " · " : ""}${b.ex.length} ${L("exercices", "exercises")} · ${b.ex[0][1]} s${b.r ? " / " + b.r + " s " + L("de repos", "rest") : ""}${b.t > 1 ? " · " + b.rt + " s " + L("entre les tours", "between rounds") : ""}</small></div></li>`
         + b.ex.map(([id, d]) => `<li class="bloc-ex">${vignette(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div><span class="duree">${d} s</span></li>`).join("")).join("")
     : so
-    ? routine.blocs.map((b, j) => `<li><div><b>${j + 1}. ${b.titre} · ${Math.round(plan.filter(q => q.j === j).reduce((t, q) => t + q.sec, 0) / 6) / 10} min</b><small>${b.resume}</small></div></li>`).join("")
+    ? routine.blocs.map((b, j) => `<li><div><b>${j + 1}. ${b.titre} · ${Math.round(plan.filter(q => q.j === j).reduce((t, q) => t + secSouf(q), 0) / 6) / 10} min</b><small>${b.resume}</small></div></li>`).join("")
       + `<li><div><small>${routine.etude} ${T("Séance de bien-être, pas un avis médical : arrête-toi en cas de vertige.")}</small></div></li>`
     : ids.length
     ? (routine.ami ? `<li class="etude defi"><div><small><b>🤝 ${L(`Ton ami ${routine.ami} te défie de réussir ${routine.amiDj ? "le défi du jour" : "cette séance"}. Relève le défi !`, `Your friend ${routine.ami} challenges you to complete ${routine.amiDj ? "the daily challenge" : "this workout"}. Take it on!`)}</b></small></div></li>` : "") + ids.map((id, i) => `<li data-i="${i}">${vignette(id)}<div><b>${EXERCICES[id].nom}</b><small>${EXERCICES[id].muscles}</small></div>${routine.fixe ? "" : `<button class="suppr" data-i="${i}" aria-label="${T("Retirer {n}", { n: EXERCICES[id].nom })}">×</button>`}</li>`).join("")
@@ -873,13 +875,24 @@ function majTemps() {
 function tic() {
   if (enPause) return;
   reste--;
-  if (reste <= 3 && reste > 0) sons.alerte(); else if (reste > 3 && (!enRepos || routine.tbt)) sons.tic();
+  const rg = !enRepos && RESP_GUIDE[liste[index].id];
+  if (reste <= 3 && reste > 0) sons.alerte(); else if (reste > 3 && (!enRepos || routine.tbt) && !rg) sons.tic();
   if (reste <= 0) return suivant(true);
   if (enRepos) { $("time").textContent = reste; return; }
   const jc = instantsCh(liste[index]).indexOf(reste);
   if (jc >= 0) changerCote(liste[index], jc);
+  else if (rg) guiderSouffle(liste[index], rg);
   else if (!direConseil(reste)) coach(liste[index], reste);
   majTemps();
+}
+/* Respiration guidée dans une séance d'exercices (fin des retours au calme) : la voix rythme inspire / expire,
+   car on la fait allongé, les yeux fermés. [inspire s, expire s] ; on laisse 6 s pour l'annonce du nom. */
+const RESP_GUIDE = { relaxation: [4, 6] };
+function guiderSouffle(e, [i, x]) {
+  const t = e.duree - reste - 6, k = t % (i + x);
+  if (t < 0 || reste <= 3 || (k && k !== i) || guideJoue()) return;
+  const ins = !k; $("zones").textContent = ins ? L("Inspire", "Breathe in") + " · " + i + " s" : L("Expire", "Breathe out") + " · " + x + " s";
+  parler(langueVoix === "fr" ? (ins ? "Inspire" : "Expire") : (ins ? "Breathe in" : "Breathe out"), 0, 0.85); bip(ins ? 523 : 392, 500, 0.08);
 }
 
 function suivant(auto) {
@@ -983,10 +996,15 @@ function setRecup(n) {
    Respiration guidée : inspire / expire en alternance, avec un cercle qui gonfle et se dégonfle. */
 let souf = { plan: [], i: 0 };
 
-/* Déroule les blocs en une liste de phases ; les durées sont mises à l'échelle de la durée choisie (minutes) */
+/* Déroule les blocs en une liste de phases ; les durées sont mises à l'échelle de la durée choisie (minutes),
+   sauf pour les tables d'apnée (fixeSouf) : leurs temps sont calculés sur le record et ne doivent pas bouger.
+   Un bloc « phases » (une apnée et sa récupération) est joué tel quel, une seule fois. */
+const secSouf = q => q.est ?? q.sec;
+const enApnee = p => p.hold || /^(RETIENS|POUMONS VIDES)$/.test(p.label);
 function planSouf(r, minutes) {
-  const f = minutes * 60 / r.blocs.reduce((t, b) => t + b.duree, 0), plan = [];
+  const f = r.fixeSouf ? 1 : minutes * 60 / r.blocs.reduce((t, b) => t + b.duree, 0), plan = [];
   r.blocs.forEach((b, j) => {
+    if (b.phases) return b.phases.forEach(p => plan.push({ j, c: 0, n: 1, ...p }));
     const len = b.cycle.reduce((t, p) => t + p[1], 0), n = Math.max(1, Math.round(b.duree * f / len));
     for (let c = 0; c < n; c++) b.cycle.forEach(([label, sec, to]) => plan.push({ j, c, n, label, sec, to }));
   });
@@ -1006,17 +1024,17 @@ function demarrerSouf() {
 
 function afficherSouf() { $("ensuite").innerHTML = "";
   noterSeance(); bandeauCote(""); typeEx();
-  const p = souf.plan[souf.i], b = routine.blocs[p.j], de = souf.i ? souf.plan[souf.i - 1].to : 0.45;
-  const c = p.to > de ? "var(--accent)" : p.to < de ? "#2F7D3A" : "var(--muted)";
-  const debutBloc = p.c === 0 && p.label === b.cycle[0][0];
-  reste = p.sec;
+  const p = souf.plan[souf.i], b = routine.blocs[p.j], de = souf.i ? souf.plan[souf.i - 1].to : 0.45, ap = enApnee(p);
+  const c = ap ? "#7C3AED" : p.to > de ? "var(--accent)" : p.to < de ? "#2F7D3A" : "var(--muted)";
+  const debutBloc = !souf.i || souf.plan[souf.i - 1].j !== p.j;
+  reste = p.sec; souf.t = 0;
   $("count").textContent = T("Exercice {a} sur {b} · {t}", { a: p.j + 1, b: routine.blocs.length, t: b.titre });
   $("name").className = "name grand";
   $("name").textContent = LANGUE === "en" ? SOUFFLE_VOIX[p.label].toUpperCase() : p.label;
   $("name").style.color = c; $("time").style.color = c;
-  $("time").textContent = reste;
-  $("desc").textContent = b.consigne;
-  $("zones").textContent = T("Cycle {a} sur {b}", { a: p.c + 1, b: p.n });
+  $("time").textContent = p.max ? 0 : reste;
+  $("desc").textContent = p.max ? L("Détends-toi. Touche le cercle (ou ⏭) dès que tu reprends ton souffle : c’est ton temps.", "Relax. Tap the circle (or ⏭) as soon as you breathe again: that is your time.") : b.consigne;
+  $("zones").textContent = b.phases ? (p.max ? L("Le plus longtemps possible, sans forcer", "As long as you can, without straining") : ap ? L("Apnée poumons pleins", "Breath-hold, lungs full") : p.label === "DERNIÈRE INSPIRATION" ? L("Inspiration normale, pas forcée", "Normal breath in, not forced") : L("Récupération en cohérence 5-5", "5-5 coherent recovery")) : T("Cycle {a} sur {b}", { a: p.c + 1, b: p.n });
   $("mediaBox").innerHTML = `<div class="souffle"><i style="--de:${de};--vers:${p.to};animation-duration:${p.sec}s;animation-play-state:${enPause ? "paused" : "running"}"></i></div>`;
   [...$("bars").children].forEach((el, j) => {
     const phases = souf.plan.filter(q => q.j === j), faites = phases.filter(q => souf.plan.indexOf(q) < souf.i).length;
@@ -1026,7 +1044,10 @@ function afficherSouf() { $("ensuite").innerHTML = "";
   clearInterval(timer);
   timer = horloge(ticSouf);
   $("pause").textContent = T(enPause ? "Reprendre" : "Pause");
+  if (p.max) $("mediaBox").firstChild.onclick = () => $("next").click();
   if (debutBloc && souf.i) { bip(660, 900, 0.12); bip(880, 900, 0.08, "sine", 0.15); }
+  // début d'apnée : double note grave, distincte de l'inspiration et de l'expiration (le cercle ne change pas de taille)
+  else if (ap) { bip(330, 260, 0.1, "triangle"); bip(330, 260, 0.1, "triangle", 0.32); }
   else if (p.to !== de) bip(p.to > de ? 523 : 392, 650, 0.1);
   // voix : titre de l'exercice au début de chaque bloc, puis chaque changement de phase (immédiat, débit calme)
   const prec = souf.i ? souf.plan[souf.i - 1].label : "";
@@ -1035,13 +1056,23 @@ function afficherSouf() { $("ensuite").innerHTML = "";
 
 function ticSouf() {
   if (enPause) return;
+  const p = souf.plan[souf.i], fr = langueVoix === "fr";
+  // test d'apnée : le chrono monte ; repère vocal toutes les 30 s, pour le faire les yeux fermés
+  if (p.max) { souf.t++; $("time").textContent = souf.t; if (souf.t % 30 === 0) parler(fr ? souf.t + " secondes" : souf.t + " seconds", 0, 0.85); return souf.t >= p.sec && suivantSouf(); }
   reste--;
   if (reste <= 0) return suivantSouf();
   $("time").textContent = reste;
+  // repères réservés aux apnées des tables (la respiration carrée garde des pauses courtes et silencieuses)
+  if (!p.hold) return;
+  if (reste <= 3) bip(660, 120, 0.07);
+  else if (p.sec >= 30 && reste === Math.round(p.sec / 2)) parler(fr ? "Relâche les épaules et la mâchoire" : "Relax your shoulders and jaw", 0, 0.85);
+  else if (p.sec >= 30 && reste === 10) parler(fr ? "Encore dix secondes" : "Ten more seconds", 0, 0.85);
 }
 
 function suivantSouf() {
-  if (souf.i >= souf.plan.length - 1) return terminer();
+  const p = souf.plan[souf.i];
+  if (p.max && !souf.res) souf.res = noterApnee(souf.t);
+  if (souf.i >= souf.plan.length - 1) { terminer(); if (souf.res) $("fSub").textContent = souf.res; return; }
   souf.i++;
   afficherSouf();
 }
