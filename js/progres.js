@@ -193,7 +193,7 @@ function celebrer() {   // renvoie false si la séance est écourtée (moins de 
   setTimeout(() => $("fBilan").querySelectorAll("b").forEach(b => compteur(b, +b.dataset.v)), 800);
   $("fTrophees").innerHTML = blocGain() + neufs.map((t, k) => `<div class="nouveau-trophee" style="--k:${k}">${medaille(t, "n")}<div><small>${L("Nouveau badge", "New badge")}</small><b>${L(t[1], t[2])}</b><span>${L(t[3], t[4])}</span></div></div>`).join("");
   if (fc.n) $("fSub").textContent += " ❤️ " + L(`${Math.round(fc.somme / fc.n)} bpm en moyenne, ${fc.max} au maximum.`, `${Math.round(fc.somme / fc.n)} bpm on average, ${fc.max} max.`);
-  $("fRessenti").innerHTML = blocRessenti(); brancherRessenti(); brancherEffort();
+  $("fRessenti").innerHTML = blocRessenti() + blocProchaine(); brancherRessenti(); brancherEffort(); brancherProchaine();
   $("fCharges").innerHTML = formCharges(); brancherCharges();
   $("fPartage").innerHTML = blocPartage(); brancherPartage();
   if ((h.length <= 3 || (h.length % 10 === 0 && h.length < 3000)) && typeof installee === "function" && !installee() && /^https?:/.test(location.protocol)) {   // premières séances (puis toutes les 10) : le bon moment pour proposer l'installation
@@ -630,20 +630,23 @@ let theme = "clair";   // par défaut : clair (Fonderie clair)
 try { theme = localStorage.getItem("theme") || "clair"; } catch (e) {}
 const sombreSys = matchMedia("(prefers-color-scheme: dark)");
 function appliquerTheme() {
-  const d = theme === "sombre" || (theme === "auto" && sombreSys.matches) || document.documentElement.dataset.style === "liquide";   // Verre liquide : toujours sombre (OLED)
+  const d = theme === "sombre" || (theme === "auto" && sombreSys.matches) || document.documentElement.dataset.style === "titane";   // Titane : toujours sombre (OLED)
   document.documentElement.dataset.theme = d ? "dark" : "light";
   document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || (d ? "#0C0A09" : "#FBF6F1");   // barre du téléphone à la couleur du fond du style
-  [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).setAttribute("aria-pressed", theme === t));
+  const ti = document.documentElement.dataset.style === "titane";   // Titane : toujours sombre, le thème ne se choisit pas
+  [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => { $(id).setAttribute("aria-pressed", ti ? t === "sombre" : theme === t); $(id).disabled = ti; });
   if (vol) vol.maj();   // l'objet en volume reprend les teintes du thème
 }
 [["thClair", "clair"], ["thSombre", "sombre"], ["thAuto", "auto"]].forEach(([id, t]) => $(id).onclick = () => { theme = t; stocker("theme", t); appliquerTheme(); });
 sombreSys.addEventListener && sombreSys.addEventListener("change", () => theme === "auto" && appliquerTheme());
 appliquerTheme();
-// style de l'appli (Fonderie par défaut, Atelier papier, Classique = d'origine) et style du minuteur ; appliqués aussi avant l'affichage (index.html)
+// style de l'appli (Titane par défaut, Fonderie, Atelier papier, Socle) et style du minuteur ; appliqués aussi avant l'affichage (index.html)
+// les styles retirés (Verre liquide, Classique) passent à Titane
 const choixRg = (id, cle, attr, def, data) => { const maj = () => { let v = def; try { v = localStorage.getItem(cle) || def; } catch (e) {} v === def && attr === "minuteur" || v === "actuel" ? delete document.documentElement.dataset[attr] : document.documentElement.dataset[attr] = v;
     $(id).querySelectorAll(`[data-${data}]`).forEach(b => b.setAttribute("aria-pressed", b.dataset[data] === v)); };
   $(id).onclick = e => { const b = e.target.closest(`[data-${data}]`); if (b) { stocker(cle, b.dataset[data]); maj(); if (cle === "minuteur") delete $("time").dataset.v; else { appliquerTheme(); if (!enSocle()) { volFin(); window.volLiberer?.(); } } } }; maj(); };
-choixRg("rgStyle", "style", "style", "liquide", "st");
+try { if (["liquide", "actuel"].includes(localStorage.getItem("style"))) stocker("style", "titane"); } catch (e) {}
+choixRg("rgStyle", "style", "style", "titane", "st");
 // effet verre : activé par défaut, appliqué aussi avant l'affichage (index.html)
 const majVerre = () => { const v = "verre" in document.documentElement.dataset; $("verreBtn").textContent = T(v ? "Activé" : "Coupé"); $("verreBtn").setAttribute("aria-pressed", v); };
 $("verreBtn").onclick = () => { const v = !("verre" in document.documentElement.dataset); v ? document.documentElement.dataset.verre = "" : delete document.documentElement.dataset.verre; stocker("verre", v ? "1" : "0"); majVerre(); };
